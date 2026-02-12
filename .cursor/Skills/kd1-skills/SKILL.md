@@ -1,5 +1,5 @@
 ---
-description: >
+description: |-
   Webアプリケーション構築スキル。React + TypeScript + Express + Catalyst UIコンポーネントを使用した
   プロダクショングレードのWebアプリを構築する。
   トリガー条件:
