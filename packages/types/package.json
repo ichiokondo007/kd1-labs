@@ -1,0 +1,16 @@
+{
+  "name": "@kd1-labs/types",
+  "version": "1.0.0",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc -w"
+  },
+  "keywords": [],
+  "author": "",
+  "packageManager": "pnpm@10.18.3",
+  "devDependencies": {
+    "typescript": "^5.9.3"
+  }
+}
