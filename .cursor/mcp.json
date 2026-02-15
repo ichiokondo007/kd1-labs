@@ -1,0 +1,18 @@
+{
+  "mcpServers": {
+    "serena": {
+      "command": "uvx",
+      "args": [
+        "--from",
+        "git+https://github.com/oraios/serena",
+        "serena-mcp-server",
+        "--project",
+        "/home/ichio/projects/kd1-labs",
+        "--context",
+        "ide-assistant",
+        "--enable-web-dashboard",
+        "false"
+      ]
+    }
+  }
+}
