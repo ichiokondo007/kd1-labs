@@ -20,18 +20,14 @@ export function DashboardLayout() {
     <SidebarLayout
       navbar={
         <Navbar>
-          <div className="flex items-center gap-3">
-             <img src="/kd.icon.svg" className="w-8 h-8" alt="KD1 Labs Logo" />
-             <SidebarLabel>KD1 Labs</SidebarLabel>
-          </div>
+          <img src="/kd1.png" className="h-10 w-auto" alt="KD1 Labs Logo" />
         </Navbar>
       }
       sidebar={
         <Sidebar>
           <SidebarHeader>
-            <div className="flex items-center gap-3 px-2 py-2">
-              <img src="/kd.icon.svg" className="w-8 h-8" alt="KD1 Labs Logo" />
-              <span className="text-lg font-bold text-zinc-950 dark:text-white">KD1 Labs</span>
+            <div className="flex items-center px-2 py-2">
+              <img src="/kd1.png" className="h-10 w-auto" alt="KD1 Labs Logo" />
             </div>
           </SidebarHeader>
 
