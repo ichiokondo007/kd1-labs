@@ -1,20 +1,16 @@
-import express from 'express';
-import { User, ApiResponse } from '@kd1-labs/types'; // ★共有型をインポート
+import cors from "cors";
+import "dotenv/config";
+import express from "express";
+import { authRoutes } from "./routes/auth.routes";
 
 const app = express();
+const PORT = Number(process.env.PORT) || 3000;
 
-app.get('/api/me', (req, res) => {
-  const user: User = {
-    id: '1',
-    name: 'Admin User',
-    email: 'admin@kd1labs.com',
-    role: 'admin'
-  };
-  
-  const response: ApiResponse<User> = {
-    success: true,
-    data: user
-  };
+app.use(cors());
+app.use(express.json());
 
-  res.json(response);
+app.use("/api", authRoutes);
+
+app.listen(PORT, () => {
+  console.log(`Server listening at http://localhost:${PORT}`);
 });

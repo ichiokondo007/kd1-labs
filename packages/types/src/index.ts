@@ -10,3 +10,22 @@ export interface ApiResponse<T> {
   data: T;
   message?: string;
 }
+
+/** ログイン API リクエスト (POST /api/login) */
+export interface LoginRequest {
+  userId: string;
+  password: string;
+}
+
+/** ログイン成功時にセッションに載せるユーザ情報 */
+export interface UserInfo {
+  userId: string;
+  userName: string;
+  isInitialPassword: number;
+  isAdmin: number;
+}
+
+/** ログイン API レスポンス: 成功時 userInfo, 失敗時 null */
+export interface LoginResponse {
+  userInfo: UserInfo | null;
+}
