@@ -1,1 +1,1 @@
-export * from "./loginApi";
+export { postLogin } from "./loginApi";

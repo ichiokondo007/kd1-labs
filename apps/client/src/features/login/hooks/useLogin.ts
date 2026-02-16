@@ -1,42 +1,45 @@
-import { useEffect, useMemo, useState } from "react";
-import type { LoginViewModel } from "../types";
-import { fetchLoginItems } from "../services";
-import { sortByCreatedAtDesc } from "../domain";
+import { useState, useCallback } from "react";
+import { useNavigate } from "react-router-dom";
+import type { LoginFormData } from "../types";
+import { postLogin } from "../services";
+import { getPostLoginRoute } from "../domain";
 
 /**
  * hooks は:
  * - state 管理
  * - 副作用（I/O）
- * - UIイベントのハンドリング
- * を担当する。UIはこの hook の戻り値だけ見る。
+ * - UI イベントのハンドリング
+ * を担当する。UI はこの hook の戻り値だけ見る。
  */
 
-export function useLogin(): LoginViewModel {
-  const [items, setItems] = useState<LoginViewModel["items"]>([]);
-  const [isLoading, setIsLoading] = useState(false);
-  const [errorMessage, setErrorMessage] = useState<string | undefined>(undefined);
+export function useLogin() {
+  const navigate = useNavigate();
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string | undefined>(
+    undefined,
+  );
 
-  useEffect(() => {
-    const ac = new AbortController();
-
-    (async () => {
-      setIsLoading(true);
+  const handleSubmit = useCallback(
+    async (data: LoginFormData) => {
+      setIsSubmitting(true);
       setErrorMessage(undefined);
+
       try {
-        const data = await fetchLoginItems(ac.signal);
-        setItems(data);
+        const user = await postLogin(data);
+        const route = getPostLoginRoute(user);
+        navigate(route);
       } catch (e) {
-        const msg = e instanceof Error ? e.message : "読み込みに失敗しました";
+        const msg =
+          e instanceof Error
+            ? e.message
+            : "Incorrect username or password.";
         setErrorMessage(msg);
       } finally {
-        setIsLoading(false);
+        setIsSubmitting(false);
       }
-    })();
+    },
+    [navigate],
+  );
 
-    return () => ac.abort();
-  }, []);
-
-  const sorted = useMemo(() => sortByCreatedAtDesc(items), [items]);
-
-  return { items: sorted, isLoading, errorMessage };
+  return { isSubmitting, errorMessage, handleSubmit };
 }

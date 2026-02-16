@@ -1,7 +1,7 @@
 node_modules/
 dist/
 storybook-static/
-
+catalyst-ui-kit/
 .env
 .env.*
 !.env.example
