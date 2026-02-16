@@ -4,7 +4,6 @@ import { Button } from "@/components/button";
 import { Field, Label } from "@/components/fieldset";
 import { Heading } from "@/components/heading";
 import { Input } from "@/components/input";
-import { Text } from "@/components/text";
 import type { LoginPageProps } from "../types";
 
 /**
@@ -36,12 +35,16 @@ export const LoginPage: FC<LoginPageProps> = ({
         onSubmit={handleSubmit}
         className="grid w-full max-w-sm grid-cols-1 gap-8"
       >
-        {/* ロゴ placeholder — 後でプロジェクトロゴに差し替え */}
-        <Text className="text-2xl font-bold tracking-tight text-zinc-950 dark:text-white">
-          KD1
-        </Text>
+        {/* ロゴ */}
+        <div className="flex justify-center">
+          <img
+            src="/_kd.png"
+            alt="KD1"
+            className="h-32 w-auto object-contain"
+          />
+        </div>
 
-        <Heading>Sign in to your account</Heading>
+        <Heading><div className="text-center">Sign in to your account</div></Heading>
 
         {errorMessage && (
           <div
