@@ -1,6 +1,7 @@
-import { BrowserRouter, Routes, Route } from 'react-router-dom'
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import { DashboardLayout } from '@/layouts/dashboard-layout'
 import HomePage from '@/pages/home'
+import LoginPageEntry from '@/pages/login'
 import CanvasListPage from '@/pages/example/canvas-list'
 
 // プレースホルダー用コンポーネント（まだ作っていないページ用）
@@ -15,26 +16,32 @@ function App() {
   return (
     <BrowserRouter>
       <Routes>
+        {/* 認証画面（レイアウト外） */}
+        <Route path="/login" element={<LoginPageEntry />} />
+
         {/* サイドバーレイアウトを適用するルート群 */}
         <Route element={<DashboardLayout />}>
-          <Route path="/" element={<HomePage />} />
-          
+          <Route path="/home" element={<HomePage />} />
+
           {/* Example Routes */}
           <Route path="/example/canvas" element={<CanvasListPage />} />
           <Route path="/example/canvas-yjs" element={<Placeholder title="Canvas Yjs App" />} />
           <Route path="/example/form-yjs" element={<Placeholder title="Form Yjs App" />} />
-          
+
           {/* Tech Blog Routes */}
           <Route path="/blog/public" element={<Placeholder title="Public Blog" />} />
           <Route path="/blog/private" element={<Placeholder title="Private Blog" />} />
           <Route path="/blog/sandbox" element={<Placeholder title="Sandbox" />} />
-          
+
           {/* Settings */}
           <Route path="/settings" element={<Placeholder title="Settings" />} />
         </Route>
-        
-        {/* ログイン画面などはレイアウトの外に定義します（後ほど実装） */}
+
+        <Route path="/password-change" element={<Placeholder title="Password Change" />} />
         <Route path="/logout" element={<Placeholder title="Logging out..." />} />
+
+        {/* ルート（/）はログイン画面へリダイレクト */}
+        <Route path="/" element={<Navigate to="/login" replace />} />
       </Routes>
     </BrowserRouter>
   )
