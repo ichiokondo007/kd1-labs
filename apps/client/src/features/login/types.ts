@@ -1,24 +1,15 @@
-// feature 内で閉じる型。外部共有が必要なら packages/types へ移す。
+// feature 内で閉じる型。DTO は packages/types を SSOT とする。
 
-/** ログインフォームの送信データ */
+import type { LoginResponse, UserInfo } from "@kd1-labs/types";
+
+/** ログインフォームの送信データ（userName でログイン） */
 export type LoginFormData = {
-  userId: string;
+  userName: string;
   password: string;
 };
 
-/** サーバーから返るユーザー情報 */
-export type UserInfo = {
-  userId: string;
-  userName: string;
-  isInitialPassword: number;
-  isAdmin: number;
-};
-
-/** POST /api/login のレスポンス */
-export type LoginResponse = {
-  data: UserInfo | null;
-  error?: { code: string; message: string };
-};
+// UserInfo, LoginResponse は @kd1-labs/types から利用
+export type { LoginResponse, UserInfo };
 
 /** LoginPage（Presentational）の props */
 export type LoginPageProps = {

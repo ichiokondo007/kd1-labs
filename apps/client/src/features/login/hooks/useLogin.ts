@@ -30,9 +30,9 @@ export function useLogin() {
         navigate(route);
       } catch (e) {
         const msg =
-          e instanceof Error
-            ? e.message
-            : "Incorrect username or password.";
+          (e as { response?: { data?: { error?: { message?: string } } } })
+            ?.response?.data?.error?.message ??
+          (e instanceof Error ? e.message : "Incorrect username or password.");
         setErrorMessage(msg);
       } finally {
         setIsSubmitting(false);

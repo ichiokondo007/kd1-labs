@@ -15,7 +15,9 @@
 ## レイアウト
 
 ### Sidebar Layout
+
 用途: ダッシュボード、管理画面、メインアプリケーション。
+
 ```tsx
 import { SidebarLayout } from '@/components/sidebar-layout'
 import { Sidebar, SidebarBody, SidebarHeader, SidebarItem, SidebarLabel, SidebarSection } from '@/components/sidebar'
@@ -23,14 +25,18 @@ import { Navbar } from '@/components/navbar'
 ```
 
 ### Stacked Layout
+
 用途: シンプルなアプリ、設定画面、ランディングページ。
+
 ```tsx
 import { StackedLayout } from '@/components/stacked-layout'
 import { Navbar, NavbarItem, NavbarLabel, NavbarSection } from '@/components/navbar'
 ```
 
 ### Auth Layout
+
 用途: ログイン、サインアップ、パスワードリセット。
+
 ```tsx
 import { AuthLayout } from '@/components/auth-layout'
 ```
@@ -41,52 +47,52 @@ import { AuthLayout } from '@/components/auth-layout'
 
 ### データ表示
 
-| コンポーネント | インポート元 | 用途 |
-|---|---|---|
-| Avatar | `@/components/avatar` | ユーザーアバター画像 |
-| Badge / BadgeButton | `@/components/badge` | ステータスラベル、タグ（18色） |
-| Description List | `@/components/description-list` | key-valueデータ表示 |
-| Heading / Subheading | `@/components/heading` | 見出し |
-| Text / TextLink / Strong / Code | `@/components/text` | テキスト表示 |
-| Table / TableHead / TableBody / TableRow / TableCell | `@/components/table` | テーブル |
+| コンポーネント                                       | インポート元                    | 用途                           |
+| ---------------------------------------------------- | ------------------------------- | ------------------------------ |
+| Avatar                                               | `@/components/avatar`           | ユーザーアバター画像           |
+| Badge / BadgeButton                                  | `@/components/badge`            | ステータスラベル、タグ（18色） |
+| Description List                                     | `@/components/description-list` | key-valueデータ表示            |
+| Heading / Subheading                                 | `@/components/heading`          | 見出し                         |
+| Text / TextLink / Strong / Code                      | `@/components/text`             | テキスト表示                   |
+| Table / TableHead / TableBody / TableRow / TableCell | `@/components/table`            | テーブル                       |
 
 ### フォーム
 
-| コンポーネント | インポート元 | 用途 |
-|---|---|---|
-| Input / InputGroup | `@/components/input` | テキスト入力 |
-| Textarea | `@/components/textarea` | 複数行入力 |
-| Select | `@/components/select` | ネイティブセレクト |
-| Listbox / ListboxOption | `@/components/listbox` | カスタムセレクト |
-| Combobox | `@/components/combobox` | 検索付きセレクト |
-| Checkbox / CheckboxField / CheckboxGroup | `@/components/checkbox` | チェックボックス |
-| Radio / RadioField / RadioGroup | `@/components/radio` | ラジオボタン |
-| Switch / SwitchField / SwitchGroup | `@/components/switch` | トグルスイッチ |
+| コンポーネント                                                 | インポート元            | 用途                       |
+| -------------------------------------------------------------- | ----------------------- | -------------------------- |
+| Input / InputGroup                                             | `@/components/input`    | テキスト入力               |
+| Textarea                                                       | `@/components/textarea` | 複数行入力                 |
+| Select                                                         | `@/components/select`   | ネイティブセレクト         |
+| Listbox / ListboxOption                                        | `@/components/listbox`  | カスタムセレクト           |
+| Combobox                                                       | `@/components/combobox` | 検索付きセレクト           |
+| Checkbox / CheckboxField / CheckboxGroup                       | `@/components/checkbox` | チェックボックス           |
+| Radio / RadioField / RadioGroup                                | `@/components/radio`    | ラジオボタン               |
+| Switch / SwitchField / SwitchGroup                             | `@/components/switch`   | トグルスイッチ             |
 | Field / Label / Description / ErrorMessage / Fieldset / Legend | `@/components/fieldset` | フォームフィールドラッパー |
 
 ### アクション・ナビゲーション
 
-| コンポーネント | インポート元 | 用途 |
-|---|---|---|
-| Button | `@/components/button` | ボタン（dark/light/white + 20色 + outline/plain） |
-| Link | `@/components/link` | ルーターリンク |
-| Dropdown / DropdownButton / DropdownItem / DropdownMenu | `@/components/dropdown` | ドロップダウンメニュー |
-| Pagination | `@/components/pagination` | ページネーション |
+| コンポーネント                                          | インポート元              | 用途                                              |
+| ------------------------------------------------------- | ------------------------- | ------------------------------------------------- |
+| Button                                                  | `@/components/button`     | ボタン（dark/light/white + 20色 + outline/plain） |
+| Link                                                    | `@/components/link`       | ルーターリンク                                    |
+| Dropdown / DropdownButton / DropdownItem / DropdownMenu | `@/components/dropdown`   | ドロップダウンメニュー                            |
+| Pagination                                              | `@/components/pagination` | ページネーション                                  |
 
 ### フィードバック・オーバーレイ
 
-| コンポーネント | インポート元 | 用途 |
-|---|---|---|
-| Alert / AlertActions / AlertBody / AlertDescription / AlertTitle | `@/components/alert` | アラートダイアログ |
+| コンポーネント                                                        | インポート元          | 用途               |
+| --------------------------------------------------------------------- | --------------------- | ------------------ |
+| Alert / AlertActions / AlertBody / AlertDescription / AlertTitle      | `@/components/alert`  | アラートダイアログ |
 | Dialog / DialogActions / DialogBody / DialogDescription / DialogTitle | `@/components/dialog` | モーダルダイアログ |
 
 ### レイアウト補助
 
-| コンポーネント | インポート元 | 用途 |
-|---|---|---|
-| Divider | `@/components/divider` | 区切り線 |
-| Sidebar* | `@/components/sidebar` | サイドバー部品 |
-| Navbar* | `@/components/navbar` | ナビバー部品 |
+| コンポーネント | インポート元           | 用途           |
+| -------------- | ---------------------- | -------------- |
+| Divider        | `@/components/divider` | 区切り線       |
+| Sidebar*       | `@/components/sidebar` | サイドバー部品 |
+| Navbar*        | `@/components/navbar`  | ナビバー部品   |
 
 ---
 
@@ -165,11 +171,11 @@ const [isOpen, setIsOpen] = useState(false)
 
 ## アイコン規約
 
-| コンテキスト | サイズ | インポート元 |
-|---|---|---|
-| Button, DropdownItem, ListboxOption | 16×16 | `@heroicons/react/16/solid` |
-| NavbarItem, SidebarItem | 20×20 | `@heroicons/react/20/solid` |
-| 大きめの装飾用 | 24×24 | `@heroicons/react/24/outline` |
+| コンテキスト                        | サイズ | インポート元                  |
+| ----------------------------------- | ------ | ----------------------------- |
+| Button, DropdownItem, ListboxOption | 16×16  | `@heroicons/react/16/solid`   |
+| NavbarItem, SidebarItem             | 20×20  | `@heroicons/react/20/solid`   |
+| 大きめの装飾用                      | 24×24  | `@heroicons/react/24/outline` |
 
 ---
 

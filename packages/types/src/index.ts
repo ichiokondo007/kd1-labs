@@ -1,8 +1,12 @@
+/** users テーブル由来のユーザー情報（API 応答用。passwordHash は含めない） */
 export interface User {
-  id: string;
-  name: string;
-  email: string;
-  role: 'admin' | 'user';
+  userId: string;
+  userName: string;
+  isAdmin: boolean;
+  isInitialPassword: boolean;
+  avatarUrl: string | null;
+  avatarColor: string;
+  updatedAt: Date;
 }
 
 export interface ApiResponse<T> {
@@ -11,9 +15,9 @@ export interface ApiResponse<T> {
   message?: string;
 }
 
-/** ログイン API リクエスト (POST /api/login) */
+/** ログイン API リクエスト (POST /api/login)。user_name で認証する */
 export interface LoginRequest {
-  userId: string;
+  userName: string;
   password: string;
 }
 
@@ -21,11 +25,14 @@ export interface LoginRequest {
 export interface UserInfo {
   userId: string;
   userName: string;
-  isInitialPassword: number;
-  isAdmin: number;
+  isInitialPassword: boolean;
+  isAdmin: boolean;
+  avatarUrl: string | null;
+  avatarColor: string;
 }
 
-/** ログイン API レスポンス: 成功時 userInfo, 失敗時 null */
+/** ログイン API レスポンス: 成功時 userInfo, 失敗時 null（401 時は error で理由を返すことがある） */
 export interface LoginResponse {
   userInfo: UserInfo | null;
+  error?: { message: string };
 }

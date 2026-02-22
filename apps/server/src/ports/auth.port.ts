@@ -1,18 +1,18 @@
 /**
  * 認証ポート
- * 認証ユーザー情報を取得する
+ * user_name でユーザーを検索し、パスワード照合用のレコードを返す
  *
- * @param userId ユーザーID
- * @returns ユーザー情報
+ * @param userName ログイン名（user_name 一意）
+ * @returns ユーザー情報（照合用）
  */
 export type AuthUserRecord = {
   userId: string;
   userName: string;
   passwordHash: string;
-  isInitialPassword: 0 | 1;
-  isAdmin: 0 | 1;
+  isInitialPassword: boolean;
+  isAdmin: boolean;
 };
 
 export interface AuthPort {
-  findUserByUserId(userId: string): Promise<AuthUserRecord | null>;
+  findUserByUserName(userName: string): Promise<AuthUserRecord | null>;
 }
