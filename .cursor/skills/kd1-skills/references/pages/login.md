@@ -23,6 +23,8 @@ CREATE TABLE users (
     password_hash VARCHAR(255) NOT NULL,
     is_initial_password TINYINT(1) NOT NULL DEFAULT 1,
     is_admin TINYINT(1) NOT NULL DEFAULT 0,
+    avatar_url VARCHAR(512),
+    avatar_color VARCHAR(20) NOT NULL DEFAULT 'zinc-900',
     updated_at DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) ON UPDATE CURRENT_TIMESTAMP(3),
     PRIMARY KEY (user_id),
     UNIQUE KEY uk_users_login_name (user_name)

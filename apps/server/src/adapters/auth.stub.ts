@@ -1,8 +1,8 @@
 /**
  * 認証スタブアダプタ
- * 認証ユーザー情報を取得する
+ * user_name でユーザーを検索する（開発用スタブ）
  *
- * @param userId ユーザーID
+ * @param userName ログイン名
  * @returns ユーザー情報
  */
 
@@ -15,15 +15,15 @@ import type { AuthPort, AuthUserRecord } from "../ports/auth.port";
 const USERS: AuthUserRecord[] = [
   {
     userId: "admin",
-    userName: "Admin User",
+    userName: "admin",
     passwordHash: "plain:password", // スタブ用の擬似hash
-    isInitialPassword: 0,
-    isAdmin: 1,
+    isInitialPassword: false, // true にするとログイン後は必ず /password-change へ
+    isAdmin: true,
   },
 ];
 
 export const authStubAdapter: AuthPort = {
-  async findUserByUserId(userId: string) {
-    return USERS.find((u) => u.userId === userId) ?? null;
+  async findUserByUserName(userName: string) {
+    return USERS.find((u) => u.userName === userName) ?? null;
   },
 };

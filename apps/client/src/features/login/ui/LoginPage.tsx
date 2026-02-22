@@ -24,7 +24,7 @@ export const LoginPage: FC<LoginPageProps> = ({
 
     const fd = new FormData(e.currentTarget);
     onSubmit({
-      userId: (fd.get("userId") as string) ?? "",
+      userName: (fd.get("userName") as string) ?? "",
       password: (fd.get("password") as string) ?? "",
     });
   };
@@ -40,7 +40,7 @@ export const LoginPage: FC<LoginPageProps> = ({
           <img
             src="/_kd.png"
             alt="KD1"
-            className="h-32 w-auto object-contain"
+            className="h-24 w-auto object-contain"
           />
         </div>
 
@@ -56,10 +56,10 @@ export const LoginPage: FC<LoginPageProps> = ({
         )}
 
         <Field>
-          <Label>UserID</Label>
+          <Label>UserName</Label>
           <Input
             type="text"
-            name="userId"
+            name="userName"
             autoComplete="username"
             required
           />

@@ -1,4 +1,5 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
+import { ProtectedRoute } from '@/components/ProtectedRoute'
 import { DashboardLayout } from '@/layouts/dashboard-layout'
 import HomePage from '@/pages/home'
 import LoginPageEntry from '@/pages/login'
@@ -19,9 +20,10 @@ function App() {
         {/* 認証画面（レイアウト外） */}
         <Route path="/login" element={<LoginPageEntry />} />
 
-        {/* サイドバーレイアウトを適用するルート群 */}
-        <Route element={<DashboardLayout />}>
-          <Route path="/home" element={<HomePage />} />
+        {/* セッションありのみ表示。なしなら /login へ */}
+        <Route element={<ProtectedRoute />}>
+          <Route element={<DashboardLayout />}>
+            <Route path="/home" element={<HomePage />} />
 
           {/* Example Routes */}
           <Route path="/example/canvas" element={<CanvasListPage />} />
@@ -35,6 +37,7 @@ function App() {
 
           {/* Settings */}
           <Route path="/settings" element={<Placeholder title="Settings" />} />
+          </Route>
         </Route>
 
         <Route path="/password-change" element={<Placeholder title="Password Change" />} />

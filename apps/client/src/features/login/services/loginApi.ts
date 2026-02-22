@@ -18,16 +18,14 @@ const apiClient = axios.create({
  */
 export async function postLogin(data: LoginFormData): Promise<UserInfo> {
   const res = await apiClient.post<LoginResponse>("/api/login", {
-    userId: data.userId,
+    userName: data.userName,
     password: data.password,
   });
 
-  if (res.data.data) {
-    return res.data.data;
+  if (res.data.userInfo) {
+    return res.data.userInfo;
   }
 
-  // サーバーが 200 だがデータなし = 認証失敗
-  throw new Error(
-    res.data.error?.message ?? "Incorrect username or password."
-  );
+  const msg = res.data.error?.message ?? "Incorrect username or password.";
+  throw new Error(msg);
 }

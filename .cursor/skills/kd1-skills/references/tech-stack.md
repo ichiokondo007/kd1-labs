@@ -27,10 +27,9 @@
 | TypeScript | 5.x        | 型安全       |
 | Node.js    | 22.x LTS   | ランタイム   |
 
-
 ### client
 
-```
+```bash
 src/
 ├── app/                    # App Router
 │   ├── layout.tsx          # Root layout（Catalystレイアウト適用）

@@ -18,11 +18,13 @@
     "@kd1-labs/types": "workspace:*",
     "cors": "^2.8.6",
     "dotenv": "^17.2.4",
-    "express": "^5.2.1"
+    "express": "^5.2.1",
+    "express-session": "^1.19.0"
   },
   "devDependencies": {
     "@types/cors": "^2.8.17",
     "@types/express": "^5.0.0",
+    "@types/express-session": "^1.18.2",
     "@types/node": "^22.10.1",
     "tsx": "^4.19.2",
     "typescript": "^5.9.3"

@@ -6,9 +6,12 @@ import type { User } from "@kd1-labs/types";
  */
 export async function getMeUsecase(): Promise<User> {
   return {
-    id: "1",
-    name: "Admin User",
-    email: "admin@kd1labs.com",
-    role: "admin",
+    userId: "admin",
+    userName: "admin",
+    isAdmin: true,
+    isInitialPassword: true,
+    avatarUrl: null,
+    avatarColor: "zinc-900",
+    updatedAt: new Date(),
   };
 }
