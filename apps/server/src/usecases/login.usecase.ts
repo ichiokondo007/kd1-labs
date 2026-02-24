@@ -34,12 +34,15 @@ export function makeLoginUsecase(deps: {
       return err({ code: "INVALID_CREDENTIALS", message: "ユーザー名またはパスワードが違います" });
     }
 
-    // 4) レスポンス生成（遷移判断はフロントが行う）
+    // 4) レスポンス生成（遷移判断はフロントが行う。アバターは未設定時デフォルト）
     const userInfo: UserInfo = {
       userId: user.userId,
       userName: user.userName,
+      screenName: user.screenName,
       isInitialPassword: user.isInitialPassword,
       isAdmin: user.isAdmin,
+      avatarUrl: null,
+      avatarColor: "zinc-900",
     };
 
     return ok({ userInfo } satisfies LoginResponse);

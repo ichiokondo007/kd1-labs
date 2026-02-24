@@ -13,8 +13,9 @@
 - Express は HTTP Adapter として扱う。
 ビジネスロジックは HTTP から分離する。
 - 「クリーンアーキテクチャのエッセンスを取り入れた、レイヤードアーキテクチャで実装する事。
-- 理由）関心事の分離。ビジネスロジックはバニラで実装し、Unitテスト実施。（テスト戦略）
+- 理由）関心事の分離。ビジネスロジックはバニラ実装、Unitテスト実施。（テスト戦略）
 - 依存の向きは routes → controllers → usecases で、usecase は Port に依存し Adapter は composition で注入
+- 実装パターンは、ヘキサゴナルアーキテクチャ（ports and adapterパターン）でDI実装。
 
 ---
 

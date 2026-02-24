@@ -5,10 +5,13 @@
  * @returns 認証ユースケース
  */
 import { makeLoginUsecase } from "../usecases/login.usecase";
-import { authStubAdapter } from "../adapters/auth.stub";
+import { authDrizzleAdapter } from "../adapters/auth.drizzle";
+import { bcryptPasswordHasher } from "../adapters/password-hasher.bcrypt";
 import { stubPasswordHasher } from "../adapters/password-hasher.stub";
 
+
 export const loginUsecase = makeLoginUsecase({
-  authPort: authStubAdapter,
-  passwordHasher: stubPasswordHasher,
+  authPort: authDrizzleAdapter,
+  passwordHasher: bcryptPasswordHasher,
+  //passwordHasher: stubPasswordHasher,
 });

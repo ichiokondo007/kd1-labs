@@ -1,6 +1,7 @@
 CREATE TABLE `users` (
 	`user_id` varchar(64) NOT NULL,
 	`user_name` varchar(64) NOT NULL,
+	`screen_name` varchar(255) NOT NULL,
 	`password_hash` varchar(255) NOT NULL,
 	`is_initial_password` boolean NOT NULL DEFAULT true,
 	`is_admin` boolean NOT NULL DEFAULT false,

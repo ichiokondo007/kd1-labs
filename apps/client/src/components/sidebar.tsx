@@ -5,7 +5,7 @@ import clsx from 'clsx'
 import { LayoutGroup, motion } from 'motion/react'
 import React, { forwardRef, useId } from 'react'
 import { TouchTarget } from './button'
-import { Link } from './link'
+import { Link, type LinkProps } from './link'
 
 export function Sidebar({ className, ...props }: React.ComponentPropsWithoutRef<'nav'>) {
   return <nav {...props} className={clsx(className, 'flex h-full min-h-0 flex-col')} />
@@ -79,10 +79,14 @@ export const SidebarItem = forwardRef(function SidebarItem(
     ...props
   }: { current?: boolean; className?: string; children: React.ReactNode } & (
     | ({ href?: never } & Omit<Headless.ButtonProps, 'as' | 'className'>)
-    | ({ href: string } & Omit<Headless.ButtonProps<typeof Link>, 'as' | 'className'>)
+    | ({ href: string } & Omit<LinkProps, 'className'>)
   ),
   ref: React.ForwardedRef<HTMLAnchorElement | HTMLButtonElement>
 ) {
+  const { type: buttonType, ...restProps } = props
+  const safeType: 'button' | 'submit' | 'reset' =
+    buttonType === 'submit' || buttonType === 'reset' ? buttonType : 'button'
+  // Link には type を渡さない。Button には safeType のみ渡す（restProps は union のため型アサーションでボタン用に絞る）
   let classes = clsx(
     // Base
     'flex w-full items-center gap-3 rounded-lg px-2 py-2.5 text-left text-base/6 font-medium text-zinc-950 sm:py-2 sm:text-sm/5',
@@ -116,7 +120,7 @@ export const SidebarItem = forwardRef(function SidebarItem(
       {typeof props.href === 'string' ? (
         <Headless.CloseButton
           as={Link}
-          {...props}
+          {...(restProps as Omit<LinkProps, 'className' | 'type'>)}
           className={classes}
           data-current={current ? 'true' : undefined}
           ref={ref}
@@ -125,7 +129,8 @@ export const SidebarItem = forwardRef(function SidebarItem(
         </Headless.CloseButton>
       ) : (
         <Headless.Button
-          {...props}
+          {...(restProps as Omit<Headless.ButtonProps, 'as' | 'className'>)}
+          type={safeType}
           className={clsx('cursor-default', classes)}
           data-current={current ? 'true' : undefined}
           ref={ref}
