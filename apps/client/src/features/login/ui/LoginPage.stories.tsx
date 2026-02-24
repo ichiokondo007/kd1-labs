@@ -8,7 +8,7 @@ import { LoginPage } from "./LoginPage";
  * - AuthLayout でセンタリング表示
  * - I/O は行わず、props / mock で各状態を確認する
  */
-const meta: Meta<typeof LoginPage> = {
+const meta = {
   title: "pages/LoginPage",
   component: LoginPage,
   parameters: {
@@ -17,11 +17,11 @@ const meta: Meta<typeof LoginPage> = {
   argTypes: {
     onSubmit: { action: "onSubmit" },
   },
-};
+} satisfies Meta<typeof LoginPage>;
 
 export default meta;
 
-type Story = StoryObj<typeof LoginPage>;
+type Story = StoryObj<typeof meta>;
 
 /** デフォルト状態 — 初期表示 */
 export const Default: Story = {};

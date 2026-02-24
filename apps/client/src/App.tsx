@@ -3,7 +3,11 @@ import { ProtectedRoute } from '@/components/ProtectedRoute'
 import { DashboardLayout } from '@/layouts/dashboard-layout'
 import HomePage from '@/pages/home'
 import LoginPageEntry from '@/pages/login'
+import PasswordChangePageEntry from '@/pages/password-change'
 import CanvasListPage from '@/pages/example/canvas-list'
+import SettingsPageEntry from '@/pages/settings'
+import UserManagementPageEntry from '@/pages/user-management'
+import LogoutPage from '@/pages/logout'
 
 // プレースホルダー用コンポーネント（まだ作っていないページ用）
 const Placeholder = ({ title }: { title: string }) => (
@@ -22,6 +26,7 @@ function App() {
 
         {/* セッションありのみ表示。なしなら /login へ */}
         <Route element={<ProtectedRoute />}>
+          <Route path="/password-change" element={<PasswordChangePageEntry />} />
           <Route element={<DashboardLayout />}>
             <Route path="/home" element={<HomePage />} />
 
@@ -35,13 +40,14 @@ function App() {
           <Route path="/blog/private" element={<Placeholder title="Private Blog" />} />
           <Route path="/blog/sandbox" element={<Placeholder title="Sandbox" />} />
 
+          {/* User management */}
+          <Route path="/user-management" element={<UserManagementPageEntry />} />
           {/* Settings */}
-          <Route path="/settings" element={<Placeholder title="Settings" />} />
+          <Route path="/settings" element={<SettingsPageEntry />} />
           </Route>
         </Route>
 
-        <Route path="/password-change" element={<Placeholder title="Password Change" />} />
-        <Route path="/logout" element={<Placeholder title="Logging out..." />} />
+        <Route path="/logout" element={<LogoutPage />} />
 
         {/* ルート（/）はログイン画面へリダイレクト */}
         <Route path="/" element={<Navigate to="/login" replace />} />

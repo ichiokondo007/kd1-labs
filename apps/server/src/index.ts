@@ -3,6 +3,7 @@ import "dotenv/config";
 import express from "express";
 import session from "express-session";
 import { authRoutes } from "./routes/auth.routes";
+import { meRoutes } from "./routes/me.routes";
 
 const app = express();
 const PORT = Number(process.env.PORT) || 3000;
@@ -20,6 +21,7 @@ app.use(
 );
 
 app.use("/api", authRoutes);
+app.use("/api", meRoutes);
 
 app.listen(PORT, () => {
   console.log(`Server listening at http://localhost:${PORT}`);

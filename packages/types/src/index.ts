@@ -2,6 +2,7 @@
 export interface User {
   userId: string;
   userName: string;
+  screenName: string;
   isAdmin: boolean;
   isInitialPassword: boolean;
   avatarUrl: string | null;
@@ -25,6 +26,7 @@ export interface LoginRequest {
 export interface UserInfo {
   userId: string;
   userName: string;
+  screenName: string;
   isInitialPassword: boolean;
   isAdmin: boolean;
   avatarUrl: string | null;
@@ -35,4 +37,15 @@ export interface UserInfo {
 export interface LoginResponse {
   userInfo: UserInfo | null;
   error?: { message: string };
+}
+
+/** プロフィール更新 API リクエスト (PATCH /api/me) */
+export interface UpdateProfileRequest {
+  userName: string;
+  avatarColor: string;
+}
+
+/** パスワード変更 API リクエスト (POST /api/me/password) */
+export interface ChangePasswordRequest {
+  newPassword: string;
 }

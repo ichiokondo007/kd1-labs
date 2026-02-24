@@ -6,16 +6,21 @@
  * https://catalyst.tailwindui.com/docs#client-side-router-integration
  */
 import { DataInteractive as HeadlessDataInteractive } from '@headlessui/react'
-import React, { forwardRef } from 'react'
+import { forwardRef } from 'react'
 import { Link as RouterLink, type LinkProps as RouterLinkProps } from 'react-router-dom'
 
-export const Link = forwardRef<HTMLAnchorElement, RouterLinkProps>(function Link(
-  props,
-  ref
-) {
+/** to または href のどちらかで遷移先を指定（Catalyst 系は href で渡すことが多い） */
+export type LinkProps = Omit<RouterLinkProps, 'to'> & {
+  to?: RouterLinkProps['to']
+  href?: string
+}
+
+export const Link = forwardRef<HTMLAnchorElement, LinkProps>(function Link(props, ref) {
+  const { href, ...rest } = props
+  const to = props.to ?? href ?? '.'
   return (
     <HeadlessDataInteractive>
-      <RouterLink {...props} ref={ref} />
+      <RouterLink {...rest} to={to} ref={ref} />
     </HeadlessDataInteractive>
   )
 })

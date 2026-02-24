@@ -1,5 +1,5 @@
 import axios from "axios";
-import type { ApiResponse, User } from "@kd1-labs/types";
+import type { ApiResponse, UpdateProfileRequest, User } from "@kd1-labs/types";
 
 /**
  * 認証付き API クライアント（/api/me 等で利用）
@@ -19,4 +19,19 @@ export async function getMe(): Promise<User> {
     throw new Error("Failed to get current user");
   }
   return res.data.data;
+}
+
+/**
+ * PATCH /api/me — プロフィール更新（userName, avatarColor）
+ * @throws 400/409 時は res.data.error.message でメッセージを返す
+ */
+export async function patchMe(body: UpdateProfileRequest): Promise<void> {
+  await apiClient.patch("/api/me", body);
+}
+
+/**
+ * POST /api/logout — セッション破棄（ログアウト）
+ */
+export async function logout(): Promise<void> {
+  await apiClient.post("/api/logout");
 }

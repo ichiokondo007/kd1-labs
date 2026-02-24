@@ -1,5 +1,5 @@
 import type { Request, Response } from "express";
-import type { ApiResponse, LoginRequest, LoginResponse, User } from "@kd1-labs/types";
+import type { LoginRequest, LoginResponse } from "@kd1-labs/types";
 import { loginUsecase } from "../composition/auth.composition";
 
 /**
@@ -41,8 +41,10 @@ export async function postLogin(req: Request, res: Response) {
     req.session.userInfo = {
       userId: userInfo.userId,
       userName: userInfo.userName,
+      screenName: userInfo.screenName,
       isInitialPassword: userInfo.isInitialPassword,
       isAdmin: userInfo.isAdmin,
+      avatarColor: userInfo.avatarColor,
     };
   }
 
@@ -50,25 +52,17 @@ export async function postLogin(req: Request, res: Response) {
 }
 
 /**
- * 現在ユーザー取得（セッションから取得。アバターはセッション情報を元に構築）
+ * ログアウト（セッション破棄）
  *
- * @route GET /api/me
- * @returns 200 ApiResponse<User> セッションあり
- * @returns 401 セッションなし（未ログイン）
+ * @route POST /api/logout
+ * @returns 200 成功（セッション削除済み）
  */
-export async function getMe(req: Request, res: Response) {
-  const sessionUser = req.session?.userInfo;
-  if (!sessionUser) {
-    res.status(401).json({ success: false, message: "Unauthorized" });
-    return;
-  }
-  // セッションの情報から User を構築（アバターは未設定時はデフォルト）
-  const user: User = {
-    ...sessionUser,
-    avatarUrl: null,
-    avatarColor: "zinc-900",
-    updatedAt: new Date(),
-  };
-  const response: ApiResponse<User> = { success: true, data: user };
-  res.json(response);
+export function postLogout(req: Request, res: Response) {
+  req.session?.destroy((err) => {
+    if (err) {
+      res.status(500).json({ success: false, message: "Failed to destroy session" });
+      return;
+    }
+    res.status(200).json({ success: true });
+  });
 }

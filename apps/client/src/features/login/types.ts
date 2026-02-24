@@ -1,4 +1,5 @@
 // feature 内で閉じる型。DTO は packages/types を SSOT とする。
+// UserInfo に screenName を含む（@kd1-labs/types で定義）。
 
 import type { LoginResponse, UserInfo } from "@kd1-labs/types";
 
