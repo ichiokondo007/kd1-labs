@@ -5,5 +5,5 @@ catalyst-ui-kit/
 .env
 .env.*
 !.env.example
-
+lazygit
 *.log
