@@ -30,8 +30,8 @@ function isHexColor(value: string): boolean {
   return /^#[0-9A-Fa-f]{3,8}$/.test(value)
 }
 
-function userNameToInitials(userName: string): string {
-  const trimmed = userName.trim()
+function nameToInitials(name: string): string {
+  const trimmed = name.trim()
   if (!trimmed) return '?'
   const parts = trimmed.split(/\s+/)
   if (parts.length >= 2) {
@@ -41,24 +41,25 @@ function userNameToInitials(userName: string): string {
 }
 
 function SidebarUser({ user }: { user: User }) {
-  const initials = userNameToInitials(user.userName)
+  const displayName = user.screenName || user.userName
+  const initials = nameToInitials(displayName)
   const useHex = isHexColor(user.avatarColor)
   const bgClass = useHex ? undefined : (AVATAR_BG[user.avatarColor] ?? AVATAR_BG['zinc-900'])
   const bgStyle = useHex ? { backgroundColor: user.avatarColor } : undefined
   return (
     <div className="flex min-w-0 items-center gap-3 px-2 py-2">
       {user.avatarUrl ? (
-        <Avatar src={user.avatarUrl} alt={user.userName} className="size-9 shrink-0" />
+        <Avatar src={user.avatarUrl} alt={displayName} className="size-9 shrink-0" />
       ) : (
         <span
           className={bgClass ? `inline-flex size-9 shrink-0 items-center justify-center rounded-full ${bgClass} text-xs font-medium` : 'inline-flex size-9 shrink-0 items-center justify-center rounded-full text-xs font-medium text-white'}
           style={bgStyle}
         >
-          <Avatar initials={initials} alt={user.userName} className="size-9" />
+          <Avatar initials={initials} alt={displayName} className="size-9" />
         </span>
       )}
       <span className="min-w-0 truncate text-sm text-zinc-600 dark:text-zinc-400">
-        {user.userName}
+        {displayName}
       </span>
     </div>
   )
@@ -66,7 +67,8 @@ function SidebarUser({ user }: { user: User }) {
 
 /** モバイル用: ナビバー右のアバター＋Settings/Logout ドロップダウン */
 function NavbarAvatarMenu({ user }: { user: User }) {
-  const initials = userNameToInitials(user.userName)
+  const displayName = user.screenName || user.userName
+  const initials = nameToInitials(displayName)
   const useHex = isHexColor(user.avatarColor)
   const bgClass = useHex ? undefined : (AVATAR_BG[user.avatarColor] ?? AVATAR_BG['zinc-900'])
   const bgStyle = useHex ? { backgroundColor: user.avatarColor } : undefined
@@ -78,13 +80,13 @@ function NavbarAvatarMenu({ user }: { user: User }) {
         aria-label="Open user menu"
       >
         {user.avatarUrl ? (
-          <Avatar src={user.avatarUrl} alt={user.userName} className="size-9" />
+          <Avatar src={user.avatarUrl} alt={displayName} className="size-9" />
         ) : (
           <span
             className={bgClass ? `inline-flex size-9 items-center justify-center rounded-full ${bgClass} text-xs font-medium` : 'inline-flex size-9 items-center justify-center rounded-full text-xs font-medium text-white'}
             style={bgStyle}
           >
-            <Avatar initials={initials} alt={user.userName} className="size-9" />
+            <Avatar initials={initials} alt={displayName} className="size-9" />
           </span>
         )}
       </DropdownButton>

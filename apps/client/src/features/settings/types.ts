@@ -15,11 +15,18 @@ export type SettingsViewModel = {
 /** ユーザー情報変更フォーム用（Presentational の props）※パスワード変更は含まない */
 export type SettingsPageFormProps = {
   userName: string;
+  screenName: string;
   avatarColor: string;
   onUserNameChange: (value: string) => void;
+  onScreenNameChange: (value: string) => void;
   onAvatarColorChange: (color: string) => void;
   onSave: () => void;
   isSaving?: boolean;
+  /** ユーザー名のバリデーションエラー */
+  userNameError?: string;
+  /** NickName（Screen Name）のバリデーションエラー */
+  screenNameError?: string;
+  /** サーバーエラー等 */
   errorMessage?: string;
 };
 

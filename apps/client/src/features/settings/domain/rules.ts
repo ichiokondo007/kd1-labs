@@ -23,3 +23,9 @@ export function getRequiredUserNameError(userName: string): string | undefined {
   if (userName.trim().length === 0) return "This field is required.";
   return undefined;
 }
+
+/** NickName（Screen Name）必須チェック。1文字未満ならエラーメッセージを返す。一意制約はなし */
+export function getRequiredScreenNameError(screenName: string): string | undefined {
+  if (screenName.trim().length === 0) return "This field is required.";
+  return undefined;
+}

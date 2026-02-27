@@ -16,6 +16,7 @@ const USERS: AuthUserRecord[] = [
   {
     userId: "admin",
     userName: "admin",
+    screenName: "admin",
     passwordHash: "plain:password", // スタブ用の擬似hash
     isInitialPassword: false, // true にするとログイン後は必ず /password-change へ
     isAdmin: true,

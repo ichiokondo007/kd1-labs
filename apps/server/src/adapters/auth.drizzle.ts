@@ -8,6 +8,7 @@ import type { AuthPort, AuthUserRecord } from "../ports/auth.port";
 function toAuthUserRecord(row: {
   userId: string;
   userName: string;
+  screenName: string;
   passwordHash: string;
   isInitialPassword: boolean;
   isAdmin: boolean;
@@ -15,6 +16,7 @@ function toAuthUserRecord(row: {
   return {
     userId: row.userId,
     userName: row.userName,
+    screenName: row.screenName,
     passwordHash: row.passwordHash,
     isInitialPassword: row.isInitialPassword,
     isAdmin: row.isAdmin,

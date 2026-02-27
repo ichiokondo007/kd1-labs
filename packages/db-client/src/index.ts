@@ -1,9 +1,8 @@
 export { pool, db, schema } from "./db.js";
-export { runMigrations } from "./migrate.js";
+export { runMigrations, runSeeds } from "./migrate.js";
 export {
   findUserByUserName,
   findUserById,
-  findUserByScreenName,
   insertUser,
   updateUser,
 } from "./repositories/users.repository.js";

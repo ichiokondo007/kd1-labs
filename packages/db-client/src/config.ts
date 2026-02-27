@@ -57,6 +57,7 @@ export function getDbConfig(): DbConfig {
     user: process.env.DB_USER ?? "kd1",
     password: process.env.DB_PASSWORD ?? "kd1",
     database: process.env.DB_NAME ?? "kd1",
+    multipleStatements: true, // マイグレーションの複数 SQL 実行に必要
     ...poolOptions,
   };
 }
