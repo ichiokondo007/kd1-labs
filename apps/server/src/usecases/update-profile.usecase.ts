@@ -9,6 +9,7 @@ const USER_NAME_MAX_LENGTH = 20;
 export interface UpdateProfileInput {
   userId: string;
   userName: string;
+  screenName: string;
   avatarColor: string;
 }
 
@@ -21,11 +22,11 @@ export function makeUpdateProfileUsecase(profilePort: ProfilePort) {
   return async function updateProfileUsecase(
     input: UpdateProfileInput
   ): Promise<UpdateProfileResult> {
-    const trimmed = input.userName.trim();
-    if (trimmed.length === 0) {
+    const trimmedName = input.userName.trim();
+    if (trimmedName.length === 0) {
       return { ok: false, code: "VALIDATION_ERROR", message: "User name is required." };
     }
-    if (trimmed.length > USER_NAME_MAX_LENGTH) {
+    if (trimmedName.length > USER_NAME_MAX_LENGTH) {
       return {
         ok: false,
         code: "VALIDATION_ERROR",
@@ -33,13 +34,19 @@ export function makeUpdateProfileUsecase(profilePort: ProfilePort) {
       };
     }
 
-    const existing = await profilePort.findUserByUserName(trimmed);
+    const trimmedScreenName = input.screenName.trim();
+    if (trimmedScreenName.length === 0) {
+      return { ok: false, code: "VALIDATION_ERROR", message: "NickName (Screen Name) is required." };
+    }
+
+    const existing = await profilePort.findUserByUserName(trimmedName);
     if (existing && existing.userId !== input.userId) {
       return { ok: false, code: "USER_NAME_TAKEN", message: "That user name is already taken." };
     }
 
     await profilePort.updateProfile(input.userId, {
-      userName: trimmed,
+      userName: trimmedName,
+      screenName: trimmedScreenName,
       avatarColor: input.avatarColor,
     });
     return { ok: true };

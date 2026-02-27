@@ -8,6 +8,7 @@ export async function getMeUsecase(): Promise<User> {
   return {
     userId: "admin",
     userName: "admin",
+    screenName: "admin",
     isAdmin: true,
     isInitialPassword: true,
     avatarUrl: null,

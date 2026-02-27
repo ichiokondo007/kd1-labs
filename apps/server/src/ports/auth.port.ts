@@ -8,6 +8,7 @@
 export type AuthUserRecord = {
   userId: string;
   userName: string;
+  screenName: string;
   passwordHash: string;
   isInitialPassword: boolean;
   isAdmin: boolean;

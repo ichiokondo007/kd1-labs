@@ -21,18 +21,6 @@ export async function findUserById(userId: string): Promise<UserRow | null> {
 }
 
 /**
- * screen_name でユーザーを 1 件取得する（同一 screen_name が複数いる場合は先頭 1 件）
- */
-export async function findUserByScreenName(screenName: string): Promise<UserRow | null> {
-  const rows = await db
-    .select()
-    .from(users)
-    .where(eq(users.screenName, screenName))
-    .limit(1);
-  return rows[0] ?? null;
-}
-
-/**
  * ユーザーを 1 件登録する。userId は呼び出し側で生成して渡す。
  */
 export async function insertUser(data: UserInsert): Promise<UserRow> {

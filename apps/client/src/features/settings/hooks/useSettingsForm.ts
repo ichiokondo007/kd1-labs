@@ -3,7 +3,7 @@ import { useCurrentUser } from "@/hooks/useCurrentUser";
 import { patchMe } from "@/services/meApi";
 import type { SettingsPageFormProps } from "../types";
 import { AVATAR_COLOR_PALETTE } from "../types";
-import { getRequiredUserNameError } from "../domain";
+import { getRequiredUserNameError, getRequiredScreenNameError } from "../domain";
 import { isAxiosError } from "axios";
 
 /**
@@ -13,6 +13,7 @@ import { isAxiosError } from "axios";
 export function useSettingsForm(): SettingsPageFormProps & { isLoading: boolean } {
   const { user, isLoading: userLoading, refetch } = useCurrentUser();
   const [userName, setUserName] = useState("");
+  const [screenName, setScreenName] = useState("");
   const [avatarColor, setAvatarColor] = useState<string>(AVATAR_COLOR_PALETTE[0]);
   const [isSaving, setIsSaving] = useState(false);
   const [serverError, setServerError] = useState<string | undefined>(undefined);
@@ -20,6 +21,7 @@ export function useSettingsForm(): SettingsPageFormProps & { isLoading: boolean 
   useEffect(() => {
     if (!user) return;
     setUserName(user.userName);
+    setScreenName(user.screenName);
     const hex = user.avatarColor;
     if (hex && AVATAR_COLOR_PALETTE.includes(hex as (typeof AVATAR_COLOR_PALETTE)[number])) {
       setAvatarColor(hex);
@@ -28,15 +30,15 @@ export function useSettingsForm(): SettingsPageFormProps & { isLoading: boolean 
     }
   }, [user]);
 
-  const requiredError = getRequiredUserNameError(userName);
-  const errorMessage = requiredError ?? serverError;
+  const userNameError = getRequiredUserNameError(userName);
+  const screenNameError = getRequiredScreenNameError(screenName);
 
   const onSave = useCallback(async () => {
-    if (getRequiredUserNameError(userName)) return;
+    if (getRequiredUserNameError(userName) || getRequiredScreenNameError(screenName)) return;
     setServerError(undefined);
     setIsSaving(true);
     try {
-      await patchMe({ userName: userName.trim(), avatarColor });
+      await patchMe({ userName: userName.trim(), screenName: screenName.trim(), avatarColor });
       await refetch();
     } catch (e) {
       const message = isAxiosError(e) && e.response?.data?.error?.message
@@ -46,16 +48,20 @@ export function useSettingsForm(): SettingsPageFormProps & { isLoading: boolean 
     } finally {
       setIsSaving(false);
     }
-  }, [userName, avatarColor, refetch]);
+  }, [userName, screenName, avatarColor, refetch]);
 
   return {
     userName,
+    screenName,
     avatarColor,
     onUserNameChange: setUserName,
+    onScreenNameChange: setScreenName,
     onAvatarColorChange: setAvatarColor,
     onSave,
     isSaving,
-    errorMessage,
+    userNameError,
+    screenNameError,
+    errorMessage: serverError,
     isLoading: userLoading,
   };
 }

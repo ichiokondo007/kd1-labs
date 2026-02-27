@@ -18,14 +18,18 @@ import { AVATAR_COLOR_PALETTE } from "../types";
  */
 export const SettingsPage: FC<SettingsPageFormProps> = ({
   userName,
+  screenName,
   avatarColor,
   onUserNameChange,
+  onScreenNameChange,
   onAvatarColorChange,
   onSave,
   isSaving = false,
+  userNameError,
+  screenNameError,
   errorMessage,
 }) => {
-  const initials = userName.trim().slice(0, 2).toUpperCase() || "?";
+  const initials = screenName.trim().slice(0, 2).toUpperCase() || "?";
 
   return (
     <div className="p-6 max-w-xl">
@@ -49,10 +53,24 @@ export const SettingsPage: FC<SettingsPageFormProps> = ({
                 onChange={(e) => onUserNameChange(e.target.value)}
                 placeholder="User name"
                 autoComplete="username"
-                data-invalid={errorMessage ? true : undefined}
-                aria-invalid={!!errorMessage}
+                data-invalid={userNameError ? true : undefined}
+                aria-invalid={!!userNameError}
               />
-              {errorMessage && <ErrorMessage>{errorMessage}</ErrorMessage>}
+              {userNameError && <ErrorMessage>{userNameError}</ErrorMessage>}
+            </Field>
+
+            <Field>
+              <Label>NickName (Screen Name)</Label>
+              <Input
+                type="text"
+                value={screenName}
+                onChange={(e) => onScreenNameChange(e.target.value)}
+                placeholder="Nickname"
+                autoComplete="nickname"
+                data-invalid={screenNameError ? true : undefined}
+                aria-invalid={!!screenNameError}
+              />
+              {screenNameError && <ErrorMessage>{screenNameError}</ErrorMessage>}
             </Field>
 
             <Field>
@@ -94,6 +112,11 @@ export const SettingsPage: FC<SettingsPageFormProps> = ({
           </FieldGroup>
         </Fieldset>
 
+        {errorMessage && (
+          <p className="mt-3 text-sm text-red-600 dark:text-red-400" role="alert">
+            {errorMessage}
+          </p>
+        )}
         <div className="mt-6">
           <Button type="submit" color="dark/zinc" disabled={isSaving}>
             {isSaving ? "Saving…" : "Save"}

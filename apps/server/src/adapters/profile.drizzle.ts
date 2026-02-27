@@ -14,9 +14,10 @@ export const profileDrizzleAdapter: ProfilePort = {
     if (!row) return null;
     return { userId: row.userId };
   },
-  async updateProfile(userId: string, input: { userName: string; avatarColor: string }) {
+  async updateProfile(userId: string, input: { userName: string; screenName: string; avatarColor: string }) {
     await dbUpdateUser(userId, {
       userName: input.userName,
+      screenName: input.screenName,
       avatarColor: input.avatarColor,
     });
   },

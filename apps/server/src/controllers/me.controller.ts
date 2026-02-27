@@ -44,7 +44,7 @@ export async function getMe(req: Request, res: Response) {
 }
 
 /**
- * プロフィール更新（userName, avatarColor）
+ * プロフィール更新（userName, screenName, avatarColor）
  *
  * @route PATCH /api/me
  * @returns 200 成功
@@ -62,12 +62,14 @@ export async function patchMe(req: Request, res: Response) {
   const body = (req.body ?? {}) as Partial<UpdateProfileRequest>;
   const input: UpdateProfileRequest = {
     userName: String(body.userName ?? ""),
+    screenName: String(body.screenName ?? ""),
     avatarColor: String(body.avatarColor ?? "zinc-900"),
   };
 
   const result = await updateProfileUsecase({
     userId: sessionUser.userId,
     userName: input.userName,
+    screenName: input.screenName,
     avatarColor: input.avatarColor,
   });
 
@@ -84,6 +86,7 @@ export async function patchMe(req: Request, res: Response) {
     req.session.userInfo = {
       ...req.session.userInfo,
       userName: input.userName.trim(),
+      screenName: input.screenName.trim(),
       avatarColor: input.avatarColor,
     };
   }

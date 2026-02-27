@@ -5,6 +5,7 @@
 
 export interface ProfileUpdateInput {
   userName: string;
+  screenName: string;
   avatarColor: string;
 }
 

@@ -42,6 +42,7 @@ export interface LoginResponse {
 /** プロフィール更新 API リクエスト (PATCH /api/me) */
 export interface UpdateProfileRequest {
   userName: string;
+  screenName: string;
   avatarColor: string;
 }
 
