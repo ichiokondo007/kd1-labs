@@ -4,6 +4,8 @@ import express from "express";
 import session from "express-session";
 import { authRoutes } from "./routes/auth.routes";
 import { meRoutes } from "./routes/me.routes";
+import { storageRoutes } from "./routes/storage.routes";
+import { usersRoutes } from "./routes/users.routes";
 
 const app = express();
 const PORT = Number(process.env.PORT) || 3000;
@@ -22,6 +24,8 @@ app.use(
 
 app.use("/api", authRoutes);
 app.use("/api", meRoutes);
+app.use("/api", storageRoutes);
+app.use("/api", usersRoutes);
 
 app.listen(PORT, () => {
   console.log(`Server listening at http://localhost:${PORT}`);

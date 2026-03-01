@@ -1,0 +1,82 @@
+services:
+  mysql:
+    image: mysql:8.0
+    container_name: kd1-mysql
+    restart: "no"
+    command:
+      - --character-set-server=utf8mb4
+      - --collation-server=utf8mb4_unicode_ci
+      - --skip-character-set-client-handshake
+    environment:
+      MYSQL_ROOT_PASSWORD: password
+      MYSQL_DATABASE: kd1
+      MYSQL_USER: kd1
+      MYSQL_PASSWORD: kd1
+    ports:
+      - "3307:3306"
+    volumes:
+      - kd1_mysql_data:/var/lib/mysql
+      - ./docker/mysql/init:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  mongodb:
+    image: mongo:7.0
+    container_name: kd1-mongodb
+    restart: "no"
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: kd1
+      MONGO_INITDB_ROOT_PASSWORD: kd1
+      MONGO_INITDB_DATABASE: kd1
+    ports:
+      - "27017:27017"
+    volumes:
+      - kd1_mongo_data:/data/db
+      - ./docker/mongodb/init:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  minio:
+    image: minio/minio:latest
+    container_name: kd1-minio
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    environment:
+      MINIO_ROOT_USER: kd1admin
+      MINIO_ROOT_PASSWORD: kd1admin1234  # ← コロンの後にスペースを入れました
+    volumes:
+      - kd1_minio_data:/data
+    command: server /data --console-address ":9001"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  minio-init:
+    image: minio/mc:latest
+    container_name: minio-init
+    depends_on:
+      minio:
+        condition: service_healthy 
+    entrypoint: >
+      /bin/sh -c "
+      mc alias set local http://minio:9000 kd1admin kd1admin1234 &&
+      mc mb local/public --ignore-existing &&
+      mc mb local/private --ignore-existing &&
+      echo '✅ バケット作成完了' &&
+      exit 0
+      "
+    restart: on-failure
+
+volumes:
+  kd1_mysql_data:
+  kd1_mongo_data:
+  kd1_minio_data:

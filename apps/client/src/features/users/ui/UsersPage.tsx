@@ -1,7 +1,7 @@
 import type { FC } from "react";
 import { EllipsisHorizontalIcon } from "@heroicons/react/16/solid";
 import { Button } from "@/components/button";
-import { Avatar } from "@/components/avatar";
+import { UserAvatar } from "@/components/user-avatar";
 import {
   Table,
   TableHead,
@@ -46,15 +46,6 @@ export const UsersPage: FC<UsersPageProps> = ({
     );
   }
 
-  const initials = (name: string) =>
-    name
-      .trim()
-      .split(/\s+/)
-      .map((s) => s[0])
-      .join("")
-      .toUpperCase()
-      .slice(0, 2) || "?";
-
   return (
     <div className="p-6">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
@@ -97,19 +88,7 @@ export const UsersPage: FC<UsersPageProps> = ({
               items.map((user) => (
                 <TableRow key={user.id}>
                   <TableCell>
-                    {user.avatarUrl ? (
-                      <Avatar
-                        src={user.avatarUrl}
-                        alt={user.userName}
-                        className="size-9 shrink-0"
-                      />
-                    ) : (
-                      <Avatar
-                        initials={initials(user.userName)}
-                        alt={user.userName}
-                        className="size-9 shrink-0"
-                      />
-                    )}
+                    <UserAvatar user={user} className="size-9 shrink-0" />
                   </TableCell>
                   <TableCell className="font-medium">
                     {user.userName}

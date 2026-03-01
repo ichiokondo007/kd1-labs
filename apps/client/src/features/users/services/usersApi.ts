@@ -40,13 +40,15 @@ export async function fetchUsersItems(signal?: AbortSignal): Promise<UsersItem[]
     return raw.map((row: Record<string, unknown>) => ({
       id: String(row.id ?? ""),
       avatarUrl: row.avatarUrl != null ? String(row.avatarUrl) : null,
+      avatarColor: row.avatarColor != null ? String(row.avatarColor) : undefined,
       userName: String(row.userName ?? row.name ?? ""),
       screenName: String(row.screenName ?? row.handle ?? ""),
       role: String(row.role ?? ""),
     })) as UsersItem[];
   } catch (e) {
+    // キャンセル（abort）は意図的なためそのまま再スローし、hook で無視する
+    if (e instanceof Error && e.name === "AbortError") throw e;
     const err = toApiError(e);
-    // hooks 側で UI 表示に変換するため、ここでは Error を投げるだけ
     throw new Error(`${err.code}: ${err.message}`);
   }
 }

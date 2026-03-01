@@ -32,6 +32,8 @@ export function useUsers(): UsersViewModel & {
         const data = await fetchUsersItems(ac.signal);
         setItems(data);
       } catch (e) {
+        // アンマウント時の abort は意図的なためユーザーに表示しない
+        if (e instanceof Error && e.name === "AbortError") return;
         const msg = e instanceof Error ? e.message : "読み込みに失敗しました";
         setErrorMessage(msg);
       } finally {

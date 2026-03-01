@@ -64,6 +64,7 @@ export async function patchMe(req: Request, res: Response) {
     userName: String(body.userName ?? ""),
     screenName: String(body.screenName ?? ""),
     avatarColor: String(body.avatarColor ?? "zinc-900"),
+    avatarUrl: body.avatarUrl !== undefined ? body.avatarUrl : undefined,
   };
 
   const result = await updateProfileUsecase({
@@ -71,6 +72,7 @@ export async function patchMe(req: Request, res: Response) {
     userName: input.userName,
     screenName: input.screenName,
     avatarColor: input.avatarColor,
+    avatarUrl: input.avatarUrl,
   });
 
   if (!result.ok) {
@@ -81,17 +83,37 @@ export async function patchMe(req: Request, res: Response) {
     return;
   }
 
+  // 更新後のユーザーを DB から取得して返す（クライアントが refetch せずに表示を更新できるようにする）
+  const row = await findUserById(sessionUser.userId);
+  if (!row) {
+    res.status(200).json({ success: true });
+    return;
+  }
+
+  const updatedUser: User = {
+    userId: row.userId,
+    userName: row.userName,
+    screenName: row.screenName,
+    isAdmin: row.isAdmin,
+    isInitialPassword: row.isInitialPassword,
+    avatarUrl: row.avatarUrl ?? null,
+    avatarColor: row.avatarColor ?? "zinc-900",
+    updatedAt: row.updatedAt,
+  };
+
   // セッションを更新（次回 GET /api/me で反映）
   if (req.session?.userInfo) {
     req.session.userInfo = {
       ...req.session.userInfo,
-      userName: input.userName.trim(),
-      screenName: input.screenName.trim(),
-      avatarColor: input.avatarColor,
+      userName: updatedUser.userName,
+      screenName: updatedUser.screenName,
+      avatarColor: updatedUser.avatarColor,
+      avatarUrl: updatedUser.avatarUrl,
     };
   }
 
-  res.status(200).json({ success: true });
+  const response: ApiResponse<User> = { success: true, data: updatedUser };
+  res.status(200).json(response);
 }
 
 /**

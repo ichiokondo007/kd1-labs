@@ -12,6 +12,10 @@ export type AuthUserRecord = {
   passwordHash: string;
   isInitialPassword: boolean;
   isAdmin: boolean;
+  /** アバター画像 URL（users.avatar_url） */
+  avatarUrl: string | null;
+  /** アバター背景色（users.avatar_color） */
+  avatarColor: string;
 };
 
 export interface AuthPort {

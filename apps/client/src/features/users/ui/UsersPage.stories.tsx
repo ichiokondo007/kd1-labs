@@ -1,5 +1,7 @@
 import type { Meta, StoryObj } from "@storybook/react";
+import React from "react";
 import { UsersPage } from "./UsersPage";
+import UserManagementPageEntry from "../../../pages/user-management";
 import type { UsersItem } from "../types";
 
 /**
@@ -13,12 +15,14 @@ const mockUsers: UsersItem[] = [
     userName: "Alice Johnson",
     screenName: "alice",
     role: "Admin",
+    avatarColor: "#3b82f6",
   },
   {
     id: "2",
     userName: "Bob Smith",
     screenName: "bob_smith",
     role: "Editor",
+    avatarColor: "#22c55e",
   },
   {
     id: "3",
@@ -26,6 +30,7 @@ const mockUsers: UsersItem[] = [
     userName: "Carol Williams",
     screenName: "carol",
     role: "Viewer",
+    avatarColor: "zinc-900",
   },
 ];
 
@@ -73,4 +78,14 @@ export const Error: Story = {
     isLoading: false,
     errorMessage: "Failed to load users.",
   },
+};
+
+/**
+ * ページコンテナ（useUsers + API）で表示。
+ * Storybook では MSW が GET /api/users/items をモックするため一覧が表示される。
+ * 「User management」クリック時と同じ挙動を確認できる。
+ */
+export const PageWithApi: Story = {
+  args: { items: [], isLoading: false },
+  render: () => <UserManagementPageEntry />,
 };

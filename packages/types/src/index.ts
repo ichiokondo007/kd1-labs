@@ -44,6 +44,8 @@ export interface UpdateProfileRequest {
   userName: string;
   screenName: string;
   avatarColor: string;
+  /** MinIO 等にアップロードしたアバター画像の URL（省略可） */
+  avatarUrl?: string | null;
 }
 
 /** パスワード変更 API リクエスト (POST /api/me/password) */

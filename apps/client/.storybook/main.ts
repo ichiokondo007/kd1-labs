@@ -5,6 +5,7 @@ import tsconfigPaths from 'vite-tsconfig-paths'
 const config: StorybookConfig = {
   stories: ['../src/**/*.stories.@(ts|tsx)'],
   framework: '@storybook/react-vite',
+  staticDirs: ['../public'],
   viteFinal(config) {
     config.plugins ??= []
     config.plugins.push(tailwindcss(), tsconfigPaths())

@@ -12,6 +12,8 @@ function toAuthUserRecord(row: {
   passwordHash: string;
   isInitialPassword: boolean;
   isAdmin: boolean;
+  avatarUrl: string | null;
+  avatarColor: string;
 }): AuthUserRecord {
   return {
     userId: row.userId,
@@ -20,6 +22,8 @@ function toAuthUserRecord(row: {
     passwordHash: row.passwordHash,
     isInitialPassword: row.isInitialPassword,
     isAdmin: row.isAdmin,
+    avatarUrl: row.avatarUrl ?? null,
+    avatarColor: row.avatarColor ?? "zinc-900",
   };
 }
 

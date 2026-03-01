@@ -40,3 +40,37 @@ export async function updateUser(
   await db.update(users).set(data).where(eq(users.userId, userId));
   return findUserById(userId);
 }
+
+/** 一覧取得用（password_hash は含めない） */
+export type ListUserRow = {
+  userId: string;
+  userName: string;
+  screenName: string;
+  isAdmin: boolean;
+  avatarUrl: string | null;
+  avatarColor: string;
+};
+
+/**
+ * ユーザー一覧を取得する。管理者画面用。password_hash は返さない。
+ */
+export async function listUsers(): Promise<ListUserRow[]> {
+  const rows = await db
+    .select({
+      userId: users.userId,
+      userName: users.userName,
+      screenName: users.screenName,
+      isAdmin: users.isAdmin,
+      avatarUrl: users.avatarUrl,
+      avatarColor: users.avatarColor,
+    })
+    .from(users);
+  return rows.map((r) => ({
+    userId: r.userId,
+    userName: r.userName,
+    screenName: r.screenName,
+    isAdmin: r.isAdmin,
+    avatarUrl: r.avatarUrl ?? null,
+    avatarColor: r.avatarColor ?? "zinc-900",
+  }));
+}

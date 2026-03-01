@@ -1,5 +1,5 @@
-import type { Meta, StoryObj } from "storybook";
-import { useState } from "react";
+import type { Meta, StoryObj } from "@storybook/react";
+import React, { useState } from "react";
 import { AvatarCropper } from "./avatarcropper";
 import { Button } from "./button";
 
@@ -66,6 +66,9 @@ export const Default: Story = {
     );
   },
   args: {
+    imageSrc: sampleImage,
+    onCropComplete: () => {},
+    onCancel: () => {},
     title: "Crop your avatar",
     confirmLabel: "Set new avatar",
     cancelLabel: "Cancel",
