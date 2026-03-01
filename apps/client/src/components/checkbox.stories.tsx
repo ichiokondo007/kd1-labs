@@ -1,4 +1,4 @@
-import type { Meta, StoryObj } from 'storybook'
+import type { Meta, StoryObj } from '@storybook/react'
 import { Checkbox, CheckboxField, CheckboxGroup } from './checkbox'
 import { Label, Description } from './fieldset'
 

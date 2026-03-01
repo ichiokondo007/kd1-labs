@@ -1,4 +1,4 @@
-import type { Meta, StoryObj } from 'storybook'
+import type { Meta, StoryObj } from '@storybook/react'
 import { useState } from 'react'
 import { Dialog, DialogTitle, DialogDescription, DialogBody, DialogActions } from './dialog'
 import { Button } from './button'

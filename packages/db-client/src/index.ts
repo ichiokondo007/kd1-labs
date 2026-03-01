@@ -5,5 +5,7 @@ export {
   findUserById,
   insertUser,
   updateUser,
+  listUsers,
 } from "./repositories/users.repository.js";
 export type { UserRow, UserInsert } from "@kd1-labs/db-schema";
+export type { ListUserRow } from "./repositories/users.repository.js";

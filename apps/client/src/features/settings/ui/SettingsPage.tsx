@@ -1,3 +1,4 @@
+import { PencilSquareIcon } from "@heroicons/react/20/solid";
 import type { FC } from "react";
 import {
   Fieldset,
@@ -8,7 +9,7 @@ import {
 } from "@/components/fieldset";
 import { Input } from "@/components/input";
 import { Button } from "@/components/button";
-import { Avatar } from "@/components/avatar";
+import { UserAvatar } from "@/components/user-avatar";
 import type { SettingsPageFormProps } from "../types";
 import { AVATAR_COLOR_PALETTE } from "../types";
 
@@ -20,17 +21,20 @@ export const SettingsPage: FC<SettingsPageFormProps> = ({
   userName,
   screenName,
   avatarColor,
+  avatarImageUrl,
+  onAvatarChangeClick,
   onUserNameChange,
   onScreenNameChange,
   onAvatarColorChange,
   onSave,
+  pendingAvatarDataUrl,
+  onCancel,
+  onPasswordReset,
   isSaving = false,
   userNameError,
   screenNameError,
   errorMessage,
 }) => {
-  const initials = screenName.trim().slice(0, 2).toUpperCase() || "?";
-
   return (
     <div className="p-6 max-w-xl">
       <h1 className="text-2xl font-semibold text-zinc-950 dark:text-white mb-6">
@@ -40,7 +44,7 @@ export const SettingsPage: FC<SettingsPageFormProps> = ({
       <form
         onSubmit={(e) => {
           e.preventDefault();
-          onSave();
+          onSave(pendingAvatarDataUrl ?? null);
         }}
       >
         <Fieldset>
@@ -76,16 +80,28 @@ export const SettingsPage: FC<SettingsPageFormProps> = ({
             <Field>
               <Label>Avatar</Label>
               <div className="flex items-center gap-3">
-                <span
-                  className="inline-flex size-20 rounded-full overflow-hidden border-2 border-zinc-200 dark:border-zinc-600"
-                  style={{ backgroundColor: avatarColor }}
-                >
-                  <Avatar
-                    initials={initials}
-                    alt="Avatar"
+                <span className="inline-flex size-20 shrink-0 overflow-hidden rounded-full border-2 border-zinc-200 dark:border-zinc-600">
+                  <UserAvatar
+                    user={{
+                      avatarUrl: avatarImageUrl ?? undefined,
+                      avatarColor,
+                      userName,
+                      screenName,
+                    }}
                     className="size-20 text-2xl"
                   />
                 </span>
+                {onAvatarChangeClick && (
+                  <button
+                    type="button"
+                    onClick={onAvatarChangeClick}
+                    className="rounded-md p-2 text-zinc-500 hover:bg-zinc-100 hover:text-zinc-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 dark:text-zinc-400 dark:hover:bg-zinc-800 dark:hover:text-zinc-300"
+                    title="Change avatar"
+                    aria-label="Change avatar"
+                  >
+                    <PencilSquareIcon className="size-5" aria-hidden />
+                  </button>
+                )}
               </div>
             </Field>
 
@@ -117,7 +133,17 @@ export const SettingsPage: FC<SettingsPageFormProps> = ({
             {errorMessage}
           </p>
         )}
-        <div className="mt-6">
+        <div className="mt-6 flex flex-wrap items-center gap-3">
+          {onCancel && (
+            <Button type="button" outline onClick={onCancel}>
+              Cancel
+            </Button>
+          )}
+          {onPasswordReset && (
+            <Button type="button" outline onClick={onPasswordReset}>
+              Password Reset
+            </Button>
+          )}
           <Button type="submit" color="dark/zinc" disabled={isSaving}>
             {isSaving ? "Saving…" : "Save"}
           </Button>

@@ -3,6 +3,8 @@
 export type UsersItem = {
   id: string;
   avatarUrl?: string | null;
+  /** 画像がないときのアバター背景色（hex または Tailwind 名） */
+  avatarColor?: string;
   userName: string;
   screenName: string;
   role: string;

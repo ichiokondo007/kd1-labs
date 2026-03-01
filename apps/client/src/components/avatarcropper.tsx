@@ -183,7 +183,7 @@ export function AvatarCropper({
 
   return (
     <div
-      className="fixed inset-0 z-[1000] flex items-center justify-center bg-zinc-950/40 backdrop-blur-sm"
+      className="fixed inset-0 z-1000 flex items-center justify-center bg-zinc-950/40 backdrop-blur-sm"
       onKeyDown={handleKeyDown}
       tabIndex={-1}
       role="dialog"

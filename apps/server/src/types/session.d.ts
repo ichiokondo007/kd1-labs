@@ -9,6 +9,8 @@ export interface SessionUserInfo {
   isAdmin: boolean;
   /** プロフィール更新で設定。未設定時は GET /me でデフォルトを使用 */
   avatarColor?: string;
+  /** プロフィール更新で設定。アバター画像 URL */
+  avatarUrl?: string | null;
 }
 
 declare module "express-session" {

@@ -5,7 +5,7 @@
   "description": "",
   "main": "dist/index.js",
   "scripts": {
-    "dev": "pnpm --filter @kd1-labs/types build && tsx watch src/index.ts",
+    "dev": "pnpm --filter @kd1-labs/types build && pnpm --filter @kd1-labs/storage build && tsx watch src/index.ts",
     "build": "tsc",
     "start": "node dist/index.js",
     "test": "echo \"Error: no test specified\" && exit 1"
@@ -16,6 +16,7 @@
   "packageManager": "pnpm@10.18.3",
   "dependencies": {
     "@kd1-labs/db-client": "workspace:*",
+    "@kd1-labs/storage": "workspace:*",
     "@kd1-labs/types": "workspace:*",
     "bcrypt": "^6.0.0",
     "cors": "^2.8.6",

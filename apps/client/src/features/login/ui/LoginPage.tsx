@@ -1,6 +1,7 @@
 import type { FC, FormEvent } from "react";
 import { AuthLayout } from "@/components/auth-layout";
 import { Button } from "@/components/button";
+import { ErrorAlert } from "@/components/error-alert";
 import { Field, Label } from "@/components/fieldset";
 import { Heading } from "@/components/heading";
 import { Input } from "@/components/input";
@@ -46,14 +47,7 @@ export const LoginPage: FC<LoginPageProps> = ({
 
         <Heading><div className="text-center">Sign in to your account</div></Heading>
 
-        {errorMessage && (
-          <div
-            role="alert"
-            className="rounded-md bg-red-50 p-3 text-sm text-red-700 dark:bg-red-900/20 dark:text-red-400"
-          >
-            {errorMessage}
-          </div>
-        )}
+        {errorMessage && <ErrorAlert>{errorMessage}</ErrorAlert>}
 
         <Field>
           <Label>UserName</Label>

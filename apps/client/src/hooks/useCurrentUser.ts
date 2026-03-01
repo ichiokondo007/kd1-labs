@@ -11,7 +11,13 @@ export function useCurrentUser() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
 
-  const refetch = useCallback(async () => {
+  /** 再取得する。updatedUser を渡すと API を叩かずにその値で状態を更新する（PATCH 直後の表示反映用） */
+  const refetch = useCallback(async (updatedUser?: User) => {
+    if (updatedUser !== undefined) {
+      setUser(updatedUser);
+      setError(null);
+      return;
+    }
     setIsLoading(true);
     setError(null);
     try {

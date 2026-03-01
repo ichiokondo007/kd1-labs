@@ -22,11 +22,17 @@ export async function getMe(): Promise<User> {
 }
 
 /**
- * PATCH /api/me — プロフィール更新（userName, avatarColor）
+ * PATCH /api/me — プロフィール更新（userName, screenName, avatarColor, avatarUrl）
+ * @returns 更新後の User（サーバーが返す場合）。表示の即時反映に利用する。
  * @throws 400/409 時は res.data.error.message でメッセージを返す
  */
-export async function patchMe(body: UpdateProfileRequest): Promise<void> {
-  await apiClient.patch("/api/me", body);
+export async function patchMe(body: UpdateProfileRequest): Promise<User | void> {
+  const res = await apiClient.patch<ApiResponse<User> | { success: true }>("/api/me", body);
+  const data = res.data as ApiResponse<User>;
+  if (data.success && data.data) {
+    return data.data;
+  }
+  return undefined;
 }
 
 /**

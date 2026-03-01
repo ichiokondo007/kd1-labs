@@ -11,6 +11,7 @@ export interface UpdateProfileInput {
   userName: string;
   screenName: string;
   avatarColor: string;
+  avatarUrl?: string | null;
 }
 
 export type UpdateProfileResult =
@@ -48,6 +49,7 @@ export function makeUpdateProfileUsecase(profilePort: ProfilePort) {
       userName: trimmedName,
       screenName: trimmedScreenName,
       avatarColor: input.avatarColor,
+      avatarUrl: input.avatarUrl,
     });
     return { ok: true };
   };

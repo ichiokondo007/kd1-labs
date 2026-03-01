@@ -33,7 +33,7 @@ function SettingsPageWithState(props: Partial<SettingsPageFormProps>) {
   const userNameError = getRequiredUserNameError(userName);
   const screenNameError = getRequiredScreenNameError(screenName);
 
-  const handleSave = useCallback(() => {
+  const handleSave = useCallback((_pendingAvatarDataUrl?: string | null) => {
     if (getRequiredUserNameError(userName) || getRequiredScreenNameError(screenName)) return;
     setIsSaving(true);
     setErrorMessage(undefined);
@@ -45,6 +45,7 @@ function SettingsPageWithState(props: Partial<SettingsPageFormProps>) {
       userName={userName}
       screenName={screenName}
       avatarColor={avatarColor}
+      onAvatarChangeClick={props.onAvatarChangeClick ?? (() => {})}
       onUserNameChange={setUserName}
       onScreenNameChange={setScreenName}
       onAvatarColorChange={setAvatarColor}

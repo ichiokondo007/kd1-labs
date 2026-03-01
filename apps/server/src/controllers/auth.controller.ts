@@ -45,6 +45,7 @@ export async function postLogin(req: Request, res: Response) {
       isInitialPassword: userInfo.isInitialPassword,
       isAdmin: userInfo.isAdmin,
       avatarColor: userInfo.avatarColor,
+      avatarUrl: userInfo.avatarUrl,
     };
   }
 

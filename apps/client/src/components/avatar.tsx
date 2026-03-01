@@ -10,6 +10,8 @@ type AvatarProps = {
   initials?: string
   alt?: string
   className?: string
+  /** 画像読み込み失敗時（フォールバック表示する親で利用） */
+  onError?: React.ReactEventHandler<HTMLImageElement>
 }
 
 export function Avatar({
@@ -18,6 +20,7 @@ export function Avatar({
   initials,
   alt = '',
   className,
+  onError,
   ...props
 }: AvatarProps & React.ComponentPropsWithoutRef<'span'>) {
   return (
@@ -45,7 +48,7 @@ export function Avatar({
           </text>
         </svg>
       )}
-      {src && <img className="size-full" src={src} alt={alt} />}
+      {src && <img className="size-full" src={src} alt={alt} onError={onError} />}
     </span>
   )
 }

@@ -1,4 +1,4 @@
-import type { Meta, StoryObj } from 'storybook'
+import type { Meta, StoryObj } from '@storybook/react'
 import { MagnifyingGlassIcon } from '@heroicons/react/20/solid'
 import { Input, InputGroup } from './input'
 import { Field, Label, Description } from './fieldset'
