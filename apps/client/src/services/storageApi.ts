@@ -1,14 +1,9 @@
-import axios from "axios";
+import { apiClient } from "./apiClient";
 
 /**
  * 認証付きファイルアップロード（POST /api/storage/upload）
  * dataURL または base64 を送り、MinIO 等に保存された URL を返す。
  */
-const apiClient = axios.create({
-  baseURL: import.meta.env.VITE_API_BASE_URL ?? "",
-  withCredentials: true,
-  headers: { "Content-Type": "application/json" },
-});
 
 export interface UploadStorageResponse {
   success: boolean;

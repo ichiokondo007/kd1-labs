@@ -1,16 +1,10 @@
-import axios from "axios";
 import type { LoginFormData, LoginResponse, UserInfo } from "../types";
+import { apiClient } from "@/services/apiClient";
 
 /**
  * services は I/O のみ担当
  * UI から直接呼ばず hooks 経由で利用する。
  */
-
-const apiClient = axios.create({
-  baseURL: import.meta.env.VITE_API_BASE_URL ?? "",
-  withCredentials: true, // session cookie 送信
-  headers: { "Content-Type": "application/json" },
-});
 
 /**
  * POST /api/login

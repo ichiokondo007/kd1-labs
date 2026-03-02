@@ -235,3 +235,45 @@ index.ts
 
 ---
 
+
+次のようにして、ルートで vitest を共有しつつ全 app/package で継承する形にしました。
+
+---
+
+## やったこと
+
+### 1. **pnpm catalog**（`pnpm-workspace.yaml`）
+
+- `catalog` に `vitest` と `happy-dom` のバージョンを定義
+- 各パッケージは `"vitest": "catalog:"` で同じバージョンを参照
+- バージョン変更はここだけ行えばよい
+
+### 2. **共有の vitest 基底設定**（ルート `vitest.config.base.ts`）
+
+- `globals`、`include`、`passWithNoTests`、`coverage` などを共通設定
+- 各 app/package は `mergeConfig(base, { ... })` で継承し、必要なら上書き
+
+### 3. **ルートのスクリプト**（`package.json`）
+
+- `pnpm test` → 全 workspace の `test`（watch）
+- `pnpm test:run` → 全 workspace の `test:run`（CI 用 1 回実行）
+
+### 4. **各 app/package**
+
+- **devDependencies**: `"vitest": "catalog:"`（client のみ `"happy-dom": "catalog:"` も追加）
+- **scripts**: `"test": "vitest"`, `"test:run": "vitest run"`
+- **vitest.config.ts**: `mergeConfig(base, { ... })` でルートの設定を継承  
+  - client のみ `environment: "happy-dom"` を指定
+
+---
+
+## 使い方
+
+| コマンド                                 | 説明                                          |
+| ---------------------------------------- | --------------------------------------------- |
+| `pnpm test`                              | 全 workspace で vitest を watch 実行          |
+| `pnpm test:run`                          | 全 workspace で 1 回だけテスト実行（CI 向け） |
+| `pnpm --filter client test`              | client だけテスト                             |
+| `pnpm --filter @kd1-labs/utils test:run` | utils だけ 1 回実行                           |
+
+テストファイルは `src/**/*.test.{ts,tsx}` または `src/**/*.spec.{ts,tsx}` に置くと検知されます。まだテストがなくても `passWithNoTests: true` で `pnpm test:run` は成功します。

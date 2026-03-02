@@ -1,4 +1,4 @@
-import { PencilSquareIcon } from "@heroicons/react/20/solid";
+import { PencilSquareIcon, TrashIcon } from "@heroicons/react/20/solid";
 import type { FC } from "react";
 import {
   Fieldset,
@@ -23,6 +23,7 @@ export const SettingsPage: FC<SettingsPageFormProps> = ({
   avatarColor,
   avatarImageUrl,
   onAvatarChangeClick,
+  onClearAvatar,
   onUserNameChange,
   onScreenNameChange,
   onAvatarColorChange,
@@ -100,6 +101,17 @@ export const SettingsPage: FC<SettingsPageFormProps> = ({
                     aria-label="Change avatar"
                   >
                     <PencilSquareIcon className="size-5" aria-hidden />
+                  </button>
+                )}
+                {onClearAvatar && !!avatarImageUrl && (
+                  <button
+                    type="button"
+                    onClick={() => void onClearAvatar()}
+                    className="rounded-md p-2 text-zinc-500 hover:bg-red-50 hover:text-red-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 dark:text-zinc-400 dark:hover:bg-red-950/30 dark:hover:text-red-400"
+                    title="Remove avatar image"
+                    aria-label="Remove avatar image"
+                  >
+                    <TrashIcon className="size-5" aria-hidden />
                   </button>
                 )}
               </div>

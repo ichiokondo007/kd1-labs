@@ -2,5 +2,9 @@ packages:
   - apps/*
   - packages/*
 
+catalog:
+  vitest: ^3.2.4
+  happy-dom: ^15.11.7
+
 ignoredBuiltDependencies:
   - esbuild

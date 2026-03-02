@@ -4,7 +4,8 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "pnpm -r run test",
+    "test:run": "pnpm -r run test:run",
     "feature:new": "pnpm --filter client run feature:new"
   },
   "keywords": [],

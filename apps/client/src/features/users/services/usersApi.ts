@@ -1,14 +1,13 @@
 import type { UsersItem } from "../types";
+import { addRequest, removeRequest } from "@/services/loadingStore";
 
 /**
  * services は I/O のみ担当（fetch/axios/localStorage 等）
  * UI から直接呼ばず hooks 経由で利用する。
  */
 
-// 推測: Vite + local dev なので API base は env に寄せるのが安全
 const API_BASE = import.meta.env.VITE_API_BASE_URL ?? "";
 
-// 最小のエラー表現（AGENTS.md の暫定に寄せる）
 type ApiError = {
   code: string;
   message: string;
@@ -20,6 +19,7 @@ function toApiError(e: unknown): ApiError {
 }
 
 export async function fetchUsersItems(signal?: AbortSignal): Promise<UsersItem[]> {
+  addRequest();
   try {
     const res = await fetch(`${API_BASE}/api/users/items`, {
       method: "GET",
@@ -46,9 +46,10 @@ export async function fetchUsersItems(signal?: AbortSignal): Promise<UsersItem[]
       role: String(row.role ?? ""),
     })) as UsersItem[];
   } catch (e) {
-    // キャンセル（abort）は意図的なためそのまま再スローし、hook で無視する
     if (e instanceof Error && e.name === "AbortError") throw e;
     const err = toApiError(e);
     throw new Error(`${err.code}: ${err.message}`);
+  } finally {
+    removeRequest();
   }
 }

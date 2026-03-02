@@ -21,6 +21,8 @@ export type SettingsPageFormProps = {
   avatarImageUrl?: string | null;
   /** アバター変更アイコン押下時（ファイル選択→クロップの開始を親で行う） */
   onAvatarChangeClick?: () => void;
+  /** アバター画像削除時（DB の avatar_url を null にする） */
+  onClearAvatar?: () => void | Promise<void>;
   onUserNameChange: (value: string) => void;
   onScreenNameChange: (value: string) => void;
   onAvatarColorChange: (color: string) => void;
@@ -48,6 +50,8 @@ export type SettingsPageFormHookResult = SettingsPageFormProps & {
   avatarUrl: string | null;
   /** アップロード後の URL をプロフィールに保存する */
   saveAvatarUrl: (url: string) => Promise<void>;
+  /** アバター画像を削除（DB の avatar_url を null にする） */
+  clearAvatarUrl: () => Promise<void>;
 };
 
 /** アバター色パレットの候補（hex） */
