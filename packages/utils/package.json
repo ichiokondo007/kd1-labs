@@ -13,7 +13,9 @@
   },
   "scripts": {
     "build": "tsc",
-    "dev": "tsc -w"
+    "dev": "tsc -w",
+    "test": "vitest",
+    "test:run": "vitest run"
   },
   "keywords": [],
   "author": "",
@@ -21,6 +23,11 @@
   "packageManager": "pnpm@10.18.3",
   "devDependencies": {
     "@types/node": "^22.15.0",
-    "typescript": "^5.9.3"
+    "@types/uuid": "^11.0.0",
+    "typescript": "^5.9.3",
+    "vitest": "catalog:"
+  },
+  "dependencies": {
+    "uuid": "^13.0.0"
   }
 }

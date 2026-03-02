@@ -58,6 +58,11 @@ export default function SettingsPageEntry() {
     setImageToCrop(null);
   }, []);
 
+  const handleClearAvatar = useCallback(async () => {
+    await formProps.clearAvatarUrl();
+    setAvatarImageUrl(null);
+  }, [formProps.clearAvatarUrl]);
+
   if (formProps.isLoading) {
     return (
       <div className="p-6 max-w-xl">
@@ -69,6 +74,7 @@ export default function SettingsPageEntry() {
   const { isLoading: _, avatarUrl, ...restFormProps } = formProps;
   /** 表示: クロップ済み未保存の画像があればそれ、なければサーバー保存の avatarUrl */
   const displayAvatarUrl = avatarImageUrl ?? avatarUrl;
+
   return (
     <>
       <input
@@ -89,6 +95,7 @@ export default function SettingsPageEntry() {
           setShowSuccessDialog(true);
         }}
         onAvatarChangeClick={handleAvatarChangeClick}
+        onClearAvatar={handleClearAvatar}
         onCancel={handleCancel}
         onPasswordReset={handlePasswordReset}
       />

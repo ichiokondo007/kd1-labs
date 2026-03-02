@@ -1,14 +1,5 @@
-import axios from "axios";
 import type { ApiResponse, UpdateProfileRequest, User } from "@kd1-labs/types";
-
-/**
- * 認証付き API クライアント（/api/me 等で利用）
- */
-const apiClient = axios.create({
-  baseURL: import.meta.env.VITE_API_BASE_URL ?? "",
-  withCredentials: true,
-  headers: { "Content-Type": "application/json" },
-});
+import { apiClient } from "./apiClient";
 
 /**
  * GET /api/me — 現在ユーザー取得

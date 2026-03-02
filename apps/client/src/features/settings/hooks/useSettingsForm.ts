@@ -94,12 +94,34 @@ export function useSettingsForm(): SettingsPageFormHookResult {
     [userName, screenName, avatarColor, refetch],
   );
 
+  /** アバター画像を削除（DB の avatar_url を null にする） */
+  const clearAvatarUrl = useCallback(async () => {
+    setServerError(undefined);
+    try {
+      const updated = await patchMe({
+        userName: userName.trim(),
+        screenName: screenName.trim(),
+        avatarColor,
+        avatarUrl: null,
+      });
+      if (updated) refetch(updated);
+      else await refetch();
+    } catch (e) {
+      const message =
+        isAxiosError(e) && e.response?.data?.error?.message
+          ? String(e.response.data.error.message)
+          : "Failed to remove avatar.";
+      setServerError(message);
+    }
+  }, [userName, screenName, avatarColor, refetch]);
+
   return {
     userName,
     screenName,
     avatarColor,
     avatarUrl: user?.avatarUrl ?? null,
     saveAvatarUrl,
+    clearAvatarUrl,
     onUserNameChange: setUserName,
     onScreenNameChange: setScreenName,
     onAvatarColorChange: setAvatarColor,

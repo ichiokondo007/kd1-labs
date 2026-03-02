@@ -1,4 +1,5 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
+import { GlobalLoading } from '@/components/global-loading'
 import { ProtectedRoute } from '@/components/ProtectedRoute'
 import { DashboardLayout } from '@/layouts/dashboard-layout'
 import HomePage from '@/pages/home'
@@ -20,6 +21,7 @@ const Placeholder = ({ title }: { title: string }) => (
 function App() {
   return (
     <BrowserRouter>
+      <GlobalLoading />
       <Routes>
         {/* 認証画面（レイアウト外） */}
         <Route path="/login" element={<LoginPageEntry />} />

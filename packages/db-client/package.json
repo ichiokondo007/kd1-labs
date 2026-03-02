@@ -6,7 +6,9 @@
   "scripts": {
     "build": "tsc",
     "dev": "tsc -w",
-    "db:migrate": "node dist/run-migrate.js"
+    "db:migrate": "node dist/run-migrate.js",
+    "test": "vitest",
+    "test:run": "vitest run"
   },
   "keywords": [],
   "author": "",
@@ -18,6 +20,7 @@
   },
   "devDependencies": {
     "@types/node": "^22.15.0",
-    "typescript": "^5.9.3"
+    "typescript": "^5.9.3",
+    "vitest": "catalog:"
   }
 }
