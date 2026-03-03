@@ -19,6 +19,7 @@
     "@kd1-labs/db-client": "workspace:*",
     "@kd1-labs/storage": "workspace:*",
     "@kd1-labs/types": "workspace:*",
+    "@kd1-labs/utils": "workspace:*",
     "bcrypt": "^6.0.0",
     "cors": "^2.8.6",
     "dotenv": "^17.2.4",

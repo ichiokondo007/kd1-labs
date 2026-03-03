@@ -1,3 +1,4 @@
+import type { ReactNode } from "react";
 import * as Headless from "@headlessui/react";
 import clsx from "clsx";
 import {
@@ -43,6 +44,8 @@ export type DialogMessageProps = {
   message: string;
   /** タイトル上のアイコン（省略時は none） */
   iconVariant?: DialogMessageIconVariant;
+  /** メッセージとボタンの間に差し込む任意の内容（例: コピーボタン） */
+  extraContent?: ReactNode;
   /** 主ボタン（1ボタンのときはこれのみ） */
   primaryButton: {
     label: string;
@@ -65,6 +68,7 @@ export function DialogMessage({
   title,
   message,
   iconVariant = "none",
+  extraContent,
   primaryButton,
   secondaryButton,
 }: DialogMessageProps) {
@@ -116,6 +120,7 @@ export function DialogMessage({
                 <div className="mt-2">
                   <p className="whitespace-pre-line text-sm text-zinc-500 dark:text-zinc-400">{message}</p>
                 </div>
+                {extraContent && <div className="mt-3">{extraContent}</div>}
               </div>
             </div>
 

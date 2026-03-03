@@ -1,5 +1,6 @@
 import type { UsersItem } from "../types";
 import { addRequest, removeRequest } from "@/services/loadingStore";
+import { apiClient } from "@/services/apiClient";
 
 /**
  * services は I/O のみ担当（fetch/axios/localStorage 等）
@@ -7,6 +8,8 @@ import { addRequest, removeRequest } from "@/services/loadingStore";
  */
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL ?? "";
+
+export type CreateUserResult = { ok: true; userName: string } | { ok: false; message: string };
 
 type ApiError = {
   code: string;
@@ -51,5 +54,29 @@ export async function fetchUsersItems(signal?: AbortSignal): Promise<UsersItem[]
     throw new Error(`${err.code}: ${err.message}`);
   } finally {
     removeRequest();
+  }
+}
+
+/**
+ * POST /api/users — 新規ユーザー作成（管理者のみ。固定パスワード）
+ */
+export async function createUser(userName: string, screenName: string): Promise<CreateUserResult> {
+  try {
+    const res = await apiClient.post<{ success: true; data: { userName: string } }>("/api/users", {
+      userName: userName.trim(),
+      screenName: screenName.trim(),
+    });
+    if (res.data?.success && res.data?.data?.userName) {
+      return { ok: true, userName: res.data.data.userName };
+    }
+    return { ok: false, message: "Unexpected response." };
+  } catch (e: unknown) {
+    const err = e as { response?: { status: number; data?: { error?: { message?: string } } } };
+    const message =
+      err.response?.data?.error?.message ?? (e instanceof Error ? e.message : "Failed to create user.");
+    if (err.response?.status === 409) {
+      return { ok: false, message };
+    }
+    return { ok: false, message };
   }
 }

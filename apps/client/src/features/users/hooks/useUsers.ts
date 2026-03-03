@@ -11,10 +11,27 @@ import { sortByUserName } from "../domain";
  * を担当する。UIはこの hook の戻り値だけ見る。
  */
 
+async function loadItems(
+  setItems: (items: UsersItem[]) => void,
+  setErrorMessage: (msg: string | undefined) => void,
+  signal?: AbortSignal
+) {
+  try {
+    const data = await fetchUsersItems(signal);
+    setItems(data);
+    setErrorMessage(undefined);
+  } catch (e) {
+    if (e instanceof Error && e.name === "AbortError") return;
+    const msg = e instanceof Error ? e.message : "読み込みに失敗しました";
+    setErrorMessage(msg);
+  }
+}
+
 export function useUsers(): UsersViewModel & {
   onCreateUser: () => void;
   onPasswordReset: (id: string) => void;
   onDelete: (id: string) => void;
+  refetch: () => Promise<void>;
 } {
   const [items, setItems] = useState<UsersItem[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -22,32 +39,26 @@ export function useUsers(): UsersViewModel & {
     undefined
   );
 
+  const refetch = useCallback(async () => {
+    setIsLoading(true);
+    await loadItems(setItems, setErrorMessage);
+    setIsLoading(false);
+  }, []);
+
   useEffect(() => {
     const ac = new AbortController();
-
-    (async () => {
-      setIsLoading(true);
-      setErrorMessage(undefined);
-      try {
-        const data = await fetchUsersItems(ac.signal);
-        setItems(data);
-      } catch (e) {
-        // アンマウント時の abort は意図的なためユーザーに表示しない
-        if (e instanceof Error && e.name === "AbortError") return;
-        const msg = e instanceof Error ? e.message : "読み込みに失敗しました";
-        setErrorMessage(msg);
-      } finally {
-        setIsLoading(false);
-      }
-    })();
-
+    setIsLoading(true);
+    setErrorMessage(undefined);
+    loadItems(setItems, setErrorMessage, ac.signal).finally(() =>
+      setIsLoading(false)
+    );
     return () => ac.abort();
   }, []);
 
   const sorted = useMemo(() => sortByUserName(items), [items]);
 
   const onCreateUser = useCallback(() => {
-    // TODO: ユーザー作成モーダル／ナビゲーション
+    // 呼び出し元で Drawer を開く
   }, []);
 
   const onPasswordReset = useCallback((_id: string) => {
@@ -65,5 +76,6 @@ export function useUsers(): UsersViewModel & {
     onCreateUser,
     onPasswordReset,
     onDelete,
+    refetch,
   };
 }

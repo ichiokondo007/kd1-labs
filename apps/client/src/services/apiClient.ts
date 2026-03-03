@@ -23,6 +23,13 @@ apiClient.interceptors.response.use(
   },
   (error) => {
     removeRequest();
+    // セッション切れ（401）時はログイン画面へ遷移
+    if (error.response?.status === 401) {
+      const path = window.location.pathname;
+      if (!path.startsWith("/login")) {
+        window.location.replace("/login");
+      }
+    }
     return Promise.reject(error);
   }
 );

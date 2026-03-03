@@ -10,3 +10,15 @@ export function sortByUserName(items: UsersItem[]): UsersItem[] {
     a.userName.localeCompare(b.userName, undefined, { sensitivity: "base" })
   );
 }
+
+/** UserName 必須チェック（Settings 画面と同じ文言） */
+export function getRequiredUserNameError(userName: string): string | undefined {
+  if (userName.trim().length === 0) return "This field is required.";
+  return undefined;
+}
+
+/** Screen Name 必須チェック（Settings 画面と同じ文言） */
+export function getRequiredScreenNameError(screenName: string): string | undefined {
+  if (screenName.trim().length === 0) return "This field is required.";
+  return undefined;
+}

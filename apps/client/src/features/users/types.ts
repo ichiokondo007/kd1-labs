@@ -25,3 +25,17 @@ export type UsersPageProps = {
   onPasswordReset?: (id: string) => void;
   onDelete?: (id: string) => void;
 };
+
+/** Presentational 用: 新規ユーザー登録フォーム（Drawer 内で表示。パスワードは固定） */
+export type CreateUserFormProps = {
+  userName: string;
+  screenName: string;
+  onUserNameChange: (value: string) => void;
+  onScreenNameChange: (value: string) => void;
+  onSave: () => void;
+  onCancel: () => void;
+  isSaving?: boolean;
+  userNameError?: string;
+  screenNameError?: string;
+  errorMessage?: string;
+};
