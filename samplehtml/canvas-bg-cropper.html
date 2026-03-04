@@ -1,0 +1,658 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Fabric.js 背景画像設定</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/fabric.js/5.3.1/fabric.min.js"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;600&display=swap');
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Noto Sans JP', sans-serif;
+      background: #1a1a2e;
+      color: #e0e0e0;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 24px;
+    }
+
+    h1 {
+      font-weight: 300;
+      font-size: 1.4rem;
+      letter-spacing: 0.08em;
+      color: #a0a0c0;
+      margin-bottom: 20px;
+    }
+
+    /* ===== メインCanvas エリア ===== */
+    .main-area {
+      position: relative;
+      background: #12122a;
+      border: 1px solid #2a2a4a;
+      border-radius: 12px;
+      padding: 20px;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+    }
+
+    .main-area canvas {
+      border-radius: 4px;
+    }
+
+    .toolbar {
+      display: flex;
+      gap: 10px;
+      margin-top: 16px;
+      justify-content: center;
+    }
+
+    .btn {
+      font-family: 'Noto Sans JP', sans-serif;
+      font-size: 0.85rem;
+      font-weight: 500;
+      padding: 10px 24px;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      letter-spacing: 0.04em;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, #4a6cf7, #6366f1);
+      color: #fff;
+      box-shadow: 0 4px 16px rgba(74, 108, 247, 0.3);
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 6px 20px rgba(74, 108, 247, 0.45);
+    }
+
+    .btn-secondary {
+      background: #2a2a4a;
+      color: #c0c0d8;
+      border: 1px solid #3a3a5a;
+    }
+
+    .btn-secondary:hover {
+      background: #3a3a5a;
+    }
+
+    .btn-danger {
+      background: #4a1a2a;
+      color: #f08080;
+      border: 1px solid #6a2a3a;
+    }
+
+    .btn-danger:hover {
+      background: #5a2a3a;
+    }
+
+    /* ===== モーダル ===== */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.7);
+      backdrop-filter: blur(6px);
+      z-index: 1000;
+      justify-content: center;
+      align-items: center;
+      animation: fadeIn 0.25s ease;
+    }
+
+    .modal-overlay.active {
+      display: flex;
+    }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+      }
+
+      to {
+        opacity: 1;
+      }
+    }
+
+    @keyframes slideUp {
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .modal {
+      background: #1e1e3a;
+      border: 1px solid #2a2a5a;
+      border-radius: 16px;
+      padding: 28px;
+      width: 640px;
+      max-width: 95vw;
+      max-height: 90vh;
+      overflow-y: auto;
+      box-shadow: 0 24px 64px rgba(0, 0, 0, 0.6);
+      animation: slideUp 0.3s ease;
+    }
+
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+      padding-bottom: 14px;
+      border-bottom: 1px solid #2a2a4a;
+    }
+
+    .modal-header h2 {
+      font-weight: 500;
+      font-size: 1.1rem;
+      color: #d0d0e8;
+      letter-spacing: 0.06em;
+    }
+
+    .close-btn {
+      background: none;
+      border: none;
+      color: #606080;
+      font-size: 1.4rem;
+      cursor: pointer;
+      width: 36px;
+      height: 36px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s;
+    }
+
+    .close-btn:hover {
+      background: #2a2a4a;
+      color: #e0e0f0;
+    }
+
+    /* プレビューエリア */
+    .preview-container {
+      position: relative;
+      background: #0e0e20;
+      border: 1px solid #2a2a4a;
+      border-radius: 10px;
+      overflow: hidden;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+
+    .preview-container canvas {
+      display: block;
+    }
+
+    .preview-hint {
+      position: absolute;
+      color: #505070;
+      font-size: 0.8rem;
+      pointer-events: none;
+    }
+
+    /* 画像情報 */
+    .image-info {
+      display: flex;
+      gap: 20px;
+      margin-bottom: 18px;
+      padding: 12px 16px;
+      background: #16162e;
+      border-radius: 8px;
+      border: 1px solid #22224a;
+      font-size: 0.82rem;
+    }
+
+    .image-info .label {
+      color: #6060a0;
+      margin-right: 6px;
+    }
+
+    .image-info .value {
+      color: #b0b0d0;
+      font-weight: 500;
+    }
+
+    /* スライダー */
+    .slider-group {
+      margin-bottom: 18px;
+    }
+
+    .slider-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+
+    .slider-label {
+      font-size: 0.82rem;
+      color: #8080a0;
+      font-weight: 400;
+    }
+
+    .slider-value {
+      font-size: 0.85rem;
+      color: #a0a0d0;
+      font-weight: 600;
+      background: #22224a;
+      padding: 3px 10px;
+      border-radius: 6px;
+      min-width: 52px;
+      text-align: center;
+    }
+
+    input[type="range"] {
+      -webkit-appearance: none;
+      width: 100%;
+      height: 6px;
+      border-radius: 3px;
+      background: #2a2a4a;
+      outline: none;
+      cursor: pointer;
+    }
+
+    input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #4a6cf7, #6366f1);
+      box-shadow: 0 2px 8px rgba(74, 108, 247, 0.4);
+      cursor: pointer;
+      transition: transform 0.15s;
+    }
+
+    input[type="range"]::-webkit-slider-thumb:hover {
+      transform: scale(1.15);
+    }
+
+    /* チェックボックス */
+    .checkbox-group {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 20px;
+      font-size: 0.85rem;
+      color: #9090b0;
+    }
+
+    .checkbox-group input[type="checkbox"] {
+      accent-color: #4a6cf7;
+      width: 16px;
+      height: 16px;
+      cursor: pointer;
+    }
+
+    /* ドラッグヒント */
+    .drag-hint {
+      text-align: center;
+      font-size: 0.75rem;
+      color: #505070;
+      margin-bottom: 16px;
+      font-style: italic;
+    }
+
+    /* モーダルフッター */
+    .modal-footer {
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+      padding-top: 16px;
+      border-top: 1px solid #2a2a4a;
+    }
+
+    /* ステータスバー */
+    .status-bar {
+      margin-top: 12px;
+      font-size: 0.75rem;
+      color: #505070;
+      text-align: center;
+      letter-spacing: 0.02em;
+    }
+
+    /* 隠しinput */
+    #fileInput {
+      display: none;
+    }
+  </style>
+</head>
+
+<body>
+
+  <h1>Fabric.js — 背景画像設定サンプル</h1>
+
+  <!-- メインCanvasエリア -->
+  <div class="main-area">
+    <canvas id="mainCanvas"></canvas>
+    <div class="toolbar">
+      <button class="btn btn-primary" id="btnInsertBg">背景挿入</button>
+      <button class="btn btn-secondary" id="btnAddRect">□ 追加</button>
+      <button class="btn btn-secondary" id="btnAddCircle">○ 追加</button>
+      <button class="btn btn-danger" id="btnRemoveBg">背景削除</button>
+    </div>
+    <div class="status-bar" id="statusBar">背景画像：未設定</div>
+  </div>
+
+  <input type="file" id="fileInput" accept="image/*">
+
+  <!-- モーダル -->
+  <div class="modal-overlay" id="modalOverlay">
+    <div class="modal">
+      <div class="modal-header">
+        <h2>背景画像の設定</h2>
+        <button class="close-btn" id="btnCloseModal">✕</button>
+      </div>
+
+      <!-- プレビュー -->
+      <div class="preview-container" id="previewContainer">
+        <canvas id="previewCanvas"></canvas>
+      </div>
+
+      <div class="drag-hint">プレビュー内をドラッグして位置を調整できます</div>
+
+      <!-- 画像情報 -->
+      <div class="image-info">
+        <div><span class="label">元画像:</span><span class="value" id="infoOrigSize">-</span></div>
+        <div><span class="label">表示サイズ:</span><span class="value" id="infoDispSize">-</span></div>
+        <div><span class="label">Canvas:</span><span class="value" id="infoCanvasSize">-</span></div>
+      </div>
+
+      <!-- スライダー -->
+      <div class="slider-group">
+        <div class="slider-header">
+          <span class="slider-label">拡大率</span>
+          <span class="slider-value" id="scaleValue">100%</span>
+        </div>
+        <input type="range" id="scaleSlider" min="10" max="300" value="100">
+      </div>
+
+      <!-- オプション -->
+      <div class="checkbox-group">
+        <input type="checkbox" id="chkAspectRatio" checked>
+        <label for="chkAspectRatio">アスペクト比を維持</label>
+      </div>
+
+      <!-- フッター -->
+      <div class="modal-footer">
+        <button class="btn btn-secondary" id="btnCancel">キャンセル</button>
+        <button class="btn btn-primary" id="btnApply">取込</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // ===== 定数 =====
+    const MAIN_WIDTH = 800;
+    const MAIN_HEIGHT = 500;
+    const PREVIEW_WIDTH = 560;
+    const PREVIEW_HEIGHT = 350;
+
+    // ===== メインCanvas =====
+    const mainCanvas = new fabric.Canvas('mainCanvas', {
+      width: MAIN_WIDTH,
+      height: MAIN_HEIGHT,
+      backgroundColor: '#16162e'
+    });
+
+    // ===== プレビューCanvas =====
+    const previewCanvas = new fabric.Canvas('previewCanvas', {
+      width: PREVIEW_WIDTH,
+      height: PREVIEW_HEIGHT,
+      backgroundColor: '#0e0e1e',
+      selection: false
+    });
+
+    // ===== 状態管理 =====
+    let previewImage = null;
+    let originalImage = null;
+    let baseScale = 1;
+
+    // ===== DOM =====
+    const fileInput = document.getElementById('fileInput');
+    const modalOverlay = document.getElementById('modalOverlay');
+    const scaleSlider = document.getElementById('scaleSlider');
+    const scaleValue = document.getElementById('scaleValue');
+    const chkAspectRatio = document.getElementById('chkAspectRatio');
+    const statusBar = document.getElementById('statusBar');
+
+    // ===== イベント：背景挿入ボタン =====
+    document.getElementById('btnInsertBg').addEventListener('click', () => {
+      fileInput.click();
+    });
+
+    // ===== イベント：ファイル選択 =====
+    fileInput.addEventListener('change', (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        openCropperModal(event.target.result);
+      };
+      reader.readAsDataURL(file);
+      fileInput.value = '';
+    });
+
+    // ===== モーダル表示 =====
+    function openCropperModal(dataUrl) {
+      modalOverlay.classList.add('active');
+
+      fabric.Image.fromURL(dataUrl, (img) => {
+        originalImage = img;
+        previewCanvas.clear();
+        previewCanvas.backgroundColor = '#0e0e1e';
+
+        // Canvasに収まるベーススケール（Contain方式）
+        baseScale = Math.min(
+          PREVIEW_WIDTH / img.width,
+          PREVIEW_HEIGHT / img.height
+        );
+
+        // Canvas枠ガイド（メインCanvasの比率を表示）
+        const guideScale = Math.min(
+          PREVIEW_WIDTH / MAIN_WIDTH,
+          PREVIEW_HEIGHT / MAIN_HEIGHT
+        );
+        const guideW = MAIN_WIDTH * guideScale;
+        const guideH = MAIN_HEIGHT * guideScale;
+
+        const guide = new fabric.Rect({
+          width: guideW,
+          height: guideH,
+          left: PREVIEW_WIDTH / 2,
+          top: PREVIEW_HEIGHT / 2,
+          originX: 'center',
+          originY: 'center',
+          fill: 'transparent',
+          stroke: '#4a6cf7',
+          strokeWidth: 1.5,
+          strokeDashArray: [6, 4],
+          selectable: false,
+          evented: false,
+          opacity: 0.6
+        });
+
+        // 画像をプレビューに配置
+        img.set({
+          scaleX: baseScale,
+          scaleY: baseScale,
+          left: PREVIEW_WIDTH / 2,
+          top: PREVIEW_HEIGHT / 2,
+          originX: 'center',
+          originY: 'center',
+          hasControls: false,
+          hasBorders: false,
+          lockRotation: true,
+          centeredScaling: true
+        });
+
+        previewImage = img;
+        previewCanvas.add(img);
+        previewCanvas.add(guide);
+        previewCanvas.setActiveObject(img);
+        previewCanvas.renderAll();
+
+        // スライダー初期化
+        scaleSlider.value = 100;
+        scaleValue.textContent = '100%';
+
+        // 情報表示
+        document.getElementById('infoOrigSize').textContent =
+          `${Math.round(img.width)} × ${Math.round(img.height)}px`;
+        document.getElementById('infoDispSize').textContent =
+          `${Math.round(img.width * baseScale)} × ${Math.round(img.height * baseScale)}px`;
+        document.getElementById('infoCanvasSize').textContent =
+          `${MAIN_WIDTH} × ${MAIN_HEIGHT}px`;
+      });
+    }
+
+    // ===== スライダー操作 =====
+    scaleSlider.addEventListener('input', (e) => {
+      if (!previewImage) return;
+
+      const percent = parseInt(e.target.value);
+      scaleValue.textContent = `${percent}%`;
+
+      const newScale = baseScale * (percent / 100);
+      previewImage.set({
+        scaleX: newScale,
+        scaleY: newScale
+      });
+
+      // 表示サイズ更新
+      document.getElementById('infoDispSize').textContent =
+        `${Math.round(previewImage.width * newScale)} × ${Math.round(previewImage.height * newScale)}px`;
+
+      previewCanvas.renderAll();
+    });
+
+    // ===== 取込ボタン =====
+    document.getElementById('btnApply').addEventListener('click', () => {
+      if (!previewImage || !originalImage) return;
+
+      const percent = parseInt(scaleSlider.value);
+
+      // メインCanvasへの適用スケール計算
+      const mainScale = Math.min(
+        MAIN_WIDTH / originalImage.width,
+        MAIN_HEIGHT / originalImage.height
+      ) * (percent / 100);
+
+      // プレビュー内の位置をメインCanvasの比率に変換
+      const posRatioX = previewImage.left / PREVIEW_WIDTH;
+      const posRatioY = previewImage.top / PREVIEW_HEIGHT;
+
+      const imgSrc = originalImage.getSrc();
+
+      fabric.Image.fromURL(imgSrc, (img) => {
+        mainCanvas.setBackgroundImage(img, mainCanvas.renderAll.bind(mainCanvas), {
+          scaleX: mainScale,
+          scaleY: mainScale,
+          left: MAIN_WIDTH * posRatioX,
+          top: MAIN_HEIGHT * posRatioY,
+          originX: 'center',
+          originY: 'center'
+        });
+
+        statusBar.textContent = `背景画像：設定済み（${Math.round(originalImage.width)}×${Math.round(originalImage.height)} → 拡大率 ${percent}%）`;
+      });
+
+      closeModal();
+    });
+
+    // ===== モーダルを閉じる =====
+    function closeModal() {
+      modalOverlay.classList.remove('active');
+      previewCanvas.clear();
+      previewImage = null;
+    }
+
+    document.getElementById('btnCancel').addEventListener('click', closeModal);
+    document.getElementById('btnCloseModal').addEventListener('click', closeModal);
+
+    modalOverlay.addEventListener('click', (e) => {
+      if (e.target === modalOverlay) closeModal();
+    });
+
+    // ===== 背景削除 =====
+    document.getElementById('btnRemoveBg').addEventListener('click', () => {
+      mainCanvas.setBackgroundImage(null, mainCanvas.renderAll.bind(mainCanvas));
+      statusBar.textContent = '背景画像：未設定';
+    });
+
+    // ===== サンプル図形追加 =====
+    document.getElementById('btnAddRect').addEventListener('click', () => {
+      const rect = new fabric.Rect({
+        left: 100 + Math.random() * 300,
+        top: 80 + Math.random() * 200,
+        width: 120,
+        height: 80,
+        fill: randomColor(),
+        stroke: '#ffffff22',
+        strokeWidth: 1,
+        rx: 6,
+        ry: 6,
+        shadow: new fabric.Shadow({ color: 'rgba(0,0,0,0.3)', blur: 10, offsetX: 3, offsetY: 3 })
+      });
+      mainCanvas.add(rect);
+    });
+
+    document.getElementById('btnAddCircle').addEventListener('click', () => {
+      const circle = new fabric.Circle({
+        left: 100 + Math.random() * 300,
+        top: 80 + Math.random() * 200,
+        radius: 50,
+        fill: randomColor(),
+        stroke: '#ffffff22',
+        strokeWidth: 1,
+        shadow: new fabric.Shadow({ color: 'rgba(0,0,0,0.3)', blur: 10, offsetX: 3, offsetY: 3 })
+      });
+      mainCanvas.add(circle);
+    });
+
+    function randomColor() {
+      const colors = [
+        'rgba(74,108,247,0.7)',
+        'rgba(99,102,241,0.7)',
+        'rgba(236,72,153,0.7)',
+        'rgba(16,185,129,0.7)',
+        'rgba(245,158,11,0.7)',
+        'rgba(139,92,246,0.7)'
+      ];
+      return colors[Math.floor(Math.random() * colors.length)];
+    }
+
+    // ===== キーボードショートカット =====
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && modalOverlay.classList.contains('active')) {
+        closeModal();
+      }
+    });
+  </script>
+
+</body>
+
+</html>

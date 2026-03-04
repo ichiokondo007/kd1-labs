@@ -3,70 +3,42 @@
 > **Proof of concept for evaluating CRDT libraries in Fabric.js applications**
 >
 > 「Fabric.js」 アプリのための CRDT ライブラリ評価用 POC
-> 　１．websockeServerのCRDTオブジェクト、メトリクス確認
-> 　２．websocketServerの水平スケール実現検討 ※consistens hash方式でのバランシング
-> 　３．自動保存実現方式検討
->
-> CRDT libraries
->  ・YJS　CRDTライブラリ
->     → y.websocket + Redis pubsub スケーリング
->     → yhub ライブラリ(未検証)
->
->  ・Loro CRDTライブラリ(未検証)
+>  １．websockeServerのCRDTオブジェクト、メトリクス確認
+>  ２．websocketServerの水平スケール実現検討 ※consistens hash方式でのバランシング
+>  ３．自動保存実現方式検討
 
 ---
 
-## 🚀 Overview
+## ️🚀️環境一覧
 
-1. Tech stack
-
-- aaaa
-
-2. Infra
-
-3. package
-
-  ```shell
-  kd1-labs
-    ├── apps            :アプリケーション
-    │   ├── client           : front(react)
-    │   └── server           : httpserver
-    │   └── yjsserver        : yjs-websocketserver
-    │   └── yjsscaleProxy    : yjs-scale-router
-    │   └── autoserve-worker : autosave processServer
-    ├── packages        : 共通パッケージ
-    │   ├── db-client        :drizzle orm(mysql)
-    │   ├── db-schema        :drizzle schema(ddl,dml)
-    │   ├── storage          :storege操作(S3互換用-MinIO)
-    │   └── types　　        :共通型定義
-    ├── docker-compose.yml
-    ├── env.example    : docer用envファイル
-    ├── docker
-    │   ├── mongodb    :fablic.jsオブジェクト格納用
-    │   ├── mysql      :loginUser管理
-    │   └── redis      :CRDTテンポラリテーブル（キャッシュ用）
-    ├── package.json
-    ├── pnpm-lock.yaml
-    └── pnpm-workspace.yaml
-    ```
+| 環境  | 役割             | インフラ                    |
+| ----- | ---------------- | --------------------------- |
+| local | 個人開発環境     | ローカルPC + docker Compose |
+| dev   | ローカル実行環境 | Docker Compose              |
+| stage | ステージング環境 | Docker Swarm                |
+| prod  | 本番環境         | AWS                         |
 
 ---
 
-## ⌨️ Local installation
+## 🚀️ Local installation(dev)
 
-1. Prerequisites
-  - pnpmインストール済
-  - dockerインストール済
-2. procedure
-  1. packageのrootから pnpm install
-  2. Docker-compose起動
-  3. Seed実行（DrizzleでのMYSQLセットアップ＆管理者用のユーザレコード登録）
-  4. [http://localhost:5173](http://localhost:5173) でログイン
-    - UserName: admin
-    - Password: password
+### [Prerequisites]
+
+- pnpmインストール済
+- dockerインストール済
+
+### [procedure]
+
+- packageのrootから pnpm install
+- Docker-compose起動
+- Seed実行（DrizzleでのMYSQLセットアップ＆管理者用のユーザレコード登録）
+- [http://localhost:5173](http://localhost:5173) でログイン
+  - UserName: admin
+  - Password: password
+
+### [Command]
 
 ```shell
-# rootから
 pnpm install
 pnpm -r run build
 docker compose up -d
@@ -75,89 +47,38 @@ pnpm --filter @kd1-labs/db-client run db:migrate
 
 ---
 
-## User management 実装手順（本番 API）
+## 🚀 Overview
 
-クライアントはすでに `GET /api/users/items` を呼び、`{ data: UsersItem[] }` を期待している。  
-サーバー側を **下から上**（DB → ルート）の順で実装する。
-
-### 1. packages/db-client（データ取得）
-
-- **目的**: 一覧用にユーザー行を取得する窓口を用意する（`password_hash` は返さない）。
-- **作業**:
-  - `packages/db-client/src/repositories/users.repository.ts` に `listUsers()` を追加する。
-  - 返却型は `{ userId, userName, screenName, isAdmin, avatarUrl }[]` など、一覧表示に必要な項目だけにする。
-- **参照**: 既存の `findUserById` / `findUserByUserName` と同じリポジトリに追加。
-
-### 2. apps/server の Port（抽象）
-
-- **目的**: ユースケースが DB に直接依存しないようにする。
-- **作業**:
-  - `apps/server/src/ports/users.port.ts` を新規作成する。
-  - 一覧取得用のインターフェースを定義する（例: `listUsers(): Promise<ListUserItem[]>`）。
-  - `ListUserItem` は `userId, userName, screenName, isAdmin, avatarUrl` など、レスポンスに必要な型だけ定義する。
-
-### 3. apps/server の Adapter（Port の実装）
-
-- **目的**: Port を db-client で実装する。
-- **作業**:
-  - `apps/server/src/adapters/users.drizzle.ts` を新規作成する。
-  - 上記 Port を実装し、内部で `db-client` の `listUsers()` を呼ぶ。
-
-### 4. apps/server の Usecase（ビジネスロジック）
-
-- **目的**: 「一覧取得」のユースケースを Express 非依存で定義する。
-- **作業**:
-  - `apps/server/src/usecases/list-users.usecase.ts` を新規作成する。
-  - Port を引数に取るファクトリ（`makeListUsersUsecase(port)`）で、`listUsers()` を呼び、必要なら `isAdmin` → `role`（例: `"Admin"` / `"Viewer"`）の変換を行う。
-  - 戻り値はクライアントの `UsersItem` に合わせた形（`id` = `userId`, `role` など）にすると controller が楽になる。
-
-### 5. apps/server の Composition（DI）
-
-- **目的**: Usecase に Adapter を注入する。
-- **作業**:
-  - `apps/server/src/composition/users.composition.ts` を新規作成する。
-  - `listUsersUsecase` を Port 実装（users.drizzle adapter）で生成して export する。
-
-### 6. apps/server の Controller
-
-- **目的**: 認可と HTTP の入出力だけを担当する。
-- **作業**:
-  - `apps/server/src/controllers/users.controller.ts` を新規作成する。
-  - `GET /api/users/items` 用のハンドラを実装する。
-  - セッションを確認し、**管理者（isAdmin）のみ** 許可する。未認証なら 401、非管理者なら 403。
-  - usecase の戻り値を `{ data: [...] }` の形で返す（クライアントの `usersApi.ts` の想定に合わせる）。
-  - JSDoc で `@route GET /api/users/items` と戻り値・status を記載する。
-
-### 7. apps/server の Route と index
-
-- **目的**: URL と controller を結び、アプリにマウントする。
-- **作業**:
-  - `apps/server/src/routes/users.routes.ts` を新規作成する。
-  - `GET /users/items` を上記 controller に紐づける。
-  - `apps/server/src/index.ts` で `usersRoutes` を `app.use("/api", usersRoutes)` でマウントする。
-
-### 8. クライアント側
-
-- **作業**: なし（既に `GET /api/users/items` を呼び、`UsersItem[]` として表示している）。
-- **確認**: 管理者でログインし、「User management」を開いて一覧が表示され、未ログイン or 非管理者では 401/403 になることを確認する。
-
-### 依存関係の流れ（まとめ）
-
-```
-index.ts
-  → routes/users.routes.ts
-      → controllers/users.controller.ts（認可・HTTP）
-          → usecases/list-users.usecase.ts
-              → ports/users.port.ts
-                  → adapters/users.drizzle.ts
-                      → @kd1-labs/db-client listUsers()
-```
-
-まずは **1. db-client の `listUsers()`** から実装し、その後に Port → Adapter → Usecase → Composition → Controller → Route → index の順で進めるとよい。
+1. Tech stack
+2. Infra
+3. package
+  ```shell
+    kd1-labs
+      ├── apps            :アプリケーション
+      │   ├── client           : front(react)
+      │   └── server           : httpserver
+      │   └── yjs-server        : yjs-websocketserver
+      │   └── yjs-scaleProxy    : yjs-scale-router
+      │   └── autoserve-worker : autosave processServer
+      ├── packages        : 共通パッケージ
+      │   ├── db-client        :drizzle orm(mysql)
+      │   ├── db-schema        :drizzle schema(ddl,dml)
+      │   ├── storage          :storege操作(S3互換用-MinIO)
+      │   └── types　　        :共通型定義
+      ├── docker-compose.yml
+      ├── env.example    : docer用envファイル
+      ├── docker        :未使用 柄のみ
+      │   ├── mongodb
+      │   ├── mysql
+      │   └── redis
+      ├── package.json
+      ├── pnpm-lock.yaml
+      └── pnpm-workspace.yaml
+  ```
 
 ---
 
-## ストレージ（S3 / MinIO）と画像表示
+## 🚀ストレージ（S3 / MinIO）と画像表示
 
 一般的な S3 利用と同様に、**アップロード後に取得した URL をそのまま API で返し、`<img src="...">` で表示**するだけです。
 
@@ -171,26 +92,9 @@ index.ts
 
 ---
 
-## cursor settings
-
-- Contextエンジニアリング設定
-
-  ```markdown
-
-  AGENTS.md             ← kd1憲法
-  apps/client/AGENTS.md ← 固有React特化憲法
-  apps/server/AGENTS.md ← 固有Express特化憲法（クリーンアーキテクチャパターン）
-  .cursor/skills/       ← 固有手順書(業務設計書)
-  Vercel Skills
-
-  ```
-
----
-
-## docker
+## 🚀docker
 
 - 自身のローカルで起動時、portバッティングする際は、rootの「env.exsample」をコピーして自身の環境用に変更してください
-
   ```yml
   # ============================================================
   # KD1 Docker Compose 環境設定
@@ -235,39 +139,10 @@ index.ts
 
 ---
 
+## 🚀Vitest(unitTest)について
 
-次のようにして、ルートで vitest を共有しつつ全 app/package で継承する形にしました。
+### 使い方
 
----
-
-## やったこと
-
-### 1. **pnpm catalog**（`pnpm-workspace.yaml`）
-
-- `catalog` に `vitest` と `happy-dom` のバージョンを定義
-- 各パッケージは `"vitest": "catalog:"` で同じバージョンを参照
-- バージョン変更はここだけ行えばよい
-
-### 2. **共有の vitest 基底設定**（ルート `vitest.config.base.ts`）
-
-- `globals`、`include`、`passWithNoTests`、`coverage` などを共通設定
-- 各 app/package は `mergeConfig(base, { ... })` で継承し、必要なら上書き
-
-### 3. **ルートのスクリプト**（`package.json`）
-
-- `pnpm test` → 全 workspace の `test`（watch）
-- `pnpm test:run` → 全 workspace の `test:run`（CI 用 1 回実行）
-
-### 4. **各 app/package**
-
-- **devDependencies**: `"vitest": "catalog:"`（client のみ `"happy-dom": "catalog:"` も追加）
-- **scripts**: `"test": "vitest"`, `"test:run": "vitest run"`
-- **vitest.config.ts**: `mergeConfig(base, { ... })` でルートの設定を継承  
-  - client のみ `environment: "happy-dom"` を指定
-
----
-
-## 使い方
 
 | コマンド                                 | 説明                                          |
 | ---------------------------------------- | --------------------------------------------- |
@@ -276,36 +151,19 @@ index.ts
 | `pnpm --filter client test`              | client だけテスト                             |
 | `pnpm --filter @kd1-labs/utils test:run` | utils だけ 1 回実行                           |
 
+
 テストファイルは `src/**/*.test.{ts,tsx}` または `src/**/*.spec.{ts,tsx}` に置くと検知されます。まだテストがなくても `passWithNoTests: true` で `pnpm test:run` は成功します。
 
+---
+
+## 🚀メトリクス取得設計
 
 
+| コンポーネント  | 役割                                                                                          |
+| --------------- | --------------------------------------------------------------------------------------------- |
+| cAdvisor        | Dockerコンテナの外側から、各コンテナのCPU・メモリ・ネットワーク利用率を自動収集します。       |
+| Prometheus      | cAdvisorやアプリから送られるメトリクスを保存する時系列データベースです。                      |
+| Grafana         | Prometheusのデータをグラフ化・可視化します。                                                  |
+| App (WebSocket) | アプリ内部にライブラリ（prom-clientなど）を入れ、接続数などのカスタムメトリクスを公開します。 |
 
-
-
-
-
-
-> @kd1-labs/storage@1.0.0 build /home/ichio/project/kd1-labs/packages/storage
-> tsc
-
-
-node:internal/modules/run_main:107
-    triggerUncaughtException(
-    ^
-Error: Cannot find package '/home/ichio/project/kd1-labs/apps/server/node_modules/@kd1-labs/db-client/dist/index.js' imported from /home/ichio/project/kd1-labs/apps/server/src/adapters/auth.drizzle.ts
-    at legacyMainResolve (node:internal/modules/esm/resolve:204:26)
-    at packageResolve (node:internal/modules/esm/resolve:778:12)
-    at moduleResolve (node:internal/modules/esm/resolve:858:18)
-    at defaultResolve (node:internal/modules/esm/resolve:990:11)
-    at nextResolve (node:internal/modules/esm/hooks:785:28)
-    at resolveBase (file:///home/ichio/project/kd1-labs/node_modules/.pnpm/tsx@4.21.0/node_modules/tsx/dist/esm/index.mjs?1772609793387:2:3744)
-    at resolveDirectory (file:///home/ichio/project/kd1-labs/node_modules/.pnpm/tsx@4.21.0/node_modules/tsx/dist/esm/index.mjs?1772609793387:2:4243)
-    at resolveTsPaths (file:///home/ichio/project/kd1-labs/node_modules/.pnpm/tsx@4.21.0/node_modules/tsx/dist/esm/index.mjs?1772609793387:2:4984)
-    at resolve (file:///home/ichio/project/kd1-labs/node_modules/.pnpm/tsx@4.21.0/node_modules/tsx/dist/esm/index.mjs?1772609793387:2:5361)
-    at nextResolve (node:internal/modules/esm/hooks:785:28) {
-  code: 'ERR_MODULE_NOT_FOUND'
-}
-
-Node.js v24.12.0
 

@@ -9,6 +9,7 @@ import CanvasListPage from '@/pages/example/canvas-list'
 import SettingsPageEntry from '@/pages/settings'
 import UserManagementPageEntry from '@/pages/user-management'
 import LogoutPage from '@/pages/logout'
+import CanvasEditorPage from '@/pages/example/canvas-editor'
 
 // プレースホルダー用コンポーネント（まだ作っていないページ用）
 const Placeholder = ({ title }: { title: string }) => (
@@ -32,20 +33,21 @@ function App() {
           <Route element={<DashboardLayout />}>
             <Route path="/home" element={<HomePage />} />
 
-          {/* Example Routes */}
-          <Route path="/example/canvas" element={<CanvasListPage />} />
-          <Route path="/example/canvas-yjs" element={<Placeholder title="Canvas Yjs App" />} />
-          <Route path="/example/form-yjs" element={<Placeholder title="Form Yjs App" />} />
+            {/* Example Routes */}
+            <Route path="/example/canvas" element={<CanvasListPage />} />
+            <Route path="/example/canvas/new" element={<CanvasEditorPage />} />
+            <Route path="/example/canvas-yjs" element={<Placeholder title="Canvas Yjs App" />} />
+            <Route path="/example/form-yjs" element={<Placeholder title="Form Yjs App" />} />
 
-          {/* Tech Blog Routes */}
-          <Route path="/blog/public" element={<Placeholder title="Public Blog" />} />
-          <Route path="/blog/private" element={<Placeholder title="Private Blog" />} />
-          <Route path="/blog/sandbox" element={<Placeholder title="Sandbox" />} />
+            {/* Tech Blog Routes */}
+            <Route path="/blog/public" element={<Placeholder title="Public Blog" />} />
+            <Route path="/blog/private" element={<Placeholder title="Private Blog" />} />
+            <Route path="/blog/sandbox" element={<Placeholder title="Sandbox" />} />
 
-          {/* User management */}
-          <Route path="/user-management" element={<UserManagementPageEntry />} />
-          {/* Settings */}
-          <Route path="/settings" element={<SettingsPageEntry />} />
+            {/* User management */}
+            <Route path="/user-management" element={<UserManagementPageEntry />} />
+            {/* Settings */}
+            <Route path="/settings" element={<SettingsPageEntry />} />
           </Route>
         </Route>
 

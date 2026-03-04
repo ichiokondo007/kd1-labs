@@ -1,5 +1,5 @@
 import { useMemo } from 'react'
-import { useSearchParams } from 'react-router-dom'
+import { useSearchParams, useNavigate } from 'react-router-dom'
 import { MagnifyingGlassIcon } from '@heroicons/react/20/solid'
 import { Heading } from '@/components/heading'
 import { Text, TextLink } from '@/components/text'
@@ -196,7 +196,7 @@ function buildPageUrl(page: number, searchParams: URLSearchParams): string {
 
 export default function CanvasListPage() {
   const [searchParams, setSearchParams] = useSearchParams()
-
+  const navigate = useNavigate()
   const query = searchParams.get('q') ?? ''
   const sortKey = (searchParams.get('sort') as SortKey) ?? 'updatedAt'
   const currentPage = Number(searchParams.get('page') ?? '1')
@@ -288,7 +288,12 @@ export default function CanvasListPage() {
             <option value="updaterName">Sort by username</option>
           </Select>
         </div>
-        <Button color="dark/zinc">Create canvas</Button>
+        <Button
+          color="dark/zinc"
+          onClick={() => navigate('/example/canvas/new')} // ← 追加
+        >
+          Create canvas
+        </Button>
       </div>
 
       {/* Canvas List */}
