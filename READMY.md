@@ -277,3 +277,35 @@ index.ts
 | `pnpm --filter @kd1-labs/utils test:run` | utils だけ 1 回実行                           |
 
 テストファイルは `src/**/*.test.{ts,tsx}` または `src/**/*.spec.{ts,tsx}` に置くと検知されます。まだテストがなくても `passWithNoTests: true` で `pnpm test:run` は成功します。
+
+
+
+
+
+
+
+
+
+> @kd1-labs/storage@1.0.0 build /home/ichio/project/kd1-labs/packages/storage
+> tsc
+
+
+node:internal/modules/run_main:107
+    triggerUncaughtException(
+    ^
+Error: Cannot find package '/home/ichio/project/kd1-labs/apps/server/node_modules/@kd1-labs/db-client/dist/index.js' imported from /home/ichio/project/kd1-labs/apps/server/src/adapters/auth.drizzle.ts
+    at legacyMainResolve (node:internal/modules/esm/resolve:204:26)
+    at packageResolve (node:internal/modules/esm/resolve:778:12)
+    at moduleResolve (node:internal/modules/esm/resolve:858:18)
+    at defaultResolve (node:internal/modules/esm/resolve:990:11)
+    at nextResolve (node:internal/modules/esm/hooks:785:28)
+    at resolveBase (file:///home/ichio/project/kd1-labs/node_modules/.pnpm/tsx@4.21.0/node_modules/tsx/dist/esm/index.mjs?1772609793387:2:3744)
+    at resolveDirectory (file:///home/ichio/project/kd1-labs/node_modules/.pnpm/tsx@4.21.0/node_modules/tsx/dist/esm/index.mjs?1772609793387:2:4243)
+    at resolveTsPaths (file:///home/ichio/project/kd1-labs/node_modules/.pnpm/tsx@4.21.0/node_modules/tsx/dist/esm/index.mjs?1772609793387:2:4984)
+    at resolve (file:///home/ichio/project/kd1-labs/node_modules/.pnpm/tsx@4.21.0/node_modules/tsx/dist/esm/index.mjs?1772609793387:2:5361)
+    at nextResolve (node:internal/modules/esm/hooks:785:28) {
+  code: 'ERR_MODULE_NOT_FOUND'
+}
+
+Node.js v24.12.0
+
