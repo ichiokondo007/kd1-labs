@@ -3,9 +3,9 @@
 > **Proof of concept for evaluating CRDT libraries in Fabric.js applications**
 >
 > 「Fabric.js」 アプリのための CRDT ライブラリ評価用 POC
->  １．websockeServerのCRDTオブジェクト、メトリクス確認
->  ２．websocketServerの水平スケール実現検討 ※consistens hash方式でのバランシング
->  ３．自動保存実現方式検討
+> １．websockeServerのCRDTオブジェクト、メトリクス確認
+> ２．websocketServerの水平スケール実現検討 ※consistent hash方式でのバランシング
+> ３．自動保存実現方式検討
 
 ---
 
@@ -52,6 +52,7 @@ pnpm --filter @kd1-labs/db-client run db:migrate
 1. Tech stack
 2. Infra
 3. package
+
   ```shell
     kd1-labs
       ├── apps            :アプリケーション
@@ -78,23 +79,43 @@ pnpm --filter @kd1-labs/db-client run db:migrate
 
 ---
 
-## 🚀ストレージ（S3 / MinIO）と画像表示
+## 🚀 docker
 
-一般的な S3 利用と同様に、**アップロード後に取得した URL をそのまま API で返し、`<img src="...">` で表示**するだけです。
+- 起動オプション
 
-- **必要なこと**: オブジェクトが読み取り可能であること（公開バケット or 署名付き URL）。本番で S3 を使う場合も、バケットの公開設定や CloudFront 等の URL を返すだけです。
-- **MinIO で 403 Forbidden になる場合**: public バケットの匿名読み取りが有効になっていません。以下で minio-init を再実行し、`mc anonymous set download local/public` を適用してください。
-  ```bash
-  docker compose run --rm minio-init
+  | ImageName        | local | dev  |
+  | :--------------- | :---- | :--- |
+  | mysql            | ✅     | ✅    |
+  | mongo            | ✅     | ✅    |
+  | minIO            | ✅     | ✅    |
+  | Redis            | ✅     | ✅    |
+  | client (react)   |       | ✅    |
+  | server( express) |       | ✅    |
+  | YJS-websocket    |       | ✅    |
+
+- command
+
+  ```shell
+
+  #🌝 START
+   docker compose up -d
+
+   docker ps --format 'table {{.ID}}\t{{.Names}}\t{{.Ports}}'
+
+    CONTAINER ID   NAMES         PORTS
+    7b1f93f18c5e   kd1-mongodb   0.0.0.0:27017->27017/tcp, [::]:27017->27017/tcp
+    05075a7c695b   kd1-minio     0.0.0.0:9000-9001->9000-9001/tcp, [::]:9000-9001->9000-9001/tcp
+    ce3f75990fec   kd1-mysql     33060/tcp, 0.0.0.0:3307->3306/tcp, [::]:3307->3306/tcp
+
+  #🌝 STOP
+   docker compose down
+
+  #🌝 Named valuem,image含め削除したい場合（kd1関連をすべて削除)
+   docker compose down -v --rmi all
   ```
-- **CORS**: `<img>` で表示するだけなら多くの環境で不要です。MinIO で画像が表示されない場合のみ、`docker/minio/cors.xml` と `minio-init` の `mc cors set` を利用してください（任意）。
-- **本番・3000 以外**: ポートに依存しません。アップロード時に `MINIO_PUBLIC_URL_BASE`（または S3 のベース URL）で「クライアントが参照する URL」を決め、その URL が DB に保存されます。本番ではその環境のストレージ URL（例: `https://your-bucket.s3.amazonaws.com/` や CloudFront のドメイン）を指定すればよいです。
-
----
-
-## 🚀docker
 
 - 自身のローカルで起動時、portバッティングする際は、rootの「env.exsample」をコピーして自身の環境用に変更してください
+
   ```yml
   # ============================================================
   # KD1 Docker Compose 環境設定
@@ -143,7 +164,6 @@ pnpm --filter @kd1-labs/db-client run db:migrate
 
 ### 使い方
 
-
 | コマンド                                 | 説明                                          |
 | ---------------------------------------- | --------------------------------------------- |
 | `pnpm test`                              | 全 workspace で vitest を watch 実行          |
@@ -151,13 +171,11 @@ pnpm --filter @kd1-labs/db-client run db:migrate
 | `pnpm --filter client test`              | client だけテスト                             |
 | `pnpm --filter @kd1-labs/utils test:run` | utils だけ 1 回実行                           |
 
-
 テストファイルは `src/**/*.test.{ts,tsx}` または `src/**/*.spec.{ts,tsx}` に置くと検知されます。まだテストがなくても `passWithNoTests: true` で `pnpm test:run` は成功します。
 
 ---
 
 ## 🚀メトリクス取得設計
-
 
 | コンポーネント  | 役割                                                                                          |
 | --------------- | --------------------------------------------------------------------------------------------- |
@@ -165,5 +183,3 @@ pnpm --filter @kd1-labs/db-client run db:migrate
 | Prometheus      | cAdvisorやアプリから送られるメトリクスを保存する時系列データベースです。                      |
 | Grafana         | Prometheusのデータをグラフ化・可視化します。                                                  |
 | App (WebSocket) | アプリ内部にライブラリ（prom-clientなど）を入れ、接続数などのカスタムメトリクスを公開します。 |
-
-

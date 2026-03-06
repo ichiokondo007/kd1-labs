@@ -36,6 +36,7 @@ function App() {
             {/* Example Routes */}
             <Route path="/example/canvas" element={<CanvasListPage />} />
             <Route path="/example/canvas/new" element={<CanvasEditorPage />} />
+            <Route path="/example/canvas/:id" element={<CanvasEditorPage />} />
             <Route path="/example/canvas-yjs" element={<Placeholder title="Canvas Yjs App" />} />
             <Route path="/example/form-yjs" element={<Placeholder title="Form Yjs App" />} />
 

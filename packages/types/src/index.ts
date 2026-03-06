@@ -52,3 +52,20 @@ export interface UpdateProfileRequest {
 export interface ChangePasswordRequest {
   newPassword: string;
 }
+
+/** Canvas 一覧の更新者情報（avatar + screenName） */
+export interface CanvasUpdater {
+  screenName: string;
+  avatarUrl: string | null;
+  avatarColor: string;
+}
+
+/** GET /api/canvas/items のレスポンス 1 件分 */
+export interface CanvasListItem {
+  id: string;
+  canvasName: string;
+  canvasDescription: string | null;
+  thumbnailUrl: string | null;
+  updatedAt: string;
+  updater: CanvasUpdater;
+}

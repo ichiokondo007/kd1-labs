@@ -1,13 +1,9 @@
-// feature 内で閉じる型。外部共有が必要なら packages/types へ移す。
+import type { CanvasListItem } from "@kd1-labs/types";
 
-export type CanvasItem = {
-  id: string;
-  title: string;
-  createdAt: string; // ISO string
-};
+export type { CanvasListItem };
 
-export type CanvasViewModel = {
-  items: CanvasItem[];
+export type CanvasListViewModel = {
+  items: CanvasListItem[];
   isLoading: boolean;
   errorMessage?: string;
 };

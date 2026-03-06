@@ -7,6 +7,8 @@ export default function HomePage() {
     <div className="p-4 sm:p-6 lg:p-8">
       <Heading>Dashboard Home</Heading>
       <Text className="mt-2">
+        This site is just for POC and personal learning.
+        <br />
         Welcome to KD1 Labs. Select a menu item from the sidebar.
       </Text>
       <div className="mt-6">

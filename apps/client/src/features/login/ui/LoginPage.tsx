@@ -45,7 +45,8 @@ export const LoginPage: FC<LoginPageProps> = ({
           />
         </div>
 
-        <Heading><div className="text-center">Sign in to your account</div></Heading>
+        <Heading><div className="text-center">This is a POC site demonstrating collaborative editing features using Fabric.js.
+          Sign in to your account</div></Heading>
 
         {errorMessage && <ErrorAlert>{errorMessage}</ErrorAlert>}
 

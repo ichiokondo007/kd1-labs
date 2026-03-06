@@ -17,6 +17,7 @@
   "packageManager": "pnpm@10.18.3",
   "dependencies": {
     "@kd1-labs/db-client": "workspace:*",
+    "@kd1-labs/document-db": "workspace:*",
     "@kd1-labs/storage": "workspace:*",
     "@kd1-labs/types": "workspace:*",
     "@kd1-labs/utils": "workspace:*",

@@ -24,7 +24,7 @@ description: >
 タスクに応じて以下を参照する:
 
 - 技術スタック: `references/tech-stack.md`
-- UIカタログ（Catalyst）: `references/catalyst-components.md`
+- UIカタログ（Catalyst）: `references/tailwind-components.md`
 
 > NOTE: 追加の設計資料が増える場合は `references/` に集約し、このセクションに導線を追加する。
 
@@ -36,9 +36,10 @@ description: >
 
 新しい機能（feature）は必ず以下で作る:
 
-1) `src/features/_template/` をコピーして `src/features/<feature-name>/` を作成  
-2) `Template*` 命名を `<Feature>*` に置換  
+1) `src/features/_template/` をコピーして `src/features/<feature-name>/` を作成
+2) `Template*` 命名を `<Feature>*` に置換
 3) `ui/hooks/services/domain/types` の構造を崩さない
+4) Feature作成コマンドを用意　”apps/client/script" $npm feature:new xxxxx
 
 目的:
 
@@ -50,12 +51,12 @@ description: >
 ### 2.2 Catalyst 優先（Catalyst First）
 
 - UI は **Catalyst UI Kit を最優先**
-- Catalyst に存在しない場合のみ自作（その際も `components/` に横断部品として追加するか、feature 内に閉じ込めるかを判断する）
-- 既存 Catalyst パターン（Layout / Form / Table 等）に合わせる
+- components に存在しない場合のみ自作（その際も `components/` に横断部品として追加するか、feature 内に閉じ込めるかを判断する）
+- 既存 tailwind パターン（Layout / Form / Table 等）に合わせる
 
 参照:
 
-- `references/catalyst-components.md`
+- `references/tailwind-components.md`
 
 ---
 
@@ -67,9 +68,9 @@ description: >
 
 ---
 
-### 2.4 import 規約（Catalyst / alias 統一）
+### 2.4 import 規約（ alias 統一）
 
-Catalyst コンポーネントは必ず alias import を使用する:
+tailwindコンポーネントは必ず alias import を使用する:
 
 ```ts
 import { Button } from '@/components/button'

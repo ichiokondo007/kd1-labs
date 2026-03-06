@@ -32,7 +32,7 @@
 ```bash
 src/
 ├── app/                    # App Router
-│   ├── layout.tsx          # Root layout（Catalystレイアウト適用）
+│   ├── layout.tsx          # Root layout
 │   ├── page.tsx            # トップページ
 │   ├── (auth)/             # 認証グループ
 │   │   ├── login/page.tsx
@@ -63,7 +63,7 @@ src/
 | ---------------------- | ---------- | ------------------------------ |
 | Tailwind CSS           | v4.x       | ユーティリティCSS              |
 | Headless UI            | v2.x       | アクセシブルなUIプリミティブ   |
-| Catalyst UI Kit        | latest     | プロダクションUIコンポーネント |
+| Tailwind-css UI Kit    | latest     | プロダクションUIコンポーネント |
 | Heroicons              | latest     | アイコン（16px/20px/24px）     |
 | motion (Framer Motion) | latest     | アニメーション                 |
 | clsx                   | latest     | 条件付きクラス名結合           |

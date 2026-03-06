@@ -7,6 +7,7 @@ import {
   RectangleStackIcon,
   PhotoIcon,
   DocumentTextIcon,
+  MapIcon,
 } from "@heroicons/react/24/outline";
 import clsx from "clsx";
 
@@ -15,7 +16,8 @@ export type CanvasTool =
   | "rect"
   | "circle"
   | "image"
-  | "text";
+  | "text"
+  | "bgImage";
 
 export type CanvasEditorToolbarProps = {
   activeTool: CanvasTool;
@@ -38,6 +40,7 @@ const TOOL_BUTTONS: {
     { tool: "circle", label: "Circle", icon: CircleStackIcon },
     { tool: "image", label: "登録画像", icon: PhotoIcon },
     { tool: "text", label: "文字入力", icon: DocumentTextIcon },
+    { tool: "bgImage", label: "背景画像", icon: MapIcon },
   ];
 
 /**

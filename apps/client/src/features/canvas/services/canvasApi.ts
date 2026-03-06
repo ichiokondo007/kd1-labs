@@ -1,44 +1,57 @@
-import type { CanvasItem } from "../types";
+import type { CanvasListItem } from "../types";
+import { apiClient } from "@/services/apiClient";
 
 /**
  * services は I/O のみ担当（fetch/axios/localStorage 等）
  * UI から直接呼ばず hooks 経由で利用する。
  */
 
-// 推測: Vite + local dev なので API base は env に寄せるのが安全
-const API_BASE = import.meta.env.VITE_API_BASE_URL ?? "";
+export type SaveCanvasResult =
+  | { ok: true; id: string; canvasName: string }
+  | { ok: false; message: string };
 
-// 最小のエラー表現（AGENTS.md の暫定に寄せる）
-type ApiError = {
-  code: string;
-  message: string;
-};
-
-function toApiError(e: unknown): ApiError {
-  if (e instanceof Error) return { code: "UNEXPECTED", message: e.message };
-  return { code: "UNEXPECTED", message: "Unexpected error" };
+export async function fetchCanvasItems(signal?: AbortSignal): Promise<CanvasListItem[]> {
+  const res = await apiClient.get<{ success: boolean; data: CanvasListItem[] }>(
+    "/api/canvas/items",
+    { signal }
+  );
+  return res.data?.data ?? [];
 }
 
-export async function fetchCanvasItems(signal?: AbortSignal): Promise<CanvasItem[]> {
+export type CanvasDetail = {
+  id: string;
+  canvasName: string;
+  canvas: unknown;
+};
+
+export async function fetchCanvas(id: string, signal?: AbortSignal): Promise<CanvasDetail> {
+  const res = await apiClient.get<{ success: boolean; data: CanvasDetail }>(
+    `/api/canvas/${id}`,
+    { signal }
+  );
+  return res.data.data;
+}
+
+export async function saveCanvas(
+  canvasName: string,
+  canvas: unknown,
+  id?: string
+): Promise<SaveCanvasResult> {
   try {
-    const res = await fetch(`${API_BASE}/api/canvas/items`, {
-      method: "GET",
-      credentials: "include", // session 想定
-      signal,
-      headers: { "Content-Type": "application/json" },
-    });
+    const res = await apiClient.post<{
+      success: true;
+      data: { id: string; canvasName: string };
+    }>("/api/canvas", { id, canvasName, canvas });
 
-    if (!res.ok) {
-      const text = await res.text().catch(() => "");
-      throw new Error(`HTTP ${res.status}: ${text || res.statusText}`);
+    if (res.data?.success && res.data?.data?.id) {
+      return { ok: true, id: res.data.data.id, canvasName: res.data.data.canvasName };
     }
-
-    // 暫定: success が { data: ... } 形式を想定
-    const json = (await res.json()) as { data?: CanvasItem[] };
-    return json.data ?? [];
-  } catch (e) {
-    const err = toApiError(e);
-    // hooks 側で UI 表示に変換するため、ここでは Error を投げるだけ
-    throw new Error(`${err.code}: ${err.message}`);
+    return { ok: false, message: "Unexpected response." };
+  } catch (e: unknown) {
+    const err = e as { response?: { data?: { error?: { message?: string } } } };
+    const message =
+      err.response?.data?.error?.message ??
+      (e instanceof Error ? e.message : "Failed to save canvas.");
+    return { ok: false, message };
   }
 }
