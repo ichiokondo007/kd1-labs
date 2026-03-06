@@ -6,7 +6,7 @@
   "main": "dist/index.js",
   "scripts": {
     "dev": "pnpm --filter @kd1-labs/types build && pnpm --filter @kd1-labs/storage build && tsx watch src/index.ts",
-    "build": "tsc",
+    "build": "tsup",
     "start": "node dist/index.js",
     "test": "vitest",
     "test:run": "vitest run"
@@ -33,6 +33,7 @@
     "@types/express": "^5.0.0",
     "@types/express-session": "^1.18.2",
     "@types/node": "^22.10.1",
+    "tsup": "^8.5.1",
     "tsx": "^4.19.2",
     "typescript": "^5.9.3",
     "vitest": "catalog:"

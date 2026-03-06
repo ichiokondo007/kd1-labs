@@ -11,6 +11,7 @@
 
 ## ️🚀️環境一覧
 
+
 | 環境  | 役割             | インフラ                    |
 | ----- | ---------------- | --------------------------- |
 | local | 個人開発環境     | ローカルPC + docker Compose |
@@ -18,31 +19,72 @@
 | stage | ステージング環境 | Docker Swarm                |
 | prod  | 本番環境         | AWS                         |
 
+
 ---
 
-## 🚀️ Local installation(dev)
+## 🚀️ Getting Started
 
-### [Prerequisites]
+### Prerequisites
 
-- pnpmインストール済
-- dockerインストール済
+- Node.js 22+
+- pnpm 10.18+
+- Docker / Docker Compose
 
-### [procedure]
+### A. ローカル開発（インフラだけ Docker、アプリはホスト実行）
 
-- packageのrootから pnpm install
-- Docker-compose起動
-- Seed実行（DrizzleでのMYSQLセットアップ＆管理者用のユーザレコード登録）
-- [http://localhost:5173](http://localhost:5173) でログイン
+```shell
+# 1. 依存インストール
+pnpm install
+
+# 2. 全パッケージビルド
+pnpm -r run build
+
+# 3. インフラ起動 (MySQL, MongoDB, MinIO)
+docker compose up -d
+
+# 4. DBマイグレーション
+pnpm --filter @kd1-labs/db-client run db:migrate
+
+# 5. サーバー起動
+pnpm --filter server dev
+
+# 6. クライアント起動（別ターミナル）
+pnpm --filter client dev
+```
+
+- [http://localhost:5173](http://localhost:5173) でアクセス
   - UserName: admin
   - Password: password
 
-### [Command]
+### B. フルDocker起動（全てコンテナで実行）
 
 ```shell
+# 1. 依存インストール（マイグレーション実行用）
 pnpm install
-pnpm -r run build
-docker compose up -d
+
+# 2. 全コンテナ起動（イメージのビルド含む）
+docker compose -f docker-compose.yml -f docker-compose.app.yml \
+  --env-file .env.docker up --build -d
+
+# 3. MySQL の healthcheck 通過を待つ
+docker compose -f docker-compose.yml wait mysql
+
+# 4. マイグレーション用にローカルビルド（db-client とその依存のみ）
+pnpm --filter @kd1-labs/db-client... run build
+
+# 5. DBマイグレーション（ホストから localhost:3307 経由で接続）
 pnpm --filter @kd1-labs/db-client run db:migrate
+```
+
+- [http://localhost:8080](http://localhost:8080) でアクセス (nginx)
+  - UserName: admin
+  - Password: password
+- API: [http://localhost:3000](http://localhost:3000)
+
+### フルDocker停止
+
+```shell
+docker compose -f docker-compose.yml -f docker-compose.app.yml down
 ```
 
 ---
@@ -52,7 +94,6 @@ pnpm --filter @kd1-labs/db-client run db:migrate
 1. Tech stack
 2. Infra
 3. package
-
   ```shell
     kd1-labs
       ├── apps            :アプリケーション
@@ -83,18 +124,17 @@ pnpm --filter @kd1-labs/db-client run db:migrate
 
 - 起動オプション
 
-  | ImageName        | local | dev  |
-  | :--------------- | :---- | :--- |
-  | mysql            | ✅     | ✅    |
-  | mongo            | ✅     | ✅    |
-  | minIO            | ✅     | ✅    |
-  | Redis            | ✅     | ✅    |
-  | client (react)   |       | ✅    |
-  | server( express) |       | ✅    |
-  | YJS-websocket    |       | ✅    |
+  | ImageName        | local | dev |
+  | ---------------- | ----- | --- |
+  | mysql            | ✅     | ✅   |
+  | mongo            | ✅     | ✅   |
+  | minIO            | ✅     | ✅   |
+  | Redis            | ✅     | ✅   |
+  | client (react)   |       | ✅   |
+  | server( express) |       | ✅   |
+  | YJS-websocket    |       | ✅   |
 
 - command
-
   ```shell
 
   #🌝 START
@@ -113,9 +153,7 @@ pnpm --filter @kd1-labs/db-client run db:migrate
   #🌝 Named valuem,image含め削除したい場合（kd1関連をすべて削除)
    docker compose down -v --rmi all
   ```
-
 - 自身のローカルで起動時、portバッティングする際は、rootの「env.exsample」をコピーして自身の環境用に変更してください
-
   ```yml
   # ============================================================
   # KD1 Docker Compose 環境設定
@@ -160,9 +198,57 @@ pnpm --filter @kd1-labs/db-client run db:migrate
 
 ---
 
+## 🚀 Docker App Build (client / server)
+
+### 設計方針
+
+- `docker-compose.yml` (既存) はインフラのみ (MySQL, MongoDB, MinIO)
+- `docker-compose.app.yml` (新規) にアプリ (client, server) を定義
+- フルDocker起動時は両ファイルを指定して起動
+- client は nginx で静的配信 + `/api` リバースプロキシ
+- server は Node.js マルチステージビルド
+- 環境切り替えは `.env.local` / `.env.docker` で行う
+
+### ファイル構成
+
+```
+kd1-labs/
+├── docker-compose.yml          # 既存 (インフラ: MySQL, MongoDB, MinIO)
+├── docker-compose.app.yml      # アプリ: client, server
+├── .env.local                  # ローカル開発用 (host=localhost)
+├── .env.docker                 # Docker用 (host=サービス名)
+├── Dockerfile.server           # server マルチステージビルド
+├── Dockerfile.client           # client マルチステージビルド → nginx
+├── docker/nginx/default.conf   # nginx 設定 (API プロキシ)
+```
+
+### 環境変数の切り替え
+
+`.env.local` (ローカル開発) と `.env.docker` (フルDocker) で接続先を切り替える。
+
+
+| 変数                  | .env.local (ローカル)   | .env.docker (Docker)    |
+| --------------------- | ----------------------- | ----------------------- |
+| DB_HOST               | localhost               | mysql                   |
+| DB_PORT               | 3307                    | 3306                    |
+| MONGO_HOST            | localhost               | mongodb                 |
+| MINIO_ENDPOINT        | localhost               | minio                   |
+| MINIO_PUBLIC_URL_BASE | `http://localhost:9000` | `http://localhost:9000` |
+
+
+※ `MINIO_PUBLIC_URL_BASE` はブラウザからアクセスするため、Docker時も `localhost` のまま。
+
+### ビルド方式
+
+- **server**: `tsup` (esbuild) でバンドル + `pnpm deploy --prod` で依存を実体コピー (symlink 不要)
+- **client**: `vite build` → nginx で静的配信 + `/api` リバースプロキシ
+
+---
+
 ## 🚀Vitest(unitTest)について
 
 ### 使い方
+
 
 | コマンド                                 | 説明                                          |
 | ---------------------------------------- | --------------------------------------------- |
@@ -183,3 +269,26 @@ pnpm --filter @kd1-labs/db-client run db:migrate
 | Prometheus      | cAdvisorやアプリから送られるメトリクスを保存する時系列データベースです。                      |
 | Grafana         | Prometheusのデータをグラフ化・可視化します。                                                  |
 | App (WebSocket) | アプリ内部にライブラリ（prom-clientなど）を入れ、接続数などのカスタムメトリクスを公開します。 |
+
+## その他
+
+| ファイル                     | 内容                                          |
+| ---------------------------- | --------------------------------------------- |
+| `Dockerfile.server`          | server マルチステージビルド (**pnpm deploy**) |
+| `Dockerfile.client`          | client マルチステージビルド (**nginx**)       |
+| `docker-compose.app.yml`     | アプリサービス定義 (server, client)           |
+| `docker/nginx/default.conf`  | nginx SPA配信 + API プロキシ                  |
+| `.env.local`                 | ローカル開発用環境変数                        |
+| `.env.docker`                | Docker用環境変数                              |
+| `.npmrc`                     | `inject-workspace-packages=true`              |
+| `apps/server/tsup.config.ts` | **tsup** ビルド設定                           |
+| `docs/tips-tsup-esm.md`      | tsup/ESM の解説ドキュメント                   |
+
+### 📝 変更
+
+| ファイル                   | 変更内容                                                |
+| -------------------------- | ------------------------------------------------------- |
+| `apps/server/package.json` | build を `tsc` → `tsup` に変更、`tsup` 追加             |
+| `docker-compose.yml`       | `kd1-network` ネットワーク追加                          |
+| `.gitignore`               | `.env.local` / `.env.docker` を除外解除                 |
+| `README.md`                | Getting Started (A/B) + Docker App Build セクション追記 |

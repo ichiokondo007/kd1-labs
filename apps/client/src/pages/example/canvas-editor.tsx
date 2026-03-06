@@ -141,25 +141,24 @@ export default function CanvasEditorPage() {
         </p>
       )}
 
-      <div className="mt-3">
-        <CanvasEditorToolbar
-          activeTool={activeTool}
-          onToolChange={handleToolChange}
-        />
-      </div>
-
-      <div className="mt-3 relative">
-        <FabricCanvas
-          ref={fabricRef}
-          width={1000}
-          height={619}
-          skipInitialRect={isEditMode}
-        />
-        {isLoading && (
-          <div className="absolute inset-0 flex items-center justify-center bg-white/80 rounded-md">
-            <Text>Loading canvas...</Text>
+      <div className="mt-3 overflow-x-auto">
+        <div className="min-w-[1088px]">
+          <CanvasEditorToolbar
+            activeTool={activeTool}
+            onToolChange={handleToolChange}
+          />
+          <div className="mt-3 relative">
+            <FabricCanvas
+              ref={fabricRef}
+              skipInitialRect={isEditMode}
+            />
+            {isLoading && (
+              <div className="absolute inset-0 flex items-center justify-center bg-white/80 rounded-md">
+                <Text>Loading canvas...</Text>
+              </div>
+            )}
           </div>
-        )}
+        </div>
       </div>
     </div>
   );

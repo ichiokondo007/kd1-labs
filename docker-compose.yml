@@ -17,6 +17,8 @@ services:
     volumes:
       - kd1_mysql_data:/var/lib/mysql
       - ./docker/mysql/init:/docker-entrypoint-initdb.d:ro
+    networks:
+      - kd1-network
     healthcheck:
       test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
       interval: 10s
@@ -36,6 +38,8 @@ services:
     volumes:
       - kd1_mongo_data:/data/db
       - ./docker/mongodb/init:/docker-entrypoint-initdb.d:ro
+    networks:
+      - kd1-network
     healthcheck:
       test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
       interval: 10s
@@ -54,6 +58,8 @@ services:
     volumes:
       - kd1_minio_data:/data
     command: server /data --console-address ":9001"
+    networks:
+      - kd1-network
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
       interval: 10s
@@ -78,7 +84,13 @@ services:
       echo '✅ バケット作成完了 (public は匿名読み取り・CORS 有効)' &&
       exit 0
       "
+    networks:
+      - kd1-network
     restart: on-failure
+
+networks:
+  kd1-network:
+    name: kd1-network
 
 volumes:
   kd1_mysql_data:

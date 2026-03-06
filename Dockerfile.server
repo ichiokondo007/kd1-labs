@@ -1,0 +1,34 @@
+# ===========================================
+# Stage 1: monorepo base (dependency install)
+# ===========================================
+FROM node:22-slim AS base
+RUN corepack enable && corepack prepare pnpm@10.18.3 --activate
+WORKDIR /app
+
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml .npmrc ./
+COPY apps/server/package.json apps/server/
+COPY packages/db-client/package.json packages/db-client/
+COPY packages/db-schema/package.json packages/db-schema/
+COPY packages/document-db/package.json packages/document-db/
+COPY packages/storage/package.json packages/storage/
+COPY packages/types/package.json packages/types/
+COPY packages/utils/package.json packages/utils/
+RUN pnpm install --frozen-lockfile
+
+# ===========================================
+# Stage 2: build + deploy
+# ===========================================
+FROM base AS build
+COPY packages/ packages/
+COPY apps/server/ apps/server/
+RUN pnpm --filter server... run build
+RUN pnpm --filter server deploy /app/deployed --prod
+
+# ===========================================
+# Stage 3: production runtime
+# ===========================================
+FROM node:22-slim AS runtime
+WORKDIR /app
+COPY --from=build /app/deployed .
+EXPOSE 3000
+CMD ["node", "dist/index.js"]

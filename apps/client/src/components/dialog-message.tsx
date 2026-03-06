@@ -2,7 +2,7 @@ import type { ReactNode } from "react";
 import * as Headless from "@headlessui/react";
 import clsx from "clsx";
 import {
-  CheckCircleIcon,
+  CheckIcon,
   ExclamationTriangleIcon,
   ExclamationCircleIcon,
   InformationCircleIcon,
@@ -13,10 +13,10 @@ export type DialogMessageIconVariant = "success" | "warning" | "error" | "info" 
 
 const iconConfig: Record<
   Exclude<DialogMessageIconVariant, "none">,
-  { Icon: typeof CheckCircleIcon; bgClass: string; iconClass: string }
+  { Icon: typeof CheckIcon; bgClass: string; iconClass: string }
 > = {
   success: {
-    Icon: CheckCircleIcon,
+    Icon: CheckIcon,
     bgClass: "bg-green-100 dark:bg-green-500/10",
     iconClass: "text-green-600 dark:text-green-400",
   },
@@ -97,7 +97,7 @@ export function DialogMessage({
         <div className="flex min-h-full items-end justify-center p-4 text-center sm:items-center sm:p-0">
           <Headless.DialogPanel
             transition
-            className="relative w-full transform overflow-hidden rounded-lg bg-white px-4 pt-5 pb-4 text-left shadow-xl transition-all data-closed:translate-y-4 data-closed:opacity-0 data-enter:duration-300 data-enter:ease-out data-leave:duration-200 data-leave:ease-in sm:my-8 sm:max-w-lg sm:p-6 data-closed:sm:translate-y-0 data-closed:sm:scale-95 dark:bg-zinc-900 dark:ring-1 dark:ring-white/10"
+            className="relative w-full transform overflow-hidden rounded-lg bg-white px-4 pt-5 pb-4 text-left shadow-xl transition-all data-closed:translate-y-4 data-closed:opacity-0 data-enter:duration-300 data-enter:ease-out data-leave:duration-200 data-leave:ease-in sm:my-8 sm:w-full sm:max-w-sm sm:p-6 data-closed:sm:translate-y-0 data-closed:sm:scale-95 dark:bg-zinc-900 dark:ring-1 dark:ring-white/10"
           >
             <div>
               {icon && IconComponent && (
@@ -145,7 +145,7 @@ export function DialogMessage({
               </div>
             ) : (
               <div className="mt-5 sm:mt-6">
-                <Button type="button" onClick={handlePrimary} className="w-full sm:w-auto" data-autofocus>
+                <Button type="button" onClick={handlePrimary} className="w-full" data-autofocus>
                   {primaryButton.label}
                 </Button>
               </div>

@@ -14,8 +14,8 @@ type FabricCanvasProps = {
   skipInitialRect?: boolean;
 };
 
-const DEFAULT_WIDTH = 1000;
-const DEFAULT_HEIGHT = 700;
+const DEFAULT_WIDTH = 1088;
+const DEFAULT_HEIGHT = 612;
 
 let _placeIndex = 0;
 function getNextPlaceOffset(): { left: number; top: number } {

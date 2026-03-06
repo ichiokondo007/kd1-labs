@@ -1,0 +1,27 @@
+# ===========================================
+# Stage 1: monorepo base (dependency install)
+# ===========================================
+FROM node:22-slim AS base
+RUN corepack enable && corepack prepare pnpm@10.18.3 --activate
+WORKDIR /app
+
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml .npmrc ./
+COPY apps/client/package.json apps/client/
+COPY packages/types/package.json packages/types/
+RUN pnpm install --frozen-lockfile
+
+# ===========================================
+# Stage 2: build
+# ===========================================
+FROM base AS build
+COPY packages/types/ packages/types/
+COPY apps/client/ apps/client/
+RUN pnpm --filter client... run build
+
+# ===========================================
+# Stage 3: nginx
+# ===========================================
+FROM nginx:alpine AS runtime
+COPY --from=build /app/apps/client/dist /usr/share/nginx/html
+COPY docker/nginx/default.conf /etc/nginx/conf.d/default.conf
+EXPOSE 80
