@@ -9,3 +9,4 @@ catalyst-ui-kit/
 !.env.docker
 lazygit
 *.log
+current-files.txt
