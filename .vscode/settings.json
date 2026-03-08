@@ -1,4 +1,5 @@
 {
   "claudeCodeChat.permissions.yoloMode": false,
-  "vitest.disableWorkspaceWarning": true
+  "vitest.disableWorkspaceWarning": true,
+  "explorer.excludeGitIgnore": false
 }

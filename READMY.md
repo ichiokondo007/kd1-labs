@@ -12,12 +12,12 @@
 ## ️🚀️環境一覧
 
 
-| 環境  | 役割             | インフラ                    |
-| ----- | ---------------- | --------------------------- |
-| local | 個人開発環境     | ローカルPC + docker Compose |
-| dev   | ローカル実行環境 | Docker Compose              |
-| stage | ステージング環境 | Docker Swarm                |
-| prod  | 本番環境         | AWS                         |
+| 環境    | 役割       | インフラ                    |
+| ----- | -------- | ----------------------- |
+| local | 個人開発環境   | ローカルPC + docker Compose |
+| dev   | ローカル実行環境 | Docker Compose          |
+| stage | ステージング環境 | Docker Swarm            |
+| prod  | 本番環境     | AWS                     |
 
 
 ---
@@ -122,79 +122,41 @@ docker compose -f docker-compose.yml -f docker-compose.app.yml down
 
 ## 🚀 docker
 
-- 起動オプション
+- dockerの設定(.envファイル）は以下２つに分けています
+  - .env.local
+  - .env.docker
 
-  | ImageName        | local | dev |
-  | ---------------- | ----- | --- |
-  | mysql            | ✅     | ✅   |
-  | mongo            | ✅     | ✅   |
-  | minIO            | ✅     | ✅   |
-  | Redis            | ✅     | ✅   |
-  | client (react)   |       | ✅   |
-  | server( express) |       | ✅   |
-  | YJS-websocket    |       | ✅   |
+  | ImageName        | local | docker |
+  | ---------------- | ----- | ------ |
+  | mysql            |       | ✅      |
+  | mongo            |       | ✅      |
+  | minIO            |       | ✅      |
+  | Redis            |       | ✅      |
+  | nginx            |       | ✅      |
+  | client (react)   | ✅     |        |
+  | server( express) | ✅     |        |
+  | YJS-websocket    | 作成中   |        |
 
-- command
+- command(すべてDockerで動かす場合)
   ```shell
-
-  #🌝 START
+  //.env.local,docker を一緒に起動
    docker compose up -d
-
-   docker ps --format 'table {{.ID}}\t{{.Names}}\t{{.Ports}}'
-
-    CONTAINER ID   NAMES         PORTS
-    7b1f93f18c5e   kd1-mongodb   0.0.0.0:27017->27017/tcp, [::]:27017->27017/tcp
-    05075a7c695b   kd1-minio     0.0.0.0:9000-9001->9000-9001/tcp, [::]:9000-9001->9000-9001/tcp
-    ce3f75990fec   kd1-mysql     33060/tcp, 0.0.0.0:3307->3306/tcp, [::]:3307->3306/tcp
-
-  #🌝 STOP
+  # STOP
    docker compose down
-
   #🌝 Named valuem,image含め削除したい場合（kd1関連をすべて削除)
    docker compose down -v --rmi all
   ```
-- 自身のローカルで起動時、portバッティングする際は、rootの「env.exsample」をコピーして自身の環境用に変更してください
-  ```yml
-  # ============================================================
-  # KD1 Docker Compose 環境設定
-  # ============================================================
-  # 使い方:
-  #   1. このファイルを .env にコピー: cp .env.example .env
-  #   2. 必要な箇所だけ変更する
-  #   3. docker compose up -d で起動
-  #
-  # ※ .env を作成しなくてもデフォルト値で動作します
-  # ============================================================
-
-  # ------------------------------------------------------------
-  # MySQL
-  # ------------------------------------------------------------
-  # MYSQL_VERSION=8.0
-  # MYSQL_PORT=3307
-  # MYSQL_ROOT_PASSWORD=password
-  # MYSQL_DATABASE=kd1
-  # MYSQL_USER=kd1
-  # MYSQL_PASSWORD=kd1
-
-  # ------------------------------------------------------------
-  # MongoDB
-  # ------------------------------------------------------------
-  # MONGO_VERSION=7.0
-  # MONGO_PORT=27017
-  # MONGO_USER=kd1
-  # MONGO_PASSWORD=kd1
-  # MONGO_DATABASE=kd1
-
-  # ------------------------------------------------------------
-  # MinIO (S3互換オブジェクトストレージ)
-  # ------------------------------------------------------------
-  # MINIO_VERSION=latest
-  # MINIO_API_PORT=9000
-  # MINIO_CONSOLE_PORT=9001
-  # MINIO_ROOT_USER=kd1admin
-  # MINIO_ROOT_PASSWORD=kd1admin1234
-  # MINIO_MC_VERSION=latest
+- command( .env.localのみ起動　開発を行う場合)
+  ```shell
+  //.env.localで起動
+   docker compose up -d
+  # STOP
+   docker compose down
+  #🌝 Named valuem,image含め削除したい場合（kd1関連をすべて削除)
+   docker compose down -v --rmi all
   ```
+- 自身のローカルで起動時、portバッティングする際は
+  1. .env.
 
 ---
 
@@ -202,8 +164,8 @@ docker compose -f docker-compose.yml -f docker-compose.app.yml down
 
 ### 設計方針
 
-- `docker-compose.yml` (既存) はインフラのみ (MySQL, MongoDB, MinIO)
-- `docker-compose.app.yml` (新規) にアプリ (client, server) を定義
+- `docker-compose.yml` (既存) はインフラのみ (MySQL, MongoDB, MinIO, Redis)
+- `docker-compose.app.yml` (新規) にアプリ (client, server, yjs-server) を定義
 - フルDocker起動時は両ファイルを指定して起動
 - client は nginx で静的配信 + `/api` リバースプロキシ
 - server は Node.js マルチステージビルド
@@ -227,7 +189,7 @@ kd1-labs/
 `.env.local` (ローカル開発) と `.env.docker` (フルDocker) で接続先を切り替える。
 
 
-| 変数                  | .env.local (ローカル)   | .env.docker (Docker)    |
+| 変数                    | .env.local (ローカル)       | .env.docker (Docker)    |
 | --------------------- | ----------------------- | ----------------------- |
 | DB_HOST               | localhost               | mysql                   |
 | DB_PORT               | 3307                    | 3306                    |
@@ -250,12 +212,13 @@ kd1-labs/
 ### 使い方
 
 
-| コマンド                                 | 説明                                          |
-| ---------------------------------------- | --------------------------------------------- |
-| `pnpm test`                              | 全 workspace で vitest を watch 実行          |
+| コマンド                                     | 説明                              |
+| ---------------------------------------- | ------------------------------- |
+| `pnpm test`                              | 全 workspace で vitest を watch 実行 |
 | `pnpm test:run`                          | 全 workspace で 1 回だけテスト実行（CI 向け） |
-| `pnpm --filter client test`              | client だけテスト                             |
-| `pnpm --filter @kd1-labs/utils test:run` | utils だけ 1 回実行                           |
+| `pnpm --filter client test`              | client だけテスト                    |
+| `pnpm --filter @kd1-labs/utils test:run` | utils だけ 1 回実行                  |
+
 
 テストファイルは `src/**/*.test.{ts,tsx}` または `src/**/*.spec.{ts,tsx}` に置くと検知されます。まだテストがなくても `passWithNoTests: true` で `pnpm test:run` は成功します。
 
@@ -263,32 +226,39 @@ kd1-labs/
 
 ## 🚀メトリクス取得設計
 
-| コンポーネント  | 役割                                                                                          |
-| --------------- | --------------------------------------------------------------------------------------------- |
-| cAdvisor        | Dockerコンテナの外側から、各コンテナのCPU・メモリ・ネットワーク利用率を自動収集します。       |
-| Prometheus      | cAdvisorやアプリから送られるメトリクスを保存する時系列データベースです。                      |
-| Grafana         | Prometheusのデータをグラフ化・可視化します。                                                  |
+
+| コンポーネント         | 役割                                                   |
+| --------------- | ---------------------------------------------------- |
+| cAdvisor        | Dockerコンテナの外側から、各コンテナのCPU・メモリ・ネットワーク利用率を自動収集します。     |
+| Prometheus      | cAdvisorやアプリから送られるメトリクスを保存する時系列データベースです。             |
+| Grafana         | Prometheusのデータをグラフ化・可視化します。                          |
 | App (WebSocket) | アプリ内部にライブラリ（prom-clientなど）を入れ、接続数などのカスタムメトリクスを公開します。 |
+
 
 ## その他
 
-| ファイル                     | 内容                                          |
-| ---------------------------- | --------------------------------------------- |
+
+| ファイル                         | 内容                                  |
+| ---------------------------- | ----------------------------------- |
 | `Dockerfile.server`          | server マルチステージビルド (**pnpm deploy**) |
 | `Dockerfile.client`          | client マルチステージビルド (**nginx**)       |
-| `docker-compose.app.yml`     | アプリサービス定義 (server, client)           |
-| `docker/nginx/default.conf`  | nginx SPA配信 + API プロキシ                  |
-| `.env.local`                 | ローカル開発用環境変数                        |
-| `.env.docker`                | Docker用環境変数                              |
-| `.npmrc`                     | `inject-workspace-packages=true`              |
-| `apps/server/tsup.config.ts` | **tsup** ビルド設定                           |
-| `docs/tips-tsup-esm.md`      | tsup/ESM の解説ドキュメント                   |
+| `docker-compose.app.yml`     | アプリサービス定義 (server, client)          |
+| `docker/nginx/default.conf`  | nginx SPA配信 + API プロキシ              |
+| `.env.local`                 | ローカル開発用環境変数                         |
+| `.env.docker`                | Docker用環境変数                         |
+| `.npmrc`                     | `inject-workspace-packages=true`    |
+| `apps/server/tsup.config.ts` | **tsup** ビルド設定                      |
+| `docs/tips-tsup-esm.md`      | tsup/ESM の解説ドキュメント                  |
+
 
 ### 📝 変更
 
-| ファイル                   | 変更内容                                                |
-| -------------------------- | ------------------------------------------------------- |
+
+| ファイル                       | 変更内容                                             |
+| -------------------------- | ------------------------------------------------ |
 | `apps/server/package.json` | build を `tsc` → `tsup` に変更、`tsup` 追加             |
-| `docker-compose.yml`       | `kd1-network` ネットワーク追加                          |
-| `.gitignore`               | `.env.local` / `.env.docker` を除外解除                 |
+| `docker-compose.yml`       | `kd1-network` ネットワーク追加                           |
+| `.gitignore`               | `.env.local` / `.env.docker` を除外解除               |
 | `README.md`                | Getting Started (A/B) + Docker App Build セクション追記 |
+
+
