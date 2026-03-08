@@ -53,4 +53,4 @@ services:
 
 networks:
   kd1-network:
-    external: true
+    name: kd1-network
