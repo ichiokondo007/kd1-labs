@@ -26,6 +26,7 @@ async function main(): Promise<void> {
           { name: "🧪 HELP / Cheat Sheet", value: "help" },
           { name: "❌ Exit", value: "exit" },
         ],
+        loop: false,
       });
     } catch {
       log.warn("\nBye! 👋");
@@ -58,8 +59,6 @@ async function main(): Promise<void> {
     } catch {
       log.error("\n⚠ エラーが発生しました。TOPメニューに戻ります。\n");
     }
-
-    await new Promise((r) => setTimeout(r, 800));
 
     showScreen();
   }

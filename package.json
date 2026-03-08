@@ -5,6 +5,7 @@
   "main": "index.js",
   "scripts": {
     "cli": "tsx scripts/cli.ts",
+    "deps": "tsx scripts/list-deps.ts",
     "test": "pnpm -r run test",
     "test:run": "pnpm -r run test:run",
     "feature:new": "pnpm --filter client run feature:new"
@@ -16,7 +17,6 @@
   "devDependencies": {
     "@inquirer/prompts": "^8.3.0",
     "cli-table3": "^0.6.5",
-    "execa": "^9.6.1",
     "ora": "^9.3.0",
     "tsx": "^4.21.0"
   }

@@ -1,11 +1,11 @@
 import { printBanner } from "./banner.js";
 
-export function showScreen() {
+export function showScreen(title = "KD1 CLI  メインメニュー") {
   console.clear();
   printBanner();
 
   console.log("────────────────────────────────────────");
-  console.log("  KD1 CLI  メインメニュー");
+  console.log(`  ${title}`);
   console.log("────────────────────────────────────────");
   console.log("");
 }

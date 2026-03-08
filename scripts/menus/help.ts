@@ -1,3 +1,5 @@
+import { waitForEnter } from "../ui/pause.js";
+
 export async function helpMenu(): Promise<void> {
   console.log(`
 ┌─────────────────────────────────────────────────┐
@@ -27,4 +29,6 @@ export async function helpMenu(): Promise<void> {
 │                                                 │
 └─────────────────────────────────────────────────┘
 `);
+
+  await waitForEnter();
 }
