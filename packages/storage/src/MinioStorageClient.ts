@@ -1,6 +1,6 @@
 import { Client } from "minio";
 import { Readable } from "node:stream";
-import type { StorageClient } from "./StorageClient.js";
+import type { StorageClient, StorageObjectInfo } from "./StorageClient.js";
 
 export interface MinioStorageClientConfig {
   endPoint: string;
@@ -50,6 +50,24 @@ export class MinioStorageClient implements StorageClient {
 
   async delete(key: string): Promise<void> {
     await this.client.removeObject(this.bucket, key);
+  }
+
+  async listObjects(prefix: string): Promise<StorageObjectInfo[]> {
+    return new Promise((resolve, reject) => {
+      const items: StorageObjectInfo[] = [];
+      const stream = this.client.listObjectsV2(this.bucket, prefix, true);
+      stream.on("data", (obj) => {
+        if (obj.name) {
+          items.push({
+            key: obj.name,
+            lastModified: obj.lastModified ?? new Date(0),
+            size: obj.size ?? 0,
+          });
+        }
+      });
+      stream.on("end", () => resolve(items));
+      stream.on("error", reject);
+    });
   }
 }
 

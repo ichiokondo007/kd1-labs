@@ -10,14 +10,9 @@ import SettingsPageEntry from '@/pages/settings'
 import UserManagementPageEntry from '@/pages/user-management'
 import LogoutPage from '@/pages/logout'
 import CanvasEditorPage from '@/pages/example/canvas-editor'
-
-// プレースホルダー用コンポーネント（まだ作っていないページ用）
-const Placeholder = ({ title }: { title: string }) => (
-  <div className="p-8">
-    <h1 className="text-2xl font-bold">{title}</h1>
-    <p className="mt-2 text-zinc-500">This page is under construction.</p>
-  </div>
-)
+import { SvglibraryPage } from '@/features/svglibrary'
+import NotFoundPage from '@/pages/404'
+import ComingSoonPage from '@/pages/coming-soon'
 
 function App() {
   return (
@@ -37,18 +32,22 @@ function App() {
             <Route path="/example/canvas" element={<CanvasListPage />} />
             <Route path="/example/canvas/new" element={<CanvasEditorPage />} />
             <Route path="/example/canvas/:id" element={<CanvasEditorPage />} />
-            <Route path="/example/canvas-yjs" element={<Placeholder title="Canvas Yjs App" />} />
-            <Route path="/example/form-yjs" element={<Placeholder title="Form Yjs App" />} />
+            <Route path="/svg-assets" element={<SvglibraryPage />} />
+            <Route path="/example/canvas-yjs" element={<ComingSoonPage />} />
+            <Route path="/example/form-yjs" element={<ComingSoonPage />} />
 
             {/* Tech Blog Routes */}
-            <Route path="/blog/public" element={<Placeholder title="Public Blog" />} />
-            <Route path="/blog/private" element={<Placeholder title="Private Blog" />} />
-            <Route path="/blog/sandbox" element={<Placeholder title="Sandbox" />} />
+            <Route path="/blog/public" element={<ComingSoonPage />} />
+            <Route path="/blog/private" element={<ComingSoonPage />} />
+            <Route path="/blog/sandbox" element={<ComingSoonPage />} />
 
             {/* User management */}
             <Route path="/user-management" element={<UserManagementPageEntry />} />
             {/* Settings */}
             <Route path="/settings" element={<SettingsPageEntry />} />
+
+            {/* 未定義ルート → 404 */}
+            <Route path="*" element={<NotFoundPage />} />
           </Route>
         </Route>
 

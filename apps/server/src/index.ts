@@ -8,12 +8,14 @@ import { meRoutes } from "./routes/me.routes";
 import { storageRoutes } from "./routes/storage.routes";
 import { usersRoutes } from "./routes/users.routes";
 import { canvasRoutes } from "./routes/canvas.routes";
+import { svglibraryRoutes } from "./routes/svglibrary.routes";
 
 const app = express();
 const PORT = Number(process.env.PORT) || 3000;
 
 app.use(cors({ origin: true, credentials: true }));
-app.use(express.json());
+app.use(express.json({ limit: "10mb" }));
+app.use(express.urlencoded({ extended: true, limit: "10mb" }));
 app.use(
   session({
     secret: process.env.SESSION_SECRET ?? "kd1-dev-secret",
@@ -29,6 +31,7 @@ app.use("/api", meRoutes);
 app.use("/api", storageRoutes);
 app.use("/api", usersRoutes);
 app.use("/api", canvasRoutes);
+app.use("/api", svglibraryRoutes);
 
 async function start() {
   await connectMongo();

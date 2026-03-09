@@ -60,6 +60,14 @@ export interface CanvasUpdater {
   avatarColor: string;
 }
 
+/** GET /api/svglibrary/items のレスポンス 1 件分 */
+export interface SvgAssetItem {
+  key: string;
+  url: string;
+  title: string;
+  createdAt: string;
+}
+
 /** GET /api/canvas/items のレスポンス 1 件分 */
 export interface CanvasListItem {
   id: string;

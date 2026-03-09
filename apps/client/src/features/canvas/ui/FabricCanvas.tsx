@@ -1,37 +1,39 @@
-import { forwardRef, useEffect, useImperativeHandle, useRef } from "react";
-import { Canvas, Circle, Rect } from "fabric";
+import { forwardRef, useCallback, useEffect, useImperativeHandle, useRef } from "react";
+import { Canvas, Circle, FabricImage, Rect, loadSVGFromURL } from "fabric";
+import type { TPointerEventInfo } from "fabric";
+import type { BgCropperResult } from "@/features/canvas-bg-cropper/types";
+import type { CanvasTool } from "./CanvasEditorToolbar";
 
 export type FabricCanvasHandle = {
-  addRect: () => void;
-  addCircle: () => void;
   toJSON: () => unknown;
   loadFromJSON: (json: unknown) => Promise<void>;
   toDataURL: () => string | null;
+  setBackgroundImage: (result: BgCropperResult) => Promise<void>;
+  removeBackgroundImage: () => void;
+  addSvgFromUrl: (url: string) => Promise<void>;
 };
 
 type FabricCanvasProps = {
   width?: number;
   height?: number;
   skipInitialRect?: boolean;
+  activeTool?: CanvasTool;
+  onShapePlaced?: () => void;
 };
 
 const DEFAULT_WIDTH = 1088;
 const DEFAULT_HEIGHT = 612;
 const THUMBNAIL_WIDTH = 480;
 
-let _placeIndex = 0;
-function getNextPlaceOffset(): { left: number; top: number } {
-  const i = _placeIndex % 6;
-  _placeIndex += 1;
-  return {
-    left: 180 + (i % 3) * 160,
-    top: 140 + Math.floor(i / 3) * 120,
-  };
-}
-
 export const FabricCanvas = forwardRef<FabricCanvasHandle, FabricCanvasProps>(
   function FabricCanvas(
-    { width = DEFAULT_WIDTH, height = DEFAULT_HEIGHT, skipInitialRect = false },
+    {
+      width = DEFAULT_WIDTH,
+      height = DEFAULT_HEIGHT,
+      skipInitialRect = false,
+      activeTool = "selection",
+      onShapePlaced,
+    },
     ref
   ) {
     const wrapperRef = useRef<HTMLDivElement | null>(null);
@@ -74,16 +76,15 @@ export const FabricCanvas = forwardRef<FabricCanvasHandle, FabricCanvasProps>(
       };
     }, [width, height, skipInitialRect]);
 
-    useImperativeHandle(
-      ref,
-      () => ({
-        addRect() {
-          const canvas = canvasInstanceRef.current;
-          if (!canvas) return;
-          const { left, top } = getNextPlaceOffset();
+    const onShapePlacedRef = useRef(onShapePlaced);
+    onShapePlacedRef.current = onShapePlaced;
+
+    const placeShape = useCallback(
+      (canvas: Canvas, tool: "rect" | "circle", x: number, y: number) => {
+        if (tool === "rect") {
           const rect = new Rect({
-            left,
-            top,
+            left: x,
+            top: y,
             width: 120,
             height: 80,
             fill: "#e3f2fd",
@@ -91,23 +92,60 @@ export const FabricCanvas = forwardRef<FabricCanvasHandle, FabricCanvasProps>(
             strokeWidth: 2,
           });
           canvas.add(rect);
-          canvas.requestRenderAll();
-        },
-        addCircle() {
-          const canvas = canvasInstanceRef.current;
-          if (!canvas) return;
-          const { left, top } = getNextPlaceOffset();
+        } else {
           const circle = new Circle({
-            left,
-            top,
+            left: x,
+            top: y,
             radius: 50,
             fill: "#e8f5e9",
             stroke: "#388e3c",
             strokeWidth: 2,
           });
           canvas.add(circle);
-          canvas.requestRenderAll();
-        },
+        }
+        canvas.requestRenderAll();
+        onShapePlacedRef.current?.();
+      },
+      [],
+    );
+
+    useEffect(() => {
+      const canvas = canvasInstanceRef.current;
+      if (!canvas) return;
+
+      if (activeTool === "rect" || activeTool === "circle") {
+        canvas.selection = false;
+        canvas.defaultCursor = "crosshair";
+        canvas.forEachObject((obj) => {
+          obj.selectable = false;
+          obj.evented = false;
+        });
+
+        const tool = activeTool;
+        const handler = (opt: TPointerEventInfo) => {
+          const { x, y } = opt.scenePoint;
+          placeShape(canvas, tool, x, y);
+        };
+        canvas.on("mouse:down", handler);
+
+        return () => {
+          canvas.off("mouse:down", handler);
+          canvas.selection = true;
+          canvas.defaultCursor = "default";
+          canvas.forEachObject((obj) => {
+            obj.selectable = true;
+            obj.evented = true;
+          });
+        };
+      }
+
+      canvas.selection = true;
+      canvas.defaultCursor = "default";
+    }, [activeTool, placeShape]);
+
+    useImperativeHandle(
+      ref,
+      () => ({
         toJSON() {
           return canvasInstanceRef.current?.toJSON() ?? null;
         },
@@ -125,6 +163,42 @@ export const FabricCanvas = forwardRef<FabricCanvasHandle, FabricCanvasProps>(
           const canvas = canvasInstanceRef.current;
           if (!canvas || !json) return;
           await canvas.loadFromJSON(json as string | Record<string, unknown>);
+          canvas.requestRenderAll();
+        },
+        async setBackgroundImage(result: BgCropperResult) {
+          const canvas = canvasInstanceRef.current;
+          if (!canvas) return;
+          const img = await FabricImage.fromURL(result.dataUrl, {
+            crossOrigin: "anonymous",
+          });
+          img.set({
+            scaleX: result.scaleX,
+            scaleY: result.scaleY,
+            left: result.left,
+            top: result.top,
+            originX: result.originX,
+            originY: result.originY,
+          });
+          img.canvas = canvas;
+          canvas.backgroundImage = img;
+          canvas.requestRenderAll();
+        },
+        removeBackgroundImage() {
+          const canvas = canvasInstanceRef.current;
+          if (!canvas) return;
+          canvas.backgroundImage = undefined;
+          canvas.requestRenderAll();
+        },
+        async addSvgFromUrl(url: string) {
+          const canvas = canvasInstanceRef.current;
+          if (!canvas) return;
+          const { objects } = await loadSVGFromURL(url);
+          const validObjects = objects.filter(Boolean);
+          for (const obj of validObjects) {
+            if (!obj) continue;
+            obj.set({ left: 100, top: 100 });
+            canvas.add(obj);
+          }
           canvas.requestRenderAll();
         },
       }),

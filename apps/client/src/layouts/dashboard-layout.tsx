@@ -15,6 +15,7 @@ import {
   ArrowRightOnRectangleIcon,
   DocumentTextIcon,
   PresentationChartLineIcon,
+  PhotoIcon,
   UsersIcon,
 } from '@heroicons/react/20/solid'
 
@@ -95,13 +96,21 @@ export function DashboardLayout() {
                 <PresentationChartLineIcon />
                 <SidebarLabel>Canvas App</SidebarLabel>
               </SidebarItem>
+              <SidebarItem href="/svg-assets" to="/svg-assets" current={pathname === '/svg-assets'}>
+                <PhotoIcon />
+                <SidebarLabel>SVG Assets Library</SidebarLabel>
+              </SidebarItem>
+            </SidebarSection>
+
+            <SidebarSection>
+              <SidebarHeading>POC</SidebarHeading>
               <SidebarItem href="/example/canvas-yjs" to="/example/canvas-yjs" current={pathname === '/example/canvas-yjs'}>
                 <Square2StackIcon />
-                <SidebarLabel>Canvas Yjs App</SidebarLabel>
+                <SidebarLabel>Yjs collab canvas</SidebarLabel>
               </SidebarItem>
               <SidebarItem href="/example/form-yjs" to="/example/form-yjs" current={pathname === '/example/form-yjs'}>
                 <DocumentTextIcon />
-                <SidebarLabel>Form Yjs App</SidebarLabel>
+                <SidebarLabel>Yjs collab Scaled</SidebarLabel>
               </SidebarItem>
             </SidebarSection>
 

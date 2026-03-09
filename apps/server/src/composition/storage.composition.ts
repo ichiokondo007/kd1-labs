@@ -29,5 +29,5 @@ function createStoragePort() {
   });
 }
 
-const storagePort = createStoragePort();
+export const storagePort = createStoragePort();
 export const uploadFileUsecase = makeUploadFileUsecase(storagePort);

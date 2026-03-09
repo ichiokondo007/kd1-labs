@@ -42,5 +42,14 @@ export function createMinioStorageAdapter(config: MinioStorageAdapterConfig): St
       await client.upload(key, body, contentType);
       return buildPublicUrl(config, key);
     },
+
+    async list(prefix: string): Promise<{ key: string; lastModified: Date }[]> {
+      const objects = await client.listObjects(prefix);
+      return objects.map((o) => ({ key: o.key, lastModified: o.lastModified }));
+    },
+
+    async remove(key: string): Promise<void> {
+      await client.delete(key);
+    },
   };
 }

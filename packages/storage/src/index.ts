@@ -1,4 +1,4 @@
-export type { StorageClient } from "./StorageClient.js";
+export type { StorageClient, StorageObjectInfo } from "./StorageClient.js";
 export {
   MinioStorageClient,
   type MinioStorageClientConfig,

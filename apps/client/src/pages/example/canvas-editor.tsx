@@ -15,6 +15,10 @@ import {
 import { validateCanvasName } from "@/features/canvas/domain";
 import { saveCanvas, fetchCanvas } from "@/features/canvas/services";
 import { uploadFile } from "@/services/storageApi";
+import { CanvasBgCropper } from "@/features/canvas-bg-cropper";
+import type { BgCropperResult } from "@/features/canvas-bg-cropper";
+import { SvgAssetsDrawer } from "@/features/svglibrary/ui/SvgAssetsDrawer";
+import type { SvgAssetItem } from "@kd1-labs/types";
 
 export default function CanvasEditorPage() {
   const { id } = useParams<{ id: string }>();
@@ -29,6 +33,9 @@ export default function CanvasEditorPage() {
   const [serverError, setServerError] = useState<string | undefined>();
   const [showSuccessDialog, setShowSuccessDialog] = useState(false);
   const [savedCanvasName, setSavedCanvasName] = useState("");
+  const [bgCropperSrc, setBgCropperSrc] = useState<string | null>(null);
+  const [svgDrawerOpen, setSvgDrawerOpen] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     if (!id) return;
@@ -56,13 +63,57 @@ export default function CanvasEditorPage() {
 
   const handleToolChange = useCallback((tool: CanvasTool) => {
     setActiveTool(tool);
-    if (tool === "rect") {
-      fabricRef.current?.addRect();
+    if (tool === "image") {
+      setSvgDrawerOpen(true);
       setActiveTool("selection");
-    } else if (tool === "circle") {
-      fabricRef.current?.addCircle();
+    } else if (tool === "bgImage") {
+      fileInputRef.current?.click();
       setActiveTool("selection");
     }
+  }, []);
+
+  const handleShapePlaced = useCallback(() => {
+    setActiveTool("selection");
+  }, []);
+
+  const handleFileSelect = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      const file = e.target.files?.[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = (ev) => {
+        setBgCropperSrc(ev.target?.result as string);
+      };
+      reader.readAsDataURL(file);
+      e.target.value = "";
+    },
+    [],
+  );
+
+  const handleBgApply = useCallback(
+    async (result: BgCropperResult) => {
+      setBgCropperSrc(null);
+      try {
+        const url = await uploadFile(result.dataUrl, "image/jpeg");
+        await fabricRef.current?.setBackgroundImage({ ...result, dataUrl: url });
+      } catch {
+        setServerError("Failed to upload background image.");
+      }
+    },
+    [],
+  );
+
+  const handleSvgSelect = useCallback(async (item: SvgAssetItem) => {
+    setSvgDrawerOpen(false);
+    try {
+      await fabricRef.current?.addSvgFromUrl(item.url);
+    } catch {
+      setServerError("Failed to add SVG to canvas.");
+    }
+  }, []);
+
+  const handleBgCropperCancel = useCallback(() => {
+    setBgCropperSrc(null);
   }, []);
 
   const handleCancel = useCallback(() => {
@@ -166,6 +217,8 @@ export default function CanvasEditorPage() {
             <FabricCanvas
               ref={fabricRef}
               skipInitialRect={isEditMode}
+              activeTool={activeTool}
+              onShapePlaced={handleShapePlaced}
             />
             {isLoading && (
               <div className="absolute inset-0 flex items-center justify-center bg-white/80 rounded-md">
@@ -175,6 +228,31 @@ export default function CanvasEditorPage() {
           </div>
         </div>
       </div>
+
+      <input
+        ref={fileInputRef}
+        type="file"
+        accept="image/*"
+        className="hidden"
+        aria-label="背景画像を選択"
+        onChange={handleFileSelect}
+      />
+
+      {bgCropperSrc && (
+        <CanvasBgCropper
+          imageSrc={bgCropperSrc}
+          targetWidth={1088}
+          targetHeight={612}
+          onApply={handleBgApply}
+          onCancel={handleBgCropperCancel}
+        />
+      )}
+
+      <SvgAssetsDrawer
+        open={svgDrawerOpen}
+        onClose={() => setSvgDrawerOpen(false)}
+        onSelect={handleSvgSelect}
+      />
 
       <DialogMessage
         open={showSuccessDialog}

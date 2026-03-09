@@ -11,6 +11,7 @@ const CONTENT_TYPE_EXT: Record<string, string> = {
   "image/jpg": "jpg",
   "image/gif": "gif",
   "image/webp": "webp",
+  "image/svg+xml": "svg",
   "application/pdf": "pdf",
 };
 

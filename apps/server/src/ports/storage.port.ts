@@ -11,4 +11,16 @@ export interface StoragePort {
    * @returns 取得用 URL（署名付きまたは公開 URL）
    */
   upload(key: string, body: Buffer, contentType: string): Promise<string>;
+
+  /**
+   * 指定プレフィックスに一致するオブジェクト一覧を返す。
+   * @param prefix オブジェクトキーのプレフィックス（例: svg-assets/）
+   */
+  list(prefix: string): Promise<{ key: string; lastModified: Date }[]>;
+
+  /**
+   * 指定キーのオブジェクトを削除する。
+   * @param key オブジェクトキー
+   */
+  remove(key: string): Promise<void>;
 }

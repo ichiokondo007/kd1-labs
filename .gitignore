@@ -2,6 +2,7 @@ node_modules/
 dist/
 storybook-static/
 catalyst-ui-kit/
+samplehtml/
 .env
 .env.*
 !.env.example

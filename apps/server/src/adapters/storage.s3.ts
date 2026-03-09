@@ -14,5 +14,11 @@ export function createS3StorageAdapter(_config: {
     async upload(_key: string, _body: Buffer, _contentType: string): Promise<string> {
       throw new Error("S3 storage adapter is not implemented yet.");
     },
+    async list(_prefix: string): Promise<{ key: string; lastModified: Date }[]> {
+      throw new Error("S3 storage adapter is not implemented yet.");
+    },
+    async remove(_key: string): Promise<void> {
+      throw new Error("S3 storage adapter is not implemented yet.");
+    },
   };
 }
