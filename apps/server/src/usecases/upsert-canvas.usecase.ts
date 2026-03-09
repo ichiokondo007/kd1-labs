@@ -8,6 +8,7 @@ export type UpsertCanvasUsecaseInput = {
   id?: string;
   canvasName: string;
   canvas: unknown;
+  thumbnailUrl?: string | null;
   updatedBy: string;
 };
 
@@ -28,6 +29,7 @@ export function makeUpsertCanvasUsecase(port: CanvasPort) {
       id: input.id,
       canvasName: trimmedName,
       canvas: input.canvas,
+      thumbnailUrl: input.thumbnailUrl,
       updatedBy: input.updatedBy,
     });
 

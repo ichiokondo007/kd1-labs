@@ -2,6 +2,7 @@ export interface UpsertCanvasInput {
   id?: string;
   canvasName: string;
   canvas: unknown;
+  thumbnailUrl?: string | null;
   updatedBy: string;
 }
 

@@ -35,13 +35,14 @@ export async function fetchCanvas(id: string, signal?: AbortSignal): Promise<Can
 export async function saveCanvas(
   canvasName: string,
   canvas: unknown,
-  id?: string
+  id?: string,
+  thumbnailUrl?: string,
 ): Promise<SaveCanvasResult> {
   try {
     const res = await apiClient.post<{
       success: true;
       data: { id: string; canvasName: string };
-    }>("/api/canvas", { id, canvasName, canvas });
+    }>("/api/canvas", { id, canvasName, canvas, thumbnailUrl });
 
     if (res.data?.success && res.data?.data?.id) {
       return { ok: true, id: res.data.data.id, canvasName: res.data.data.canvasName };

@@ -19,7 +19,7 @@ export const canvasDocumentDbAdapter: CanvasPort = {
       _id: id,
       canvasName: data.canvasName,
       canvasDescription: null,
-      thumbnailUrl: null,
+      thumbnailUrl: data.thumbnailUrl ?? null,
       canvas: data.canvas,
       backgroundImageUrl: null,
       updatedBy: data.updatedBy,

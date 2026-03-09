@@ -2,10 +2,10 @@ import type { Request, Response } from "express";
 import { upsertCanvasUsecase, listCanvasesUsecase, getCanvasUsecase } from "../composition/canvas.composition";
 
 /**
- * Canvas 新規作成
+ * Canvas 新規作成/更新
  *
  * @route POST /api/canvas
- * @body { canvasName: string, canvas: unknown }
+ * @body { canvasName: string, canvas: unknown, thumbnailUrl?: string }
  * @returns 201 { success: true, data: { id, canvasName } }
  * @returns 400 バリデーションエラー
  * @returns 401 未ログイン
@@ -17,15 +17,22 @@ export async function postCanvas(req: Request, res: Response) {
     return;
   }
 
-  const body = (req.body ?? {}) as { id?: string; canvasName?: string; canvas?: unknown };
+  const body = (req.body ?? {}) as {
+    id?: string;
+    canvasName?: string;
+    canvas?: unknown;
+    thumbnailUrl?: string;
+  };
   const id = typeof body.id === "string" && body.id ? body.id : undefined;
   const canvasName = typeof body.canvasName === "string" ? body.canvasName : "";
   const canvas = body.canvas ?? null;
+  const thumbnailUrl = typeof body.thumbnailUrl === "string" ? body.thumbnailUrl : undefined;
 
   const result = await upsertCanvasUsecase({
     id,
     canvasName,
     canvas,
+    thumbnailUrl,
     updatedBy: sessionUser.userId,
   });
 

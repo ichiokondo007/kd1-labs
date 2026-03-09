@@ -5,7 +5,8 @@ import { Heading } from "@/components/heading";
 import { Text } from "@/components/text";
 import { Input } from "@/components/input";
 import { Button } from "@/components/button";
-import { ErrorMessage } from "@/components/fieldset";
+import { Field, ErrorMessage } from "@/components/fieldset";
+import { DialogMessage } from "@/components/dialog-message";
 import { FabricCanvas, type FabricCanvasHandle } from "@/features/canvas/ui/FabricCanvas";
 import {
   CanvasEditorToolbar,
@@ -13,6 +14,7 @@ import {
 } from "@/features/canvas/ui/CanvasEditorToolbar";
 import { validateCanvasName } from "@/features/canvas/domain";
 import { saveCanvas, fetchCanvas } from "@/features/canvas/services";
+import { uploadFile } from "@/services/storageApi";
 
 export default function CanvasEditorPage() {
   const { id } = useParams<{ id: string }>();
@@ -25,6 +27,8 @@ export default function CanvasEditorPage() {
   const [isSaving, setIsSaving] = useState(false);
   const [isLoading, setIsLoading] = useState(isEditMode);
   const [serverError, setServerError] = useState<string | undefined>();
+  const [showSuccessDialog, setShowSuccessDialog] = useState(false);
+  const [savedCanvasName, setSavedCanvasName] = useState("");
 
   useEffect(() => {
     if (!id) return;
@@ -80,9 +84,20 @@ export default function CanvasEditorPage() {
     setIsSaving(true);
     setServerError(undefined);
     try {
-      const result = await saveCanvas(canvasName, canvasJson, id);
+      let thumbnailUrl: string | undefined;
+      const dataUrl = fabricRef.current?.toDataURL();
+      if (dataUrl) {
+        try {
+          thumbnailUrl = await uploadFile(dataUrl, "image/jpeg");
+        } catch {
+          // サムネイルアップロード失敗は無視して保存を続行
+        }
+      }
+
+      const result = await saveCanvas(canvasName, canvasJson, id, thumbnailUrl);
       if (result.ok) {
-        navigate("/example/canvas");
+        setSavedCanvasName(result.canvasName);
+        setShowSuccessDialog(true);
       } else {
         setServerError(result.message);
       }
@@ -91,7 +106,7 @@ export default function CanvasEditorPage() {
     } finally {
       setIsSaving(false);
     }
-  }, [canvasName, id, navigate]);
+  }, [canvasName, id]);
 
   return (
     <div className="p-4 sm:p-6 lg:p-8">
@@ -101,7 +116,7 @@ export default function CanvasEditorPage() {
       </Text>
 
       <div className="mt-4 flex items-center gap-3">
-        <div className="max-w-sm">
+        <Field className="max-w-sm">
           <Input
             type="text"
             placeholder="Canvas Name"
@@ -114,7 +129,7 @@ export default function CanvasEditorPage() {
             aria-invalid={!!canvasNameError}
           />
           {canvasNameError && <ErrorMessage>{canvasNameError}</ErrorMessage>}
-        </div>
+        </Field>
         <div className="ml-auto flex items-center gap-2">
           <Button type="button" outline onClick={handleCancel}>
             Cancel
@@ -160,6 +175,21 @@ export default function CanvasEditorPage() {
           </div>
         </div>
       </div>
+
+      <DialogMessage
+        open={showSuccessDialog}
+        onClose={() => {
+          setShowSuccessDialog(false);
+          navigate("/example/canvas");
+        }}
+        title="Canvas Saved"
+        message={`Canvas has been saved.\nCanvas name: ${savedCanvasName}`}
+        iconVariant="success"
+        primaryButton={{
+          label: "OK",
+          onClick: () => {},
+        }}
+      />
     </div>
   );
 }

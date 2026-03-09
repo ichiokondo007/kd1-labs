@@ -6,6 +6,7 @@ export type FabricCanvasHandle = {
   addCircle: () => void;
   toJSON: () => unknown;
   loadFromJSON: (json: unknown) => Promise<void>;
+  toDataURL: () => string | null;
 };
 
 type FabricCanvasProps = {
@@ -16,6 +17,7 @@ type FabricCanvasProps = {
 
 const DEFAULT_WIDTH = 1088;
 const DEFAULT_HEIGHT = 612;
+const THUMBNAIL_WIDTH = 480;
 
 let _placeIndex = 0;
 function getNextPlaceOffset(): { left: number; top: number } {
@@ -108,6 +110,16 @@ export const FabricCanvas = forwardRef<FabricCanvasHandle, FabricCanvasProps>(
         },
         toJSON() {
           return canvasInstanceRef.current?.toJSON() ?? null;
+        },
+        toDataURL() {
+          const canvas = canvasInstanceRef.current;
+          if (!canvas) return null;
+          const multiplier = THUMBNAIL_WIDTH / canvas.getWidth();
+          return canvas.toDataURL({
+            format: "jpeg",
+            quality: 0.8,
+            multiplier,
+          });
         },
         async loadFromJSON(json: unknown) {
           const canvas = canvasInstanceRef.current;
