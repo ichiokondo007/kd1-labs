@@ -27,7 +27,7 @@ services:
       MINIO_BUCKET: ${MINIO_BUCKET:-public}
       MINIO_PUBLIC_URL_BASE: ${MINIO_PUBLIC_URL_BASE:-http://localhost:9000}
     ports:
-      - "3000:3000"
+      - "${PORT:-3000}:3000"
     networks:
       - kd1-network
     depends_on:
@@ -45,7 +45,7 @@ services:
     container_name: kd1-client
     restart: "no"
     ports:
-      - "8080:80"
+      - "${LOCALPOST:-80}:80"
     networks:
       - kd1-network
     depends_on:

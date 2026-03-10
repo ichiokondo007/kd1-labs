@@ -29,22 +29,31 @@ services:
     image: mongo:${MONGO_VERSION:-7.0}
     container_name: kd1-mongodb
     restart: "no"
+    command:
+      - mongod
+      - --quiet
+      - --setParameter
+      - diagnosticDataCollectionEnabled=false
+      - --setParameter
+      - >-
+        logComponentVerbosity={"network":{"verbosity":-1},"accessControl":{"verbosity":-1}}
     environment:
       MONGO_INITDB_ROOT_USERNAME: ${MONGO_USER:-kd1}
       MONGO_INITDB_ROOT_PASSWORD: ${MONGO_PASSWORD:-kd1}
       MONGO_INITDB_DATABASE: ${MONGO_DATABASE:-kd1}
     ports:
-      - "${MONGO_PORT:-27017}:27017"
+      - "${MONGO_HOST_PORT:-27017}:27017"
     volumes:
       - kd1_mongo_data:/data/db
       - ./docker/mongodb/init:/docker-entrypoint-initdb.d:ro
     networks:
       - kd1-network
     healthcheck:
-      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
-      interval: 10s
+      test: ["CMD", "mongosh", "--quiet", "--norc", "--eval", "db.adminCommand('ping')"]
+      interval: 30s
       timeout: 5s
       retries: 5
+      start_period: 10s
 
   minio:
     image: minio/minio:${MINIO_VERSION:-latest}

@@ -1,24 +1,118 @@
 # 😎Introduction
 
-> **Proof of concept for evaluating CRDT libraries in Fabric.js applications**
+> **「Fabric.js」YJS CRDTライブラリPOCアプリケーションです。**
 >
-> 「Fabric.js」 アプリのための CRDT ライブラリ評価用 POC
-> １．websockeServerのCRDTオブジェクト、メトリクス確認
-> ２．websocketServerの水平スケール実現検討 ※consistent hash方式でのバランシング
-> ３．自動保存実現方式検討
+> １．websockeServer内CRDT利用メモリのメトリクス検証。
+>
+> ２．高頻度同期変更処理 （マウス操作）によるServer負荷検証。
+>
+> ３．画像を含んだCanvasの同時編集及び同時複数Canvas編集負荷検証
+>
+> ４．Websocketでの水平スケール実現検討
+>
+> - ※「consistent hash」でのロードバランシング検証
+>
+> ３．CRDT Persistence方式検証
+>
+> 尚、YJS調査、実装方針は doc/yjs/配下を参照。
 
 ---
 
-## ️🚀️環境一覧
+## 🚀 環境
 
+### [🐳Docker]
 
-| 環境    | 役割       | インフラ                    |
-| ----- | -------- | ----------------------- |
-| local | 個人開発環境   | ローカルPC + docker Compose |
-| dev   | ローカル実行環境 | Docker Compose          |
-| stage | ステージング環境 | Docker Swarm            |
-| prod  | 本番環境     | AWS                     |
+- composeは2種類
+  - infraのみ実行　docker-compose.yml　：.env.local
+  - apps/配下　　　docker-compose.app.yml : .env.docker
 
+  ```shell
+  //種類:infraのみ実行
+  docker compose --env-file .env.local up -d
+  //全てdocker起動
+  docker compose -f docker-compose.yml -f docker-compose.app.yml --env-file .env.docker up --build -d
+  ```
+
+  | service         | 役割                        | 種類                 | compose            |
+  | --------------- | --------------------------- | -------------------- | ------------------ |
+  | mysql           | RDB（user管理）             | infra                | docker-compose     |
+  | mongo           | Fablicjs-canvas persistence | infra                | docker-compose     |
+  | MinIO           | S3互換Storage（画像系保存） | infra                | docker-compose     |
+  | redis           | Que AutoSave                | infra                | docker-compose     |
+  | client          | ReactWebapp                 | apps/client          | docker-compose.app |
+  | server          | express                     | apps/server          | docker-compose.app |
+  | yjs-server      | y-websocket                 | apps/yjs-server      | docker-compose.app |
+  | yjs-scale-proxy | consistant hassing scaler   | apps/yjs-scale-proxy | docker-compose.app |
+
+ - LOCAL-PORT設定(ローカルからアクセPORT)
+
+    | service         | port                 |
+    | --------------- | -------------------- |
+    | mysql           | 3307                 |
+    | mongo           | 27017                |
+    | MinIO           | 9001                 |
+    | redis           | 実装中！！           |
+    | client          | 5317                 |
+    | server          | 3000                 |
+    | yjs-server      | 実装中!!             |
+    | yjs-scale-proxy | ローカルからの利用無 |
+
+---
+
+### [重要] local-portバッティング時のport変更場所
+
+#### 【👀全てDocker起動の場合】
+
+| ImageName        | local  | docker |
+| ---------------- | ------ | ------ |
+| mysql            |        | ✅      |
+| mongo            |        | ✅      |
+| minIO            |        | ✅      |
+| Redis            |        | ✅      |
+| client (react)   |        | ✅      |
+| server( express) |        | ✅      |
+| yjs-websocket    | 作成中 | ✅      |
+| yjs-scale-proxy  | 作成中 | ✅      |
+
+`(applicationRoot)/.env.docker` 内の変更
+
+```properties
+# --- ローカルポート（ホスト公開用 / 競合時に変更可） ---
+MYSQL_PORT=3307
+MONGO_HOST_PORT=27017
+MINIO_CONSOLE_PORT=9001
+# ブラウザからのアクセスは localhost 経由
+MINIO_PUBLIC_URL_BASE=http://localhost:9001
+# --- Client ---
+LOCALPOST=80
+```
+
+---
+
+#### 【👀infraのみDockerでappはviteで実行（ pnpm run dev )】
+
+| ImageName        | local  | docker |
+| ---------------- | ------ | ------ |
+| mysql            |        | ✅      |
+| mongo            |        | ✅      |
+| minIO            |        | ✅      |
+| Redis            |        | ✅      |
+| client (react)   | ✅      |        |
+| server( express) | ✅      |        |
+| yjs-websocket    | 作成中 |        |
+| yjs-scale-proxy  | 作成中 |        |
+
+`(applicationRoot)/.env.local` 内の変更
+
+> 現在設定項目なし
+
+server, yjs-server, client は以下変更が必要：
+
+| 対象                   | 変更箇所                   | 設定方法                             |
+| :--------------------- | :------------------------- | :----------------------------------- |
+| client (Vite) :5173    | apps/client/vite.config.ts | server.port                          |
+| server (Express) :3000 | apps/server/.env.local     | PORT=xxxx   （自分で作ってください） |
+| proxy 先               | apps/client/vite.config.ts | proxy.target を server に合わせる    |
 
 ---
 
@@ -28,7 +122,20 @@
 
 - Node.js 22+
 - pnpm 10.18+
-- Docker / Docker Compose
+- Docker / Docker Compose(Compose V2)
+
+### DEV-TOOL
+
+- 開発者用DEV-TOOLを提供しています。ローカルで動かす場合活用ください。
+  - １）上記、Prerequisitesがインストールされている事。
+  - ２）windowsはWSL2(linux環境)にて実行
+
+ ```shell
+ # ApplicationRootから
+ pnpm cli
+ ```
+
+![alt text](<docs/Screenshot From 2026-03-10 18-34-47.png>)
 
 ### A. ローカル開発（インフラだけ Docker、アプリはホスト実行）
 
@@ -40,7 +147,7 @@ pnpm install
 pnpm -r run build
 
 # 3. インフラ起動 (MySQL, MongoDB, MinIO)
-docker compose up -d
+docker compose --env-file .env.local up -d
 
 # 4. DBマイグレーション
 pnpm --filter @kd1-labs/db-client run db:migrate
@@ -76,7 +183,7 @@ pnpm --filter @kd1-labs/db-client... run build
 pnpm --filter @kd1-labs/db-client run db:migrate
 ```
 
-- [http://localhost:8080](http://localhost:8080) でアクセス (nginx)
+- [http://localhost](http://localhost) でアクセス
   - UserName: admin
   - Password: password
 - API: [http://localhost:3000](http://localhost:3000)
@@ -94,69 +201,37 @@ docker compose -f docker-compose.yml -f docker-compose.app.yml down
 1. Tech stack
 2. Infra
 3. package
+
   ```shell
     kd1-labs
-      ├── apps            :アプリケーション
-      │   ├── client           : front(react)
-      │   └── server           : httpserver
-      │   └── yjs-server        : yjs-websocketserver
-      │   └── yjs-scaleProxy    : yjs-scale-router
-      │   └── autoserve-worker : autosave processServer
-      ├── packages        : 共通パッケージ
-      │   ├── db-client        :drizzle orm(mysql)
-      │   ├── db-schema        :drizzle schema(ddl,dml)
-      │   ├── storage          :storege操作(S3互換用-MinIO)
-      │   └── types　　        :共通型定義
+      ├── apps            #アプリケーション
+      │   ├── client           # front(react)
+      │   └── server           # express(http)
+      │   └── yjs-server       # yjs-websocketserver(websocket)
+      │   └── yjs-scale-proxy  # yjs-scale-router(proxy)
+      │   └── autoserve-proces # autosave processServer
+      ├── packages        # 共通パッケージ
+      │   ├── db-client        #drizzle orm(mysql)
+      │   ├── db-schema        #drizzle schema(ddl,dml)
+      │   ├── storage          #storege操作(S3互換用-MinIO)
+      │   └── types　　         #共通型定義
       ├── docker-compose.yml
-      ├── env.example    : docer用envファイル
-      ├── docker        :未使用 柄のみ
+      ├── docker-compose.app.yml
+      ├── Dockerfile.server           # server マルチステージビルド
+      ├── Dockerfile.client           # client マルチステージビルド → nginx
+      ├── docker/nginx/default.conf   # nginx 設定 (API プロキシ)
+      ├── env.local    # infra：docer用envファイル
+      ├── env.docker   # 全docer起動用envファイル
+      ├── docker
       │   ├── mongodb
       │   ├── mysql
+      │   ├── nginx
+      │   │    ├── docker/nginx/default.conf   # nginx 設定 (API プロキシ)
       │   └── redis
       ├── package.json
       ├── pnpm-lock.yaml
       └── pnpm-workspace.yaml
   ```
-
----
-
-## 🚀 docker
-
-- dockerの設定(.envファイル）は以下２つに分けています
-  - .env.local
-  - .env.docker
-
-  | ImageName        | local | docker |
-  | ---------------- | ----- | ------ |
-  | mysql            |       | ✅      |
-  | mongo            |       | ✅      |
-  | minIO            |       | ✅      |
-  | Redis            |       | ✅      |
-  | nginx            |       | ✅      |
-  | client (react)   | ✅     |        |
-  | server( express) | ✅     |        |
-  | YJS-websocket    | 作成中   |        |
-
-- command(すべてDockerで動かす場合)
-  ```shell
-  //.env.local,docker を一緒に起動
-   docker compose up -d
-  # STOP
-   docker compose down
-  #🌝 Named valuem,image含め削除したい場合（kd1関連をすべて削除)
-   docker compose down -v --rmi all
-  ```
-- command( .env.localのみ起動　開発を行う場合)
-  ```shell
-  //.env.localで起動
-   docker compose up -d
-  # STOP
-   docker compose down
-  #🌝 Named valuem,image含め削除したい場合（kd1関連をすべて削除)
-   docker compose down -v --rmi all
-  ```
-- 自身のローカルで起動時、portバッティングする際は
-  1. .env.
 
 ---
 
@@ -173,8 +248,8 @@ docker compose -f docker-compose.yml -f docker-compose.app.yml down
 
 ### ファイル構成
 
-```
-kd1-labs/
+```shell
+root/
 ├── docker-compose.yml          # 既存 (インフラ: MySQL, MongoDB, MinIO)
 ├── docker-compose.app.yml      # アプリ: client, server
 ├── .env.local                  # ローカル開発用 (host=localhost)
@@ -184,41 +259,19 @@ kd1-labs/
 ├── docker/nginx/default.conf   # nginx 設定 (API プロキシ)
 ```
 
-### 環境変数の切り替え
-
-`.env.local` (ローカル開発) と `.env.docker` (フルDocker) で接続先を切り替える。
-
-
-| 変数                    | .env.local (ローカル)       | .env.docker (Docker)    |
-| --------------------- | ----------------------- | ----------------------- |
-| DB_HOST               | localhost               | mysql                   |
-| DB_PORT               | 3307                    | 3306                    |
-| MONGO_HOST            | localhost               | mongodb                 |
-| MINIO_ENDPOINT        | localhost               | minio                   |
-| MINIO_PUBLIC_URL_BASE | `http://localhost:9000` | `http://localhost:9000` |
-
-
-※ `MINIO_PUBLIC_URL_BASE` はブラウザからアクセスするため、Docker時も `localhost` のまま。
-
-### ビルド方式
+### Docker ビルド方式
 
 - **server**: `tsup` (esbuild) でバンドル + `pnpm deploy --prod` で依存を実体コピー (symlink 不要)
 - **client**: `vite build` → nginx で静的配信 + `/api` リバースプロキシ
 
 ---
 
-## 🚀Vitest(unitTest)について
-
-### 使い方
-
-
-| コマンド                                     | 説明                              |
-| ---------------------------------------- | ------------------------------- |
-| `pnpm test`                              | 全 workspace で vitest を watch 実行 |
+| コマンド                                 | 説明                                          |
+| ---------------------------------------- | --------------------------------------------- |
+| `pnpm test`                              | 全 workspace で vitest を watch 実行          |
 | `pnpm test:run`                          | 全 workspace で 1 回だけテスト実行（CI 向け） |
-| `pnpm --filter client test`              | client だけテスト                    |
-| `pnpm --filter @kd1-labs/utils test:run` | utils だけ 1 回実行                  |
-
+| `pnpm --filter client test`              | client だけテスト                             |
+| `pnpm --filter @kd1-labs/utils test:run` | utils だけ 1 回実行                           |
 
 テストファイルは `src/**/*.test.{ts,tsx}` または `src/**/*.spec.{ts,tsx}` に置くと検知されます。まだテストがなくても `passWithNoTests: true` で `pnpm test:run` は成功します。
 
@@ -226,39 +279,23 @@ kd1-labs/
 
 ## 🚀メトリクス取得設計
 
-
-| コンポーネント         | 役割                                                   |
-| --------------- | ---------------------------------------------------- |
-| cAdvisor        | Dockerコンテナの外側から、各コンテナのCPU・メモリ・ネットワーク利用率を自動収集します。     |
-| Prometheus      | cAdvisorやアプリから送られるメトリクスを保存する時系列データベースです。             |
-| Grafana         | Prometheusのデータをグラフ化・可視化します。                          |
+| コンポーネント  | 役割                                                                                          |
+| --------------- | --------------------------------------------------------------------------------------------- |
+| cAdvisor        | Dockerコンテナの外側から、各コンテナのCPU・メモリ・ネットワーク利用率を自動収集します。       |
+| Prometheus      | cAdvisorやアプリから送られるメトリクスを保存する時系列データベースです。                      |
+| Grafana         | Prometheusのデータをグラフ化・可視化します。                                                  |
 | App (WebSocket) | アプリ内部にライブラリ（prom-clientなど）を入れ、接続数などのカスタムメトリクスを公開します。 |
-
 
 ## その他
 
-
-| ファイル                         | 内容                                  |
-| ---------------------------- | ----------------------------------- |
+| ファイル                     | 内容                                          |
+| ---------------------------- | --------------------------------------------- |
 | `Dockerfile.server`          | server マルチステージビルド (**pnpm deploy**) |
 | `Dockerfile.client`          | client マルチステージビルド (**nginx**)       |
-| `docker-compose.app.yml`     | アプリサービス定義 (server, client)          |
-| `docker/nginx/default.conf`  | nginx SPA配信 + API プロキシ              |
-| `.env.local`                 | ローカル開発用環境変数                         |
-| `.env.docker`                | Docker用環境変数                         |
-| `.npmrc`                     | `inject-workspace-packages=true`    |
-| `apps/server/tsup.config.ts` | **tsup** ビルド設定                      |
-| `docs/tips-tsup-esm.md`      | tsup/ESM の解説ドキュメント                  |
-
-
-### 📝 変更
-
-
-| ファイル                       | 変更内容                                             |
-| -------------------------- | ------------------------------------------------ |
-| `apps/server/package.json` | build を `tsc` → `tsup` に変更、`tsup` 追加             |
-| `docker-compose.yml`       | `kd1-network` ネットワーク追加                           |
-| `.gitignore`               | `.env.local` / `.env.docker` を除外解除               |
-| `README.md`                | Getting Started (A/B) + Docker App Build セクション追記 |
-
-
+| `docker-compose.app.yml`     | アプリサービス定義 (server, client)           |
+| `docker/nginx/default.conf`  | nginx SPA配信 + API プロキシ                  |
+| `.env.local`                 | ローカル開発用環境変数                        |
+| `.env.docker`                | Docker用環境変数                              |
+| `.npmrc`                     | `inject-workspace-packages=true`              |
+| `apps/server/tsup.config.ts` | **tsup** ビルド設定                           |
+| `docs/tips-tsup-esm.md`      | tsup/ESM の解説ドキュメント                   |

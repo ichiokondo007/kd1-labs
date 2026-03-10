@@ -16,6 +16,11 @@ export default defineConfig({
         target: 'http://localhost:3000',
         changeOrigin: true,
       },
+      '/yjs': {
+        target: 'ws://localhost:1234',
+        ws: true,
+        rewrite: (path) => path.replace(/^\/yjs/, ''),
+      },
     },
   },
 })

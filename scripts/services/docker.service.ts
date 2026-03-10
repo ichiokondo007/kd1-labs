@@ -4,6 +4,7 @@ const PROJECT_ROOT = process.cwd();
 const BASE_COMPOSE_FILE = "docker-compose.yml";
 const APP_COMPOSE_FILE = "docker-compose.app.yml";
 const DOCKER_ENV_FILE = ".env.docker";
+const LOCAL_ENV_FILE = ".env.local";
 
 export interface ContainerInfo {
   name: string;
@@ -40,7 +41,7 @@ export async function getContainerStatus(): Promise<ContainerInfo[]> {
 export async function infraUp(): Promise<void> {
   await runCommand(
     "docker",
-    ["compose", "-f", BASE_COMPOSE_FILE, "up", "-d"],
+    ["compose", "-f", BASE_COMPOSE_FILE, "--env-file", LOCAL_ENV_FILE, "up", "-d"],
     PROJECT_ROOT,
   );
 }
