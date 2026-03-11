@@ -30,6 +30,7 @@ export interface CanvasPort {
   upsertCanvas(data: UpsertCanvasInput): Promise<UpsertCanvasOutput>;
   listCanvases(): Promise<CanvasSummaryRow[]>;
   findById(id: string): Promise<CanvasDetailRow | null>;
+  deleteCanvas(id: string): Promise<boolean>;
 }
 
 export interface UserLookupPort {

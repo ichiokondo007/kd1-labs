@@ -7,6 +7,7 @@ import type {
 } from "@kd1-labs/types";
 import { findUserById } from "@kd1-labs/db-client";
 import { changePasswordUsecase, updateProfileUsecase } from "../composition/me.composition";
+import { storagePort } from "../composition/storage.composition";
 
 /**
  * 現在ユーザー取得（セッションで認証し、表示用は DB から取得）
@@ -35,7 +36,7 @@ export async function getMe(req: Request, res: Response) {
     screenName: row.screenName,
     isAdmin: row.isAdmin,
     isInitialPassword: row.isInitialPassword,
-    avatarUrl: row.avatarUrl ?? null,
+    avatarUrl: row.avatarUrl ? storagePort.buildPublicUrl(row.avatarUrl) : null,
     avatarColor: row.avatarColor ?? "zinc-900",
     updatedAt: row.updatedAt,
   };
@@ -96,19 +97,18 @@ export async function patchMe(req: Request, res: Response) {
     screenName: row.screenName,
     isAdmin: row.isAdmin,
     isInitialPassword: row.isInitialPassword,
-    avatarUrl: row.avatarUrl ?? null,
+    avatarUrl: row.avatarUrl ? storagePort.buildPublicUrl(row.avatarUrl) : null,
     avatarColor: row.avatarColor ?? "zinc-900",
     updatedAt: row.updatedAt,
   };
 
-  // セッションを更新（次回 GET /api/me で反映）
   if (req.session?.userInfo) {
     req.session.userInfo = {
       ...req.session.userInfo,
       userName: updatedUser.userName,
       screenName: updatedUser.screenName,
       avatarColor: updatedUser.avatarColor,
-      avatarUrl: updatedUser.avatarUrl,
+      avatarUrl: row.avatarUrl ?? null,
     };
   }
 

@@ -25,7 +25,8 @@ function createStoragePort() {
     accessKey: process.env.MINIO_ACCESS_KEY ?? "kd1admin",
     secretKey: process.env.MINIO_SECRET_KEY ?? "kd1admin1234",
     bucket: process.env.MINIO_BUCKET ?? "public",
-    publicUrlBase: process.env.MINIO_PUBLIC_URL_BASE,
+    publicHost: process.env.STORAGE_DOMAIN_URL ?? "localhost",
+    publicPort: Number(process.env.STORAGE_DOMAIN_PORT) || 9000,
   });
 }
 

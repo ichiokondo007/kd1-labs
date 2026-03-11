@@ -1,14 +1,14 @@
 /**
  * ファイル保存用ポート（MinIO / S3 / その他を差し替え可能）
- * アップロード後に取得した URL を返す。
+ * アップロード後にオブジェクトキーを返す。
  */
 export interface StoragePort {
   /**
-   * 指定キーでファイルをアップロードし、取得用 URL を返す。
-   * @param key オブジェクトキー（例: avatars/user-1/abc.png）
+   * 指定キーでファイルをアップロードし、オブジェクトキーを返す。
+   * @param key オブジェクトキー（例: uploads/abc.png）
    * @param body ファイル内容
    * @param contentType Content-Type（例: image/png）
-   * @returns 取得用 URL（署名付きまたは公開 URL）
+   * @returns オブジェクトキー（配信 URL への変換は呼び出し側で行う）
    */
   upload(key: string, body: Buffer, contentType: string): Promise<string>;
 
@@ -23,4 +23,10 @@ export interface StoragePort {
    * @param key オブジェクトキー
    */
   remove(key: string): Promise<void>;
+
+  /**
+   * オブジェクトキーからブラウザ向けの公開 URL を組み立てる。
+   * @param key オブジェクトキー（例: uploads/abc.png）
+   */
+  buildPublicUrl(key: string): string;
 }

@@ -3,41 +3,41 @@ import { useNavigate, useParams } from "react-router-dom";
 import axios from "axios";
 import { Heading } from "@/components/heading";
 import { Text } from "@/components/text";
-import { Input } from "@/components/input";
 import { Button } from "@/components/button";
-import { Field, ErrorMessage } from "@/components/fieldset";
-import { DialogMessage } from "@/components/dialog-message";
 import { FabricCanvas, type FabricCanvasHandle } from "@/features/canvas/ui/FabricCanvas";
 import {
   CanvasEditorToolbar,
   type CanvasTool,
 } from "@/features/canvas/ui/CanvasEditorToolbar";
-import { validateCanvasName } from "@/features/canvas/domain";
-import { saveCanvas, fetchCanvas, deleteCanvas } from "@/features/canvas/services";
+import { fetchCanvas } from "@/features/canvas/services";
 import { uploadFile } from "@/services/storageApi";
 import { CanvasBgCropper } from "@/features/canvas-bg-cropper";
 import type { BgCropperResult } from "@/features/canvas-bg-cropper";
 import { SvgAssetsDrawer } from "@/features/svglibrary/ui/SvgAssetsDrawer";
 import type { SvgAssetItem } from "@kd1-labs/types";
+import { useCurrentUser } from "@/hooks/useCurrentUser";
+import { useYjsConnection } from "@/features/canvas-yjs/hooks/useYjsConnection";
+import { useYjsCircleSync } from "@/features/canvas-yjs/hooks/useYjsCircleSync";
+import { ConnectedUsers } from "@/features/canvas-yjs/ui/ConnectedUsers";
+import { ConnectionStatusBadge } from "@/features/canvas-yjs/ui/ConnectionStatusBadge";
 
-export default function CanvasEditorPage() {
+export default function CanvasYjsEditorPage() {
   const { id } = useParams<{ id: string }>();
-  const isEditMode = !!id;
   const navigate = useNavigate();
   const fabricRef = useRef<FabricCanvasHandle>(null);
   const [activeTool, setActiveTool] = useState<CanvasTool>("selection");
   const [canvasName, setCanvasName] = useState("");
-  const [canvasNameError, setCanvasNameError] = useState<string | undefined>();
-  const [isSaving, setIsSaving] = useState(false);
-  const [isLoading, setIsLoading] = useState(isEditMode);
+  const [isLoading, setIsLoading] = useState(true);
   const [serverError, setServerError] = useState<string | undefined>();
-  const [showSuccessDialog, setShowSuccessDialog] = useState(false);
-  const [savedCanvasName, setSavedCanvasName] = useState("");
-  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
-  const [isDeleting, setIsDeleting] = useState(false);
   const [bgCropperSrc, setBgCropperSrc] = useState<string | null>(null);
   const [svgDrawerOpen, setSvgDrawerOpen] = useState(false);
+  const [canvasLoaded, setCanvasLoaded] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const { user } = useCurrentUser();
+  const { yDoc, provider, connectionStatus, synced } = useYjsConnection(id, user);
+
+  useYjsCircleSync(yDoc, fabricRef, canvasLoaded && synced);
 
   useEffect(() => {
     if (!id) return;
@@ -51,6 +51,7 @@ export default function CanvasEditorPage() {
         if (ac.signal.aborted) return;
         setCanvasName(data.canvasName);
         await fabricRef.current?.loadFromJSON(data.canvas);
+        setCanvasLoaded(true);
       } catch (e) {
         if (ac.signal.aborted || axios.isCancel(e)) return;
         const msg = e instanceof Error ? e.message : "Failed to load canvas.";
@@ -114,114 +115,23 @@ export default function CanvasEditorPage() {
     setBgCropperSrc(null);
   }, []);
 
-  const handleCancel = useCallback(() => {
-    navigate("/example/canvas");
+  const handleBack = useCallback(() => {
+    navigate("/example/canvas-yjs");
   }, [navigate]);
-
-  const handleDelete = useCallback(() => {
-    setShowDeleteDialog(true);
-  }, []);
-
-  const handleConfirmDelete = useCallback(async () => {
-    if (!id) {
-      setShowDeleteDialog(false);
-      navigate("/example/canvas");
-      return;
-    }
-
-    setIsDeleting(true);
-    setServerError(undefined);
-    try {
-      const result = await deleteCanvas(id);
-      if (result.ok) {
-        setShowDeleteDialog(false);
-        navigate("/example/canvas");
-      } else {
-        setShowDeleteDialog(false);
-        setServerError(result.message);
-      }
-    } catch {
-      setShowDeleteDialog(false);
-      setServerError("Failed to delete canvas.");
-    } finally {
-      setIsDeleting(false);
-    }
-  }, [deleteCanvas, id, navigate]);
-
-  const handleSave = useCallback(async () => {
-    const nameError = validateCanvasName(canvasName);
-    setCanvasNameError(nameError);
-    if (nameError) return;
-
-    const canvasJson = fabricRef.current?.toJSON();
-    if (!canvasJson) return;
-
-    setIsSaving(true);
-    setServerError(undefined);
-    try {
-      let thumbnailKey: string | undefined;
-      const dataUrl = fabricRef.current?.toDataURL();
-      if (dataUrl) {
-        try {
-          const { key } = await uploadFile(dataUrl, "image/jpeg");
-          thumbnailKey = key;
-        } catch {
-          // サムネイルアップロード失敗は無視して保存を続行
-        }
-      }
-
-      const result = await saveCanvas(canvasName, canvasJson, id, thumbnailKey);
-      if (result.ok) {
-        setSavedCanvasName(result.canvasName);
-        setShowSuccessDialog(true);
-      } else {
-        setServerError(result.message);
-      }
-    } catch {
-      setServerError("Failed to save canvas.");
-    } finally {
-      setIsSaving(false);
-    }
-  }, [canvasName, id]);
 
   return (
     <div className="p-4 sm:p-6 lg:p-8">
-      <Heading>Example &gt; Canvas Editor</Heading>
+      <Heading>Example &gt; Yjs Collab Canvas</Heading>
       <Text className="mt-2">
-        Fabric.js のキャンバス編集画面です。ツールバーから図形を追加できます。
+        Yjs CRDT 共同編集 — {canvasName || "Loading..."}
       </Text>
 
       <div className="mt-4 flex items-center gap-3">
-        <Field className="max-w-sm">
-          <Input
-            type="text"
-            placeholder="Canvas Name"
-            value={canvasName}
-            onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
-              setCanvasName(e.target.value);
-              setCanvasNameError(undefined);
-            }}
-            data-invalid={canvasNameError ? true : undefined}
-            aria-invalid={!!canvasNameError}
-          />
-          {canvasNameError && <ErrorMessage>{canvasNameError}</ErrorMessage>}
-        </Field>
-        <div className="ml-auto flex items-center gap-2">
-          <Button type="button" outline onClick={handleCancel}>
-            Cancel
-          </Button>
-          {isEditMode && (
-            <Button type="button" color="red" onClick={handleDelete} disabled={isDeleting || isSaving || isLoading}>
-              Delete
-            </Button>
-          )}
-          <Button
-            type="button"
-            color="dark/zinc"
-            onClick={handleSave}
-            disabled={isSaving || isLoading}
-          >
-            {isSaving ? "Saving…" : "Save"}
+        <ConnectionStatusBadge status={connectionStatus} synced={synced} />
+        <ConnectedUsers provider={provider} />
+        <div className="ml-auto">
+          <Button type="button" outline onClick={handleBack}>
+            Back to List
           </Button>
         </div>
       </div>
@@ -241,7 +151,7 @@ export default function CanvasEditorPage() {
           <div className="mt-3 relative">
             <FabricCanvas
               ref={fabricRef}
-              skipInitialRect={isEditMode}
+              skipInitialRect
               activeTool={activeTool}
               onShapePlaced={handleShapePlaced}
             />
@@ -277,38 +187,6 @@ export default function CanvasEditorPage() {
         open={svgDrawerOpen}
         onClose={() => setSvgDrawerOpen(false)}
         onSelect={handleSvgSelect}
-      />
-
-      <DialogMessage
-        open={showSuccessDialog}
-        onClose={() => {
-          setShowSuccessDialog(false);
-          navigate("/example/canvas");
-        }}
-        title="Canvas Saved"
-        message={`Canvas has been saved.\nCanvas name: ${savedCanvasName}`}
-        iconVariant="success"
-        primaryButton={{
-          label: "OK",
-          onClick: () => {},
-        }}
-      />
-
-      <DialogMessage
-        open={showDeleteDialog}
-        onClose={() => setShowDeleteDialog(false)}
-        title="Canvasを削除しますか？"
-        message={"Canvasを削除します。この操作は取り消せません。"}
-        iconVariant="warning"
-        primaryButton={{
-          label: "削除する",
-          onClick: handleConfirmDelete,
-          color: "red",
-        }}
-        secondaryButton={{
-          label: "キャンセル",
-          onClick: () => {},
-        }}
       />
     </div>
   );

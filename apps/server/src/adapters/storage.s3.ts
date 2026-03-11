@@ -20,5 +20,8 @@ export function createS3StorageAdapter(_config: {
     async remove(_key: string): Promise<void> {
       throw new Error("S3 storage adapter is not implemented yet.");
     },
+    buildPublicUrl(_key: string): string {
+      throw new Error("S3 storage adapter is not implemented yet.");
+    },
   };
 }

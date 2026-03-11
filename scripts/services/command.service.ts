@@ -5,14 +5,23 @@ export interface CommandResult {
   stderr: string;
 }
 
+export interface CommandOptions {
+  cwd?: string;
+  env?: NodeJS.ProcessEnv;
+}
+
 export async function runCommand(
   command: string,
   args: string[],
-  cwd?: string,
+  cwdOrOpts?: string | CommandOptions,
 ): Promise<CommandResult> {
+  const opts: CommandOptions =
+    typeof cwdOrOpts === "string" ? { cwd: cwdOrOpts } : cwdOrOpts ?? {};
+
   return new Promise<CommandResult>((resolve, reject) => {
     const child = spawn(command, args, {
-      cwd,
+      cwd: opts.cwd,
+      env: opts.env,
       stdio: "pipe",
       shell: false,
     });

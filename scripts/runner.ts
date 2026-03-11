@@ -1,4 +1,4 @@
-import { execSync, type ExecSyncOptions } from "node:child_process";
+import { execSync, spawn, type ExecSyncOptions } from "node:child_process";
 import type { Step } from "./types.js";
 
 const defaultOpts: ExecSyncOptions = {
@@ -24,4 +24,37 @@ export function runSequential(steps: Step[], opts?: ExecSyncOptions): void {
     execSync(step.cmd, { ...defaultOpts, ...opts });
   }
   console.log(`\n✅ ${total} ステップ完了`);
+}
+
+/**
+ * フォアグラウンドでコマンドを実行し、終了まで待機する。
+ * Ctrl+C (SIGINT) で子プロセスを停止してから resolve する。
+ * dev server のような長時間プロセス向け。
+ */
+export function runForeground(step: Step): Promise<number | null> {
+  return new Promise((resolve) => {
+    console.log(`\n▶ ${step.label}`);
+    console.log(`  $ ${step.cmd}`);
+    console.log("  (Ctrl+C で停止)\n");
+
+    const [cmd, ...args] = step.cmd.split(" ");
+    const child = spawn(cmd, args, {
+      cwd: process.cwd(),
+      stdio: "inherit",
+      env: { ...process.env, FORCE_COLOR: "1" },
+      shell: true,
+    });
+
+    const onSignal = () => {
+      child.kill("SIGTERM");
+    };
+    process.on("SIGINT", onSignal);
+    process.on("SIGTERM", onSignal);
+
+    child.on("close", (code) => {
+      process.off("SIGINT", onSignal);
+      process.off("SIGTERM", onSignal);
+      resolve(code);
+    });
+  });
 }

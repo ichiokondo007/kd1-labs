@@ -9,15 +9,10 @@ import {
   makeRemoveSvgAssetUsecase,
 } from "../usecases/svglibrary.usecase";
 
-const MINIO_BASE =
-  (process.env.MINIO_PUBLIC_URL_BASE ?? "").replace(/\/$/, "") ||
-  `http://${process.env.MINIO_ENDPOINT ?? "localhost"}:${process.env.MINIO_PORT ?? "9000"}`;
-const BUCKET = process.env.MINIO_BUCKET ?? "public";
-
-function buildPublicUrl(key: string): string {
-  return `${MINIO_BASE}/${BUCKET}/${key}`;
+function buildKey(key: string): string {
+  return key;
 }
 
-export const listSvgAssetsUsecase = makeListSvgAssetsUsecase(storagePort, buildPublicUrl);
-export const uploadSvgAssetUsecase = makeUploadSvgAssetUsecase(storagePort, buildPublicUrl);
+export const listSvgAssetsUsecase = makeListSvgAssetsUsecase(storagePort, buildKey);
+export const uploadSvgAssetUsecase = makeUploadSvgAssetUsecase(storagePort, buildKey);
 export const removeSvgAssetUsecase = makeRemoveSvgAssetUsecase(storagePort);

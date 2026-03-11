@@ -4,6 +4,7 @@ import {
   uploadSvgAssetUsecase,
   removeSvgAssetUsecase,
 } from "../composition/svglibrary.composition";
+import { storagePort } from "../composition/storage.composition";
 
 /**
  * SVG アセット一覧を返す。
@@ -27,7 +28,7 @@ export async function getSvglibraryItems(req: Request, res: Response) {
 
   const items = result.value.map((o) => ({
     key: o.key,
-    url: o.url,
+    url: o.url ? storagePort.buildPublicUrl(o.url) : "",
     title: extractTitle(o.key),
     createdAt: o.lastModified.toISOString(),
   }));
@@ -74,7 +75,11 @@ export async function postSvglibraryUpload(req: Request, res: Response) {
     return;
   }
 
-  res.status(200).json({ success: true, data: result.value });
+  const data = {
+    key: result.value.key,
+    url: result.value.url ? storagePort.buildPublicUrl(result.value.url) : "",
+  };
+  res.status(200).json({ success: true, data });
 }
 
 /**

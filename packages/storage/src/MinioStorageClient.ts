@@ -9,6 +9,10 @@ export interface MinioStorageClientConfig {
   accessKey: string;
   secretKey: string;
   bucket: string;
+  /** ブラウザ用 URL のホスト名（デフォルト: endPoint と同じ） */
+  publicHost?: string;
+  /** ブラウザ用 URL のポート（デフォルト: port と同じ） */
+  publicPort?: number;
 }
 
 /**
@@ -18,9 +22,13 @@ export interface MinioStorageClientConfig {
 export class MinioStorageClient implements StorageClient {
   private readonly client: Client;
   private readonly bucket: string;
+  private readonly publicHost: string;
+  private readonly publicPort: number;
 
   constructor(config: MinioStorageClientConfig) {
     this.bucket = config.bucket;
+    this.publicHost = config.publicHost ?? config.endPoint;
+    this.publicPort = config.publicPort ?? config.port ?? 9000;
     this.client = new Client({
       endPoint: config.endPoint,
       port: config.port ?? 9000,
@@ -50,6 +58,12 @@ export class MinioStorageClient implements StorageClient {
 
   async delete(key: string): Promise<void> {
     await this.client.removeObject(this.bucket, key);
+  }
+
+  buildPublicUrl(key: string): string {
+    if (key.startsWith("http://") || key.startsWith("https://")) return key;
+    if (key.startsWith("/api/")) return key;
+    return `http://${this.publicHost}:${this.publicPort}/${this.bucket}/${key}`;
   }
 
   async listObjects(prefix: string): Promise<StorageObjectInfo[]> {

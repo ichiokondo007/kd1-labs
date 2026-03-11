@@ -14,7 +14,7 @@
 >
 > ３．CRDT Persistence方式検証
 >
-> 尚、YJS調査、実装方針は doc/yjs/配下を参照。
+> 尚、YJS調査、実装方針は doc/yjs/配下を参照。awareness
 
 ---
 
@@ -81,8 +81,6 @@
 MYSQL_PORT=3307
 MONGO_HOST_PORT=27017
 MINIO_CONSOLE_PORT=9001
-# ブラウザからのアクセスは localhost 経由
-MINIO_PUBLIC_URL_BASE=http://localhost:9001
 # --- Client ---
 LOCALPOST=80
 ```
@@ -137,7 +135,7 @@ server, yjs-server, client は以下変更が必要：
 
 ![alt text](<docs/Screenshot From 2026-03-10 18-34-47.png>)
 
-### A. ローカル開発（インフラだけ Docker、アプリはホスト実行）
+### ローカル開発（インフラだけ Docker、アプリはホスト実行）
 
 ```shell
 # 1. 依存インストール
@@ -163,7 +161,7 @@ pnpm --filter client dev
   - UserName: admin
   - Password: password
 
-### B. フルDocker起動（全てコンテナで実行）
+### フルDocker起動（全てコンテナで実行）
 
 ```shell
 # 1. 依存インストール（マイグレーション実行用）
@@ -173,8 +171,28 @@ pnpm install
 docker compose -f docker-compose.yml -f docker-compose.app.yml \
   --env-file .env.docker up --build -d
 
+
+pnpm install
+
+#Docker停止
+
+#1 mysql、mongo,minio 起動
+docker compose -f docker-compose.yml --env-file .env.docker up -d --wait mysql mongodb minio
+
+# minio(S3互換）初期Backet作成
+docker compose -f docker-compose.yml --env-file .env.docker up minio-init
+
+# Drizzle DBマイグレーション（Sheed） 実行（管理者ユーザ登録）
+pnpm --filter @kd1-labs/db-client... run build
+pnpm --filter @kd1-labs/db-client run db:migrate
+
+# アプリケーションDeploy run
+docker compose -f docker-compose.yml -f docker-compose.app.yml \
+  --env-file .env.docker up --build -d
+
+
 # 3. MySQL の healthcheck 通過を待つ
-docker compose -f docker-compose.yml wait mysql
+# mysqlが起動したら下記実行。
 
 # 4. マイグレーション用にローカルビルド（db-client とその依存のみ）
 pnpm --filter @kd1-labs/db-client... run build
@@ -192,6 +210,14 @@ pnpm --filter @kd1-labs/db-client run db:migrate
 
 ```shell
 docker compose -f docker-compose.yml -f docker-compose.app.yml down
+```
+
+### up --build で変更反映されない場合。
+
+−compose up --buildでレイヤーキャッシュが聞いて変更が拾われない場合
+
+```shell
+docker compose -f docker-compose.yml -f docker-compose.app.yml build --no-cache client
 ```
 
 ---

@@ -111,28 +111,31 @@ function send(doc: WSSharedDoc, conn: WebSocket, message: Uint8Array): void {
 
 // ── closeConn ────────────────────────────────────────────────────────
 function closeConn(doc: WSSharedDoc, conn: WebSocket): void {
-  if (doc.conns.has(conn)) {
-    const controlledIds = doc.conns.get(conn)!;
-    doc.conns.delete(conn);
-    awarenessProtocol.removeAwarenessStates(
-      doc.awareness,
-      Array.from(controlledIds),
-      null
-    );
-    // 全員退出 → persistence があれば保存してメモリ解放
-    if (doc.conns.size === 0) {
-      if (persistence !== null) {
-        persistence.writeState(doc.name, doc).then(() => {
-          doc.destroy();
-        });
-      } else {
+  if (!doc.conns.has(conn)) return;
+
+  const controlledIds = doc.conns.get(conn)!;
+  doc.conns.delete(conn);
+  awarenessProtocol.removeAwarenessStates(
+    doc.awareness,
+    Array.from(controlledIds),
+    null
+  );
+
+  if (doc.conns.size === 0) {
+    if (persistence !== null) {
+      persistence.writeState(doc.name, doc).then(() => {
         doc.destroy();
-      }
-      docs.delete(doc.name);
-      console.log(`[doc:idle] "${doc.name}" — removed from memory`);
+      });
+    } else {
+      doc.destroy();
     }
+    docs.delete(doc.name);
+    console.log(`[doc:idle] "${doc.name}" — removed from memory`);
   }
-  conn.close();
+
+  if (conn.readyState === WS_READY_STATE_OPEN || conn.readyState === WS_READY_STATE_CONNECTING) {
+    conn.close();
+  }
 }
 
 // ── messageListener ──────────────────────────────────────────────────
@@ -218,6 +221,12 @@ export function setupWSConnection(
 
   conn.on("pong", () => {
     pongReceived = true;
+  });
+
+  conn.on("error", (err) => {
+    console.warn(`[ws:error] doc="${docName}" ${err.message}`);
+    closeConn(doc, conn);
+    clearInterval(pingInterval);
   });
 
   // SyncStep1 を送信 → クライアントが SyncStep2 で応答

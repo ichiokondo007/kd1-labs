@@ -10,26 +10,33 @@
 | Step | 内容 | 状態 |
 |------|------|------|
 | 1 | `apps/yjs-server` 構築（TypeScript/ESM, y-websocket v1.5.4 ベース再実装） | **完了** |
-| 2 | クライアント依存パッケージ追加 (`yjs`, `y-websocket`) | 未着手 |
-| 3 | `useYjsConnection` hook（WebsocketProvider 接続・Awareness 管理） | 未着手 |
-| 4 | `useYjsCircleSync` hook（Circle の Fabric ↔ Y.Map バインディング） | 未着手 |
-| 5 | `/example/canvas-yjs` ページ統合 | 未着手 |
+| 2 | クライアント依存パッケージ追加 (`yjs`, `y-websocket`) | **完了** |
+| 3 | `useYjsConnection` hook（WebsocketProvider 接続・Awareness 管理） | **完了** |
+| 4 | `useYjsCircleSync` hook（Circle の Fabric ↔ Y.Map バインディング） | **完了** |
+| 5 | `/example/canvas-yjs/:id` エディタページ統合 | **完了** |
 
 ### クライアント側ファイル構成
 
 ```
 apps/client/src/
 ├── features/canvas-yjs/
-│   ├── types.ts                   # CircleProps, AwarenessState
+│   ├── types.ts                        # CollabStatus, YjsCanvasListItem
 │   ├── hooks/
-│   │   ├── useYjsConnection.ts    # WebsocketProvider 接続管理
-│   │   └── useYjsCircleSync.ts    # Fabric ↔ Y.Map バインディング
+│   │   ├── useYjsConnection.ts         # WebsocketProvider 接続管理
+│   │   ├── useYjsCircleSync.ts         # Fabric ↔ Y.Map バインディング
+│   │   └── useYjsCanvasList.ts         # 一覧取得
 │   ├── ui/
-│   │   ├── YjsCanvas.tsx          # Fabric Canvas + Yjs統合
-│   │   └── ConnectedUsers.tsx     # Awareness表示（アバター一覧）
+│   │   ├── CollabStatusBadge.tsx       # 一覧用ステータスバッジ
+│   │   ├── ConnectedUsers.tsx          # Awareness 表示（アバター一覧）
+│   │   └── ConnectionStatusBadge.tsx   # 接続状態バッジ
+│   ├── domain/
+│   │   └── rules.ts                    # ステータス判定（純関数）
+│   ├── services/
+│   │   └── index.ts                    # Yjs 固有 API（Phase 2）
 │   └── index.ts
 ├── pages/example/
-│   └── canvas-yjs.tsx             # ページコンポーネント
+│   ├── canvas-yjs-list.tsx             # 一覧ページ
+│   └── canvas-yjs-editor.tsx           # 共同編集エディタページ
 ```
 
 ## Phase 2: 永続化 + スケーリング検証

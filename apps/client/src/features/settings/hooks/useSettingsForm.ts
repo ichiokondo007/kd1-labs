@@ -40,18 +40,16 @@ export function useSettingsForm(): SettingsPageFormHookResult {
       setServerError(undefined);
       setIsSaving(true);
       try {
-        let avatarUrl: string | undefined;
+        let avatarKey: string | undefined;
         if (pendingAvatarDataUrl?.startsWith("data:")) {
-          const url = await uploadFile(pendingAvatarDataUrl, "image/png");
-          avatarUrl = url;
-        } else {
-          avatarUrl = user?.avatarUrl ?? undefined;
+          const { key } = await uploadFile(pendingAvatarDataUrl, "image/png");
+          avatarKey = key;
         }
         const updated = await patchMe({
           userName: userName.trim(),
           screenName: screenName.trim(),
           avatarColor,
-          ...(avatarUrl !== undefined && { avatarUrl }),
+          ...(avatarKey !== undefined && { avatarUrl: avatarKey }),
         });
         if (updated) {
           refetch(updated);

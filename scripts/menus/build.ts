@@ -1,8 +1,24 @@
+import { execSync } from "node:child_process";
 import { select } from "@inquirer/prompts";
 import { runSequential, runStep } from "../runner.js";
 import { log } from "../ui/logger.js";
 import { waitForEnter } from "../ui/pause.js";
 import { showScreen } from "../ui/screen.js";
+
+/**
+ * kd1-mysql コンテナの公開ポートを docker port から動的に取得する。
+ * 取得できない場合はデフォルト 3307 を返す。
+ */
+function getMysqlPort(): string {
+  try {
+    const out = execSync("docker port kd1-mysql 3306", { encoding: "utf-8" }).trim();
+    const port = out.split("\n")[0]?.split(":").pop();
+    if (port && /^\d+$/.test(port)) return port;
+  } catch {
+    log.warn("⚠ kd1-mysql コンテナからポートを取得できません。デフォルト 3307 を使用します。");
+  }
+  return "3307";
+}
 
 type BuildMenuValue =
   | "build:all"
@@ -50,25 +66,29 @@ export async function buildMenu(): Promise<void> {
         });
         break;
 
-      case "migrate":
-        runStep({
-          label: "DBマイグレーション",
-          cmd: "pnpm --filter @kd1-labs/db-client run db:migrate",
-        });
+      case "migrate": {
+        const port = getMysqlPort();
+        log.info(`🔌 DB_PORT=${port} (kd1-mysql)`);
+        runStep(
+          { label: "DBマイグレーション", cmd: "pnpm --filter @kd1-labs/db-client run db:migrate" },
+          { env: { ...process.env, DB_PORT: port } },
+        );
         break;
+      }
 
-      case "build:migrate":
-        runSequential([
-          {
-            label: "db-client ビルド",
-            cmd: "pnpm --filter @kd1-labs/db-client... run build",
-          },
-          {
-            label: "DBマイグレーション",
-            cmd: "pnpm --filter @kd1-labs/db-client run db:migrate",
-          },
-        ]);
+      case "build:migrate": {
+        const port = getMysqlPort();
+        log.info(`🔌 DB_PORT=${port} (kd1-mysql)`);
+        const migrateOpts = { env: { ...process.env, DB_PORT: port } };
+        runSequential(
+          [
+            { label: "db-client ビルド", cmd: "pnpm --filter @kd1-labs/db-client... run build" },
+            { label: "DBマイグレーション", cmd: "pnpm --filter @kd1-labs/db-client run db:migrate" },
+          ],
+          migrateOpts,
+        );
         break;
+      }
     }
 
     console.log("");

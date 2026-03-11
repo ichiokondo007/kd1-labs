@@ -25,7 +25,8 @@ services:
       MINIO_ACCESS_KEY: ${MINIO_ACCESS_KEY:-kd1admin}
       MINIO_SECRET_KEY: ${MINIO_SECRET_KEY:-kd1admin1234}
       MINIO_BUCKET: ${MINIO_BUCKET:-public}
-      MINIO_PUBLIC_URL_BASE: ${MINIO_PUBLIC_URL_BASE:-http://localhost:9000}
+      STORAGE_DOMAIN_URL: ${STORAGE_DOMAIN_URL:-localhost}
+      STORAGE_DOMAIN_PORT: ${STORAGE_DOMAIN_PORT:-9000}
     ports:
       - "${PORT:-3000}:3000"
     networks:

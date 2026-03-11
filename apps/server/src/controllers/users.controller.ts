@@ -3,6 +3,7 @@ import type { ApiResponse } from "@kd1-labs/types";
 import { listUsersUsecase } from "../composition/users.composition";
 import { createUserUsecase } from "../composition/create-user.composition";
 import type { ListUsersOutputItem } from "../usecases/list-users.usecase";
+import { storagePort } from "../composition/storage.composition";
 
 /**
  * ユーザー一覧取得（管理者のみ）
@@ -24,8 +25,12 @@ export async function getUsersItems(req: Request, res: Response) {
     return;
   }
 
-  const items: ListUsersOutputItem[] = await listUsersUsecase();
-  const response: ApiResponse<ListUsersOutputItem[]> = { success: true, data: items };
+  const items = await listUsersUsecase();
+  const data = items.map((item) => ({
+    ...item,
+    avatarUrl: item.avatarUrl ? storagePort.buildPublicUrl(item.avatarUrl) : null,
+  }));
+  const response: ApiResponse<typeof data> = { success: true, data };
   res.json(response);
 }
 

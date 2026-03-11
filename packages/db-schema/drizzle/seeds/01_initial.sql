@@ -6,7 +6,7 @@
 --
 -- INSERT INTO users (user_id, user_name, screen_name, password_hash, is_initial_password, is_admin, avatar_color)
 -- VALUES ('dev-user-1', 'devuser', '開発ユーザー', '<PASSWORD_HASH>', true, true, 'zinc-900');
-INSERT INTO
+INSERT IGNORE INTO
     kd1.users (
         user_id,
         user_name,

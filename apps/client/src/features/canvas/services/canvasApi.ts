@@ -56,3 +56,18 @@ export async function saveCanvas(
     return { ok: false, message };
   }
 }
+
+export type DeleteCanvasResult = { ok: true } | { ok: false; message: string };
+
+export async function deleteCanvas(id: string): Promise<DeleteCanvasResult> {
+  try {
+    await apiClient.delete<void>(`/api/canvas/${id}`);
+    return { ok: true };
+  } catch (e: unknown) {
+    const err = e as { response?: { data?: { error?: { message?: string } } } };
+    const message =
+      err.response?.data?.error?.message ??
+      (e instanceof Error ? e.message : "Failed to delete canvas.");
+    return { ok: false, message };
+  }
+}

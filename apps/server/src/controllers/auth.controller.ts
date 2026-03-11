@@ -1,6 +1,7 @@
 import type { Request, Response } from "express";
 import type { LoginRequest, LoginResponse } from "@kd1-labs/types";
 import { loginUsecase } from "../composition/auth.composition";
+import { storagePort } from "../composition/storage.composition";
 
 /**
  * ログイン（参照: references/pages/login.md）
@@ -35,7 +36,6 @@ export async function postLogin(req: Request, res: Response) {
     return;
   }
 
-  // ログイン成功時は必ずセッションに UserInfo を保存（HTTP レイヤの責務）
   const userInfo = result.value.userInfo;
   if (userInfo && req.session) {
     req.session.userInfo = {
@@ -49,7 +49,13 @@ export async function postLogin(req: Request, res: Response) {
     };
   }
 
-  res.json(result.value satisfies LoginResponse);
+  const response: LoginResponse = {
+    ...result.value,
+    userInfo: userInfo
+      ? { ...userInfo, avatarUrl: userInfo.avatarUrl ? storagePort.buildPublicUrl(userInfo.avatarUrl) : null }
+      : null,
+  };
+  res.json(response);
 }
 
 /**

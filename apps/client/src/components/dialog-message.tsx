@@ -7,7 +7,7 @@ import {
   ExclamationCircleIcon,
   InformationCircleIcon,
 } from "@heroicons/react/24/outline";
-import { Button } from "@/components/button";
+import { Button, type ButtonColor } from "@/components/button";
 
 export type DialogMessageIconVariant = "success" | "warning" | "error" | "info" | "none";
 
@@ -50,6 +50,8 @@ export type DialogMessageProps = {
   primaryButton: {
     label: string;
     onClick: () => void;
+    /** 破壊的操作などでボタン色を変えたい場合に指定（省略時はデフォルト色） */
+    color?: ButtonColor;
   };
   /** 副ボタン（指定時は2ボタンレイアウト。Cancel など） */
   secondaryButton?: {
@@ -126,16 +128,12 @@ export function DialogMessage({
 
             {hasTwoButtons ? (
               <div className="mt-5 flex flex-col-reverse gap-3 sm:mt-6 sm:grid sm:grid-flow-row-dense sm:grid-cols-2 sm:gap-3">
-                <Button
-                  type="button"
-                  plain
-                  onClick={handleSecondary}
-                  className="sm:col-start-1 sm:mt-0"
-                >
+                <Button type="button" plain onClick={handleSecondary} className="sm:col-start-1 sm:mt-0">
                   {secondaryButton.label}
                 </Button>
                 <Button
                   type="button"
+                  color={primaryButton.color}
                   onClick={handlePrimary}
                   className="sm:col-start-2"
                   data-autofocus

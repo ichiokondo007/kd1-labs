@@ -6,6 +6,7 @@ import { devMenu } from "./menus/dev.js";
 import { dockerMenu } from "./menus/docker.js";
 import { buildMenu } from "./menus/build.js";
 import { helpMenu } from "./menus/help.js";
+import { techstackMenu } from "./menus/techstack.js";
 
 import { showScreen } from "./ui/screen.js";
 import { log } from "./ui/logger.js";
@@ -18,13 +19,14 @@ async function main(): Promise<void> {
 
     try {
       choice = await select({
-        message: "操作を選択してください",
+        message: "Operation selection(操作を選択してください)",
         choices: [
-          { name: "🚀 開発環境を起動", value: "dev" },
-          { name: "🐳 Docker操作", value: "docker" },
-          { name: "🔨 Build / Migration", value: "build" },
-          { name: "🧪 HELP / Cheat Sheet", value: "help" },
-          { name: "❌ Exit", value: "exit" },
+          { name: "🚀 Open Development Environment (開発環境を起動)", value: "dev" },
+          { name: "🐳 Docker Operation (Docker 操作)", value: "docker" },
+          { name: "🔨 Build / DB Migration (ビルド / DB マイグレーション)", value: "build" },
+          { name: "📦 Tech Stack (技術スタック)", value: "techstack" },
+          { name: "🧪 HELP / Cheat Sheet (ヘルプ / チートシート)", value: "help" },
+          { name: "❌ Exit(終了)", value: "exit" },
         ],
         loop: false,
       });
@@ -50,6 +52,10 @@ async function main(): Promise<void> {
 
         case "build":
           await buildMenu();
+          break;
+
+        case "techstack":
+          await techstackMenu();
           break;
 
         case "help":

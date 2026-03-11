@@ -4,7 +4,7 @@ import { Text } from "@/components/text";
 import { Input } from "@/components/input";
 import { Textarea } from "@/components/textarea";
 import { Button } from "@/components/button";
-import { Field, Label, ErrorMessage } from "@/components/fieldset";
+import { Field, Label } from "@/components/fieldset";
 import { Divider } from "@/components/divider";
 import { TrashIcon } from "@heroicons/react/24/outline";
 import { useSvglibrary, useSvgUpload } from "../hooks";
@@ -125,7 +125,9 @@ export const SvglibraryPage: FC = () => {
             )}
 
             {upload.errorMessage && (
-              <ErrorMessage>{upload.errorMessage}</ErrorMessage>
+              <p className="text-base/6 text-red-600 sm:text-sm/6 dark:text-red-500">
+                {upload.errorMessage}
+              </p>
             )}
 
             <div className="flex items-center gap-2">

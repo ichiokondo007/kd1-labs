@@ -1,5 +1,19 @@
-import { forwardRef, useCallback, useEffect, useImperativeHandle, useRef } from "react";
-import { Canvas, Circle, FabricImage, Rect, loadSVGFromURL } from "fabric";
+import {
+  forwardRef,
+  useCallback,
+  useEffect,
+  useImperativeHandle,
+  useRef,
+  useState,
+} from "react";
+import {
+  Canvas,
+  Circle,
+  FabricImage,
+  Rect,
+  loadSVGFromURL,
+  util,
+} from "fabric";
 import type { TPointerEventInfo } from "fabric";
 import type { BgCropperResult } from "@/features/canvas-bg-cropper/types";
 import type { CanvasTool } from "./CanvasEditorToolbar";
@@ -11,6 +25,9 @@ export type FabricCanvasHandle = {
   setBackgroundImage: (result: BgCropperResult) => Promise<void>;
   removeBackgroundImage: () => void;
   addSvgFromUrl: (url: string) => Promise<void>;
+  placeSvgFromUrl: (url: string) => void;
+  /** Fabric Canvas インスタンスを直接取得（Yjs 同期用） */
+  getCanvas: () => Canvas | null;
 };
 
 type FabricCanvasProps = {
@@ -24,6 +41,29 @@ type FabricCanvasProps = {
 const DEFAULT_WIDTH = 1088;
 const DEFAULT_HEIGHT = 612;
 const THUMBNAIL_WIDTH = 480;
+const MAX_SVG_DISPLAY_WIDTH = 200;
+const MAX_SVG_DISPLAY_HEIGHT = 200;
+
+async function loadAndScaleSvgGroup(url: string) {
+  const { objects, options } = await loadSVGFromURL(url, undefined, {
+    crossOrigin: "anonymous",
+  });
+  const validObjects = objects.filter(
+    (o): o is NonNullable<typeof o> => o != null
+  );
+  if (validObjects.length === 0) return null;
+  const groupedObj = util.groupSVGElements(validObjects, options);
+  groupedObj.setCoords();
+  const w = groupedObj.getScaledWidth();
+  const h = groupedObj.getScaledHeight();
+  const scale = Math.min(
+    MAX_SVG_DISPLAY_WIDTH / w,
+    MAX_SVG_DISPLAY_HEIGHT / h,
+    1
+  );
+  groupedObj.scale(scale);
+  return groupedObj;
+}
 
 export const FabricCanvas = forwardRef<FabricCanvasHandle, FabricCanvasProps>(
   function FabricCanvas(
@@ -38,6 +78,9 @@ export const FabricCanvas = forwardRef<FabricCanvasHandle, FabricCanvasProps>(
   ) {
     const wrapperRef = useRef<HTMLDivElement | null>(null);
     const canvasInstanceRef = useRef<Canvas | null>(null);
+    const [pendingSvgUrl, setPendingSvgUrl] = useState<string | null>(null);
+    const setPendingSvgUrlRef = useRef(setPendingSvgUrl);
+    setPendingSvgUrlRef.current = setPendingSvgUrl;
 
     useEffect(() => {
       const wrapper = wrapperRef.current;
@@ -113,6 +156,43 @@ export const FabricCanvas = forwardRef<FabricCanvasHandle, FabricCanvasProps>(
       const canvas = canvasInstanceRef.current;
       if (!canvas) return;
 
+      if (pendingSvgUrl) {
+        canvas.selection = false;
+        canvas.defaultCursor = "crosshair";
+        canvas.forEachObject((obj) => {
+          obj.selectable = false;
+          obj.evented = false;
+        });
+
+        const urlToPlace = pendingSvgUrl;
+        const handler = (opt: TPointerEventInfo) => {
+          setPendingSvgUrl(null);
+          const { x, y } = opt.scenePoint;
+          void (async () => {
+            const group = await loadAndScaleSvgGroup(urlToPlace);
+            if (!group) return;
+            const c = canvasInstanceRef.current;
+            if (!c) return;
+            group.set({ left: x, top: y });
+            c.add(group);
+            c.setActiveObject(group);
+            c.requestRenderAll();
+            onShapePlacedRef.current?.();
+          })();
+        };
+        canvas.on("mouse:down", handler);
+
+        return () => {
+          canvas.off("mouse:down", handler);
+          canvas.selection = true;
+          canvas.defaultCursor = "default";
+          canvas.forEachObject((obj) => {
+            obj.selectable = true;
+            obj.evented = true;
+          });
+        };
+      }
+
       if (activeTool === "rect" || activeTool === "circle") {
         canvas.selection = false;
         canvas.defaultCursor = "crosshair";
@@ -141,7 +221,7 @@ export const FabricCanvas = forwardRef<FabricCanvasHandle, FabricCanvasProps>(
 
       canvas.selection = true;
       canvas.defaultCursor = "default";
-    }, [activeTool, placeShape]);
+    }, [activeTool, placeShape, pendingSvgUrl]);
 
     useImperativeHandle(
       ref,
@@ -192,14 +272,17 @@ export const FabricCanvas = forwardRef<FabricCanvasHandle, FabricCanvasProps>(
         async addSvgFromUrl(url: string) {
           const canvas = canvasInstanceRef.current;
           if (!canvas) return;
-          const { objects } = await loadSVGFromURL(url);
-          const validObjects = objects.filter(Boolean);
-          for (const obj of validObjects) {
-            if (!obj) continue;
-            obj.set({ left: 100, top: 100 });
-            canvas.add(obj);
-          }
+          const group = await loadAndScaleSvgGroup(url);
+          if (!group) return;
+          group.set({ left: 100, top: 100 });
+          canvas.add(group);
           canvas.requestRenderAll();
+        },
+        placeSvgFromUrl(url: string) {
+          setPendingSvgUrlRef.current(url);
+        },
+        getCanvas() {
+          return canvasInstanceRef.current;
         },
       }),
       []

@@ -10,4 +10,6 @@ export interface StorageClient {
   getFile(key: string): Promise<Buffer>;
   delete(key: string): Promise<void>;
   listObjects(prefix: string): Promise<StorageObjectInfo[]>;
+  /** キーからブラウザ向け公開 URL を組み立てる */
+  buildPublicUrl(key: string): string;
 }

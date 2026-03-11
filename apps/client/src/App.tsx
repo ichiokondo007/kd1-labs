@@ -14,6 +14,7 @@ import { SvglibraryPage } from '@/features/svglibrary'
 import NotFoundPage from '@/pages/404'
 import ComingSoonPage from '@/pages/coming-soon'
 import CanvasYjsListPage from '@/pages/example/canvas-yjs-list'
+import CanvasYjsEditorPage from '@/pages/example/canvas-yjs-editor'
 
 function App() {
   return (
@@ -35,7 +36,7 @@ function App() {
             <Route path="/example/canvas/:id" element={<CanvasEditorPage />} />
             <Route path="/svg-assets" element={<SvglibraryPage />} />
             <Route path="/example/canvas-yjs" element={<CanvasYjsListPage />} />
-            <Route path="/example/canvas-yjs/:id" element={<ComingSoonPage />} />
+            <Route path="/example/canvas-yjs/:id" element={<CanvasYjsEditorPage />} />
             <Route path="/example/form-yjs" element={<ComingSoonPage />} />
 
             {/* Tech Blog Routes */}

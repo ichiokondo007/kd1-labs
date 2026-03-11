@@ -2,6 +2,7 @@ import {
   upsertCanvas as dbUpsertCanvas,
   listCanvases as dbListCanvases,
   findCanvasById as dbFindCanvasById,
+  deleteCanvas as dbDeleteCanvas,
 } from "@kd1-labs/document-db";
 import { generateUUIDv7 } from "@kd1-labs/utils";
 import type {
@@ -47,5 +48,9 @@ export const canvasDocumentDbAdapter: CanvasPort = {
       canvasName: doc.canvasName,
       canvas: doc.canvas,
     };
+  },
+
+  async deleteCanvas(id: string): Promise<boolean> {
+    return dbDeleteCanvas(id);
   },
 };

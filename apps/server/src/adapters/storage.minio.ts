@@ -12,19 +12,8 @@ export interface MinioStorageAdapterConfig {
   accessKey: string;
   secretKey: string;
   bucket: string;
-  /**
-   * 公開 URL のベース（署名なし・有効期限なし）。
-   * クライアントからアクセスする MinIO の URL。例: http://localhost:9000
-   * 未指定時は endPoint + port から組み立てる。
-   */
-  publicUrlBase?: string;
-}
-
-function buildPublicUrl(config: MinioStorageAdapterConfig, key: string): string {
-  const base =
-    config.publicUrlBase ??
-    `${config.useSSL ? "https" : "http"}://${config.endPoint}:${config.port ?? 9000}`;
-  return `${base.replace(/\/$/, "")}/${config.bucket}/${key}`;
+  publicHost?: string;
+  publicPort?: number;
 }
 
 export function createMinioStorageAdapter(config: MinioStorageAdapterConfig): StoragePort {
@@ -35,12 +24,14 @@ export function createMinioStorageAdapter(config: MinioStorageAdapterConfig): St
     accessKey: config.accessKey,
     secretKey: config.secretKey,
     bucket: config.bucket,
+    publicHost: config.publicHost,
+    publicPort: config.publicPort,
   });
 
   return {
     async upload(key: string, body: Buffer, contentType: string): Promise<string> {
       await client.upload(key, body, contentType);
-      return buildPublicUrl(config, key);
+      return key;
     },
 
     async list(prefix: string): Promise<{ key: string; lastModified: Date }[]> {
@@ -50,6 +41,10 @@ export function createMinioStorageAdapter(config: MinioStorageAdapterConfig): St
 
     async remove(key: string): Promise<void> {
       await client.delete(key);
+    },
+
+    buildPublicUrl(key: string): string {
+      return client.buildPublicUrl(key);
     },
   };
 }

@@ -1,27 +1,64 @@
 import { select } from "@inquirer/prompts";
+import { runForeground } from "../runner.js";
+import { runFullDocker } from "../services/dev.service.js";
 import { log } from "../ui/logger.js";
 import { waitForEnter } from "../ui/pause.js";
 import { showScreen } from "../ui/screen.js";
 
-type DevMenuValue = "full-docker" | "local" | "back" | "exit";
+type DevMenuValue = "full-docker" | "server" | "client" | "back" | "exit";
 
 const DEV_CHOICES = [
-  { name: "モードA: フルDocker開発（全コンテナ）", value: "full-docker" as const },
+  { name: "一括Docker起動（Full Docker run）", value: "full-docker" as const },
   {
-    name: "モードB: ローカル開発（infra Docker + 「apps/client/server」ホスト実行）",
-    value: "local" as const,
+    name: "Server Process起動 apps/server run dev（Build → run）",
+    value: "server" as const,
+  },
+  {
+    name: "Cliant Process起動 apps/client run dev（Build → run）",
+    value: "client" as const,
   },
   { name: "↩ TOPへ戻る", value: "back" as const },
   { name: "❌ EXIT", value: "exit" as const },
 ];
 
+const PREPARE_AND_RUN = {
+  server: {
+    buildLabel: "server 依存パッケージ ビルド",
+    buildCmd: "pnpm --filter @kd1-labs/db-client... run build",
+    runLabel: "apps/server dev server 起動",
+    runCmd: "pnpm --filter server dev",
+  },
+  client: {
+    buildLabel: "client 依存パッケージ ビルド",
+    buildCmd: "pnpm --filter @kd1-labs/types run build",
+    runLabel: "apps/client dev server 起動",
+    runCmd: "pnpm --filter client dev",
+  },
+} as const;
+
+async function startDevServer(target: "server" | "client"): Promise<void> {
+  const cfg = PREPARE_AND_RUN[target];
+
+  log.info(`\n📦 ${cfg.buildLabel}...`);
+  const { runSequential } = await import("../runner.js");
+  runSequential([{ label: cfg.buildLabel, cmd: cfg.buildCmd }]);
+
+  log.success(`\n✅ ビルド完了 → ${cfg.runLabel} を開始します`);
+  const code = await runForeground({ label: cfg.runLabel, cmd: cfg.runCmd });
+
+  console.log(`\n🛑 dev server 終了 (code: ${code})`);
+  process.exit(0);
+}
+
+
+
 export async function devMenu(): Promise<void> {
-  showScreen("🚀 開発環境起動");
+  showScreen("🚀 Open Development Environment");
 
   while (true) {
     console.log("");
     const choice = await select<DevMenuValue>({
-      message: "🚀 開発環境起動(すぐに動かして確認したい場合は「モードA」で実行してください)",
+      message: "🚀 Open Development Environment (server / client は別ターミナルで各々実行)",
       choices: DEV_CHOICES,
       loop: false,
     });
@@ -34,22 +71,16 @@ export async function devMenu(): Promise<void> {
 
     switch (choice) {
       case "full-docker":
-        // TODO: 仕様確定後に実装
-        // 1. docker compose -f ... -f ... --env-file .env.docker up --build -d
-        // 2. docker compose wait mysql
-        // 3. db-client build + migrate
-        log.warn("\n⚠️  モードA は未実装です");
+        await runFullDocker();
         break;
 
-      case "local":
-        // TODO: 仕様確定後に実装
-        // 1. docker compose up -d (infra)
-        // 2. pnpm install
-        // 3. pnpm -r run build
-        // 4. db:migrate
-        // 5. pnpm --filter server dev & pnpm --filter client dev
-        log.warn("\n⚠️  モードB は未実装です");
-        break;
+      case "server":
+        await startDevServer("server");
+        return;
+
+      case "client":
+        await startDevServer("client");
+        return;
     }
 
     console.log("");
