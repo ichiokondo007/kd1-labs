@@ -2,27 +2,22 @@
 
 export type BlogCategory = {
   title: string;
-  href: string;
 };
 
 export type BlogAuthor = {
   name: string;
   role: string;
-  href: string;
-  imageUrl: string;
 };
 
 export type BloglistItem = {
-  id: string;
+  slug: string;
   title: string;
-  href: string;
   description: string;
   imageUrl: string;
   date: string;
   datetime: string;
   category: BlogCategory;
   author: BlogAuthor;
-  createdAt: string; // ISO string（ソート用）
 };
 
 export type BloglistViewModel = {

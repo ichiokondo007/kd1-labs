@@ -1,4 +1,5 @@
 @import "tailwindcss";
+@plugin "@tailwindcss/typography";
 
 /* Tailwind Plus: Inter を sans フォントに指定 (v4) */
 @theme {

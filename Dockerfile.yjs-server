@@ -1,0 +1,27 @@
+# ===========================================
+# Stage 1: monorepo base (dependency install)
+# ===========================================
+FROM node:22-slim AS base
+RUN corepack enable && corepack prepare pnpm@10.18.3 --activate
+WORKDIR /app
+
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml .npmrc ./
+COPY apps/yjs-server/package.json apps/yjs-server/
+RUN pnpm install --frozen-lockfile
+
+# ===========================================
+# Stage 2: build + deploy
+# ===========================================
+FROM base AS build
+COPY apps/yjs-server/ apps/yjs-server/
+RUN pnpm --filter yjs-server run build
+RUN pnpm --filter yjs-server deploy /app/deployed --prod
+
+# ===========================================
+# Stage 3: production runtime
+# ===========================================
+FROM node:22-slim AS runtime
+WORKDIR /app
+COPY --from=build /app/deployed .
+EXPOSE 1234
+CMD ["node", "dist/index.js"]

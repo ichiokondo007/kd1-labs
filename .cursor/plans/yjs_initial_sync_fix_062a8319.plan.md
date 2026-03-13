@@ -4,7 +4,7 @@ overview: B が途中参加した際に、Y.Map に既にある Circle データ
 todos:
   - id: fix-initial-sync
     content: useYjsCircleSync に Y.Map → Fabric 初期描画処理を追加し、途中参加時に既存 Circle が表示されるようにする
-    status: pending
+    status: completed
 isProject: false
 ---
 

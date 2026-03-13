@@ -15,6 +15,8 @@ import NotFoundPage from '@/pages/404'
 import ComingSoonPage from '@/pages/coming-soon'
 import CanvasYjsListPage from '@/pages/example/canvas-yjs-list'
 import CanvasYjsEditorPage from '@/pages/example/canvas-yjs-editor'
+import BlogPublicPageEntry from '@/pages/blog-public'
+import BlogPublicDetailPage from '@/pages/blog-public-detail'
 
 function App() {
   return (
@@ -40,7 +42,8 @@ function App() {
             <Route path="/example/form-yjs" element={<ComingSoonPage />} />
 
             {/* Tech Blog Routes */}
-            <Route path="/blog/public" element={<ComingSoonPage />} />
+            <Route path="/blog/public" element={<BlogPublicPageEntry />} />
+            <Route path="/blog/public/:slug" element={<BlogPublicDetailPage />} />
             <Route path="/blog/private" element={<ComingSoonPage />} />
             <Route path="/blog/sandbox" element={<ComingSoonPage />} />
 

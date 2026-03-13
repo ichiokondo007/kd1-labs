@@ -20,12 +20,6 @@ export default defineConfig({
         target: 'ws://localhost:1234',
         ws: true,
         rewrite: (path) => path.replace(/^\/yjs/, ''),
-        on: {
-          error(err) {
-            if ('code' in err && err.code === 'ECONNRESET') return;
-            console.error('[vite] yjs proxy error:', err.message);
-          },
-        },
       },
     },
   },

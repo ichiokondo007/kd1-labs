@@ -1,10 +1,7 @@
 import type { FC } from "react";
+import { Link } from "react-router-dom";
 import type { BloglistViewModel } from "../types";
 
-/**
- * Presentational: props のみで描画。I/O 禁止。
- * Draft ブログ一覧をカードリストで表示する。
- */
 export const BloglistPage: FC<BloglistViewModel> = ({
   items,
   isLoading,
@@ -31,21 +28,21 @@ export const BloglistPage: FC<BloglistViewModel> = ({
       <div className="mx-auto max-w-7xl px-6 lg:px-8">
         <div className="mx-auto max-w-2xl lg:max-w-4xl">
           <h2 className="text-4xl font-semibold tracking-tight text-pretty text-gray-900 sm:text-5xl dark:text-white">
-            Sandbox
+            Tech Blog
           </h2>
           <p className="mt-2 text-lg/8 text-gray-600 dark:text-gray-400">
-            Draft blog posts
+            Public articles and POC Results Report
           </p>
 
           {items.length === 0 ? (
             <p className="mt-16 text-gray-500 dark:text-gray-400">
-              データがありません
+              記事がありません
             </p>
           ) : (
             <div className="mt-16 space-y-20 lg:mt-20">
               {items.map((post) => (
                 <article
-                  key={post.id}
+                  key={post.slug}
                   className="relative isolate flex flex-col gap-8 lg:flex-row"
                 >
                   <div className="relative aspect-video sm:aspect-2/1 lg:aspect-square lg:w-64 lg:shrink-0">
@@ -65,20 +62,17 @@ export const BloglistPage: FC<BloglistViewModel> = ({
                       >
                         {post.date}
                       </time>
-                      <a
-                        href={post.category.href}
-                        className="relative z-10 rounded-full bg-gray-50 px-3 py-1.5 font-medium text-gray-600 hover:bg-gray-100 dark:bg-zinc-800 dark:text-gray-300 dark:hover:bg-zinc-700"
-                      >
+                      <span className="rounded-full bg-gray-50 px-3 py-1.5 font-medium text-gray-600 dark:bg-zinc-800 dark:text-gray-300">
                         {post.category.title}
-                      </a>
+                      </span>
                     </div>
 
                     <div className="group relative max-w-xl">
                       <h3 className="mt-3 text-lg/6 font-semibold text-gray-900 group-hover:text-gray-600 dark:text-white dark:group-hover:text-gray-300">
-                        <a href={post.href}>
+                        <Link to={`/blog/public/${post.slug}`}>
                           <span className="absolute inset-0" />
                           {post.title}
-                        </a>
+                        </Link>
                       </h3>
                       <p className="mt-5 text-sm/6 text-gray-600 dark:text-gray-400">
                         {post.description}
@@ -86,18 +80,10 @@ export const BloglistPage: FC<BloglistViewModel> = ({
                     </div>
 
                     <div className="mt-6 flex border-t border-gray-900/5 pt-6 dark:border-white/5">
-                      <div className="relative flex items-center gap-x-4">
-                        <img
-                          alt=""
-                          src={post.author.imageUrl}
-                          className="size-10 rounded-full bg-gray-50 dark:bg-zinc-800"
-                        />
+                      <div className="flex items-center gap-x-4">
                         <div className="text-sm/6">
                           <p className="font-semibold text-gray-900 dark:text-white">
-                            <a href={post.author.href}>
-                              <span className="absolute inset-0" />
-                              {post.author.name}
-                            </a>
+                            {post.author.name}
                           </p>
                           <p className="text-gray-600 dark:text-gray-400">
                             {post.author.role}

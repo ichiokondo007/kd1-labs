@@ -1,8 +1,8 @@
 /**
  * Y.Doc シングルトン管理 + WebSocket 接続ハンドリング
  *
- * y-websocket v1.5.4 の bin/utils.js を TypeScript/ESM で再実装。
- * ref: https://github.com/yjs/y-websocket/blob/master/bin/utils.js
+ * y-websocket v1.5.4
+ * ref: https://github.com/yjs/y-websocket/blob
  */
 import * as Y from "yjs";
 import * as syncProtocol from "y-protocols/sync";

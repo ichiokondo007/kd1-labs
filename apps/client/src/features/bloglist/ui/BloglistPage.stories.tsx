@@ -1,67 +1,44 @@
 import type { Meta, StoryObj } from "@storybook/react";
+import { MemoryRouter } from "react-router-dom";
 import { BloglistPage } from "./BloglistPage";
 import type { BloglistItem } from "../types";
 
 const mockPosts: BloglistItem[] = [
   {
-    id: "1",
-    title: "Boost your conversion rate",
-    href: "#",
+    slug: "getting-started",
+    title: "Getting Started with KD1 Labs",
     description:
-      "Illo sint voluptas. Error voluptates culpa eligendi. Hic vel totam vitae illo. Non aliquid explicabo necessitatibus unde. Sed exercitationem placeat consectetur nulla deserunt vel iusto corrupti dicta laboris incididunt.",
+      "KD1 Labs プロジェクトの概要と開発環境セットアップガイド。初めての方はこちらから。",
     imageUrl:
       "https://images.unsplash.com/photo-1496128858413-b36217c2ce36?ixlib=rb-4.0.3&auto=format&fit=crop&w=3603&q=80",
-    date: "Mar 16, 2020",
-    datetime: "2020-03-16",
-    createdAt: "2020-03-16T00:00:00Z",
-    category: { title: "Marketing", href: "#" },
-    author: {
-      name: "Michael Foster",
-      role: "Co-Founder / CTO",
-      href: "#",
-      imageUrl:
-        "https://images.unsplash.com/photo-1519244703995-f4e0f30006d5?ixlib=rb-1.2.1&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80",
-    },
+    date: "Mar 12, 2026",
+    datetime: "2026-03-12",
+    category: { title: "Guide" },
+    author: { name: "ichio", role: "Developer" },
   },
   {
-    id: "2",
-    title: "How to use search engine optimization to drive sales",
-    href: "#",
+    slug: "yjs-architecture",
+    title: "Yjs CRDT による共同編集アーキテクチャ",
     description:
-      "Optio sit exercitation et ex ullamco aliquid explicabo. Dolore do ut officia anim non ad eu. Magna laboris incididunt commodo elit ipsum.",
+      "Fabric.js Canvas 上でリアルタイム共同編集を実現するための Yjs CRDT 設計と実装方針。",
     imageUrl:
       "https://images.unsplash.com/photo-1547586696-ea22b4d4235d?ixlib=rb-4.0.3&auto=format&fit=crop&w=3270&q=80",
-    date: "Mar 10, 2020",
-    datetime: "2020-03-10",
-    createdAt: "2020-03-10T00:00:00Z",
-    category: { title: "Sales", href: "#" },
-    author: {
-      name: "Lindsay Walton",
-      role: "Front-end Developer",
-      href: "#",
-      imageUrl:
-        "https://images.unsplash.com/photo-1517841905240-472988babdf9?ixlib=rb-1.2.1&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80",
-    },
+    date: "Mar 10, 2026",
+    datetime: "2026-03-10",
+    category: { title: "Architecture" },
+    author: { name: "ichio", role: "Developer" },
   },
   {
-    id: "3",
-    title: "Improve your customer experience",
-    href: "#",
+    slug: "docker-setup",
+    title: "Docker Compose によるローカル開発環境",
     description:
-      "Dolore commodo in nulla do nulla esse consectetur. Adipisicing voluptate velit sint adipisicing ex duis elit deserunt sint ipsum. Culpa in exercitation magna adipisicing id reprehenderit consectetur culpa eu cillum.",
+      "MongoDB, MinIO, API サーバを Docker Compose で立ち上げるマルチサービス構成の解説。",
     imageUrl:
       "https://images.unsplash.com/photo-1492724441997-5dc865305da7?ixlib=rb-4.0.3&auto=format&fit=crop&w=3270&q=80",
-    date: "Feb 12, 2020",
-    datetime: "2020-02-12",
-    createdAt: "2020-02-12T00:00:00Z",
-    category: { title: "Business", href: "#" },
-    author: {
-      name: "Tom Cook",
-      role: "Director of Product",
-      href: "#",
-      imageUrl:
-        "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-1.2.1&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80",
-    },
+    date: "Mar 5, 2026",
+    datetime: "2026-03-05",
+    category: { title: "DevOps" },
+    author: { name: "ichio", role: "Developer" },
   },
 ];
 
@@ -71,13 +48,19 @@ const meta = {
   parameters: {
     layout: "fullscreen",
   },
+  decorators: [
+    (Story) => (
+      <MemoryRouter>
+        <Story />
+      </MemoryRouter>
+    ),
+  ],
 } satisfies Meta<typeof BloglistPage>;
 
 export default meta;
 
 type Story = StoryObj<typeof meta>;
 
-/** デフォルト — 3件のブログカード表示 */
 export const Default: Story = {
   args: {
     items: mockPosts,
@@ -85,7 +68,6 @@ export const Default: Story = {
   },
 };
 
-/** 空状態 — データなし */
 export const Empty: Story = {
   args: {
     items: [],
@@ -93,7 +75,6 @@ export const Empty: Story = {
   },
 };
 
-/** ローディング中 */
 export const Loading: Story = {
   args: {
     items: [],
@@ -101,19 +82,10 @@ export const Loading: Story = {
   },
 };
 
-/** エラー表示 */
 export const Error: Story = {
   args: {
     items: [],
     isLoading: false,
     errorMessage: "ブログ記事の読み込みに失敗しました。",
-  },
-};
-
-/** 1件のみ表示 */
-export const SinglePost: Story = {
-  args: {
-    items: [mockPosts[0]],
-    isLoading: false,
   },
 };

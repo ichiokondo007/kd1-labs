@@ -1,3 +1,8 @@
+---
+description: 
+alwaysApply: true
+---
+
 # AGENTS.md (KD1)
 
 このリポジトリで AI エージェントが作業する際の「常時適用ルール」。

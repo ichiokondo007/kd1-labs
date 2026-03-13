@@ -1,18 +1,10 @@
 import { useEffect, useMemo, useState } from "react";
-import type { BloglistViewModel } from "../types";
+import type { BloglistItem, BloglistViewModel } from "../types";
 import { fetchBloglistItems } from "../services";
-import { sortByCreatedAtDesc } from "../domain";
-
-/**
- * hooks は:
- * - state 管理
- * - 副作用（I/O）
- * - UIイベントのハンドリング
- * を担当する。UIはこの hook の戻り値だけ見る。
- */
+import { sortByDateDesc } from "../domain";
 
 export function useBloglist(): BloglistViewModel {
-  const [items, setItems] = useState<BloglistViewModel["items"]>([]);
+  const [items, setItems] = useState<BloglistItem[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | undefined>(undefined);
 
@@ -26,6 +18,7 @@ export function useBloglist(): BloglistViewModel {
         const data = await fetchBloglistItems(ac.signal);
         setItems(data);
       } catch (e) {
+        if (ac.signal.aborted) return;
         const msg = e instanceof Error ? e.message : "読み込みに失敗しました";
         setErrorMessage(msg);
       } finally {
@@ -36,7 +29,7 @@ export function useBloglist(): BloglistViewModel {
     return () => ac.abort();
   }, []);
 
-  const sorted = useMemo(() => sortByCreatedAtDesc(items), [items]);
+  const sorted = useMemo(() => sortByDateDesc(items), [items]);
 
   return { items: sorted, isLoading, errorMessage };
 }

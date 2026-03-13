@@ -146,6 +146,12 @@ export function useYjsCircleSync(
     canvas.on("object:removed", handleObjectRemoved);
     yCircles.observe(observer);
 
+    // Y.Map にデータがあれば Canvas に描画（途中参加で SyncStep2 が先に完了した場合）
+    if (yCircles.size > 0) {
+      renderYjsCirclesToCanvas(canvas, yCircles, isRemoteRef);
+    }
+    // Canvas 上の Circle を Y.Map に登録（最初のユーザ or SyncStep2 がまだの場合）
+    // SyncStep2 が後から来た場合は observer の "add" で Fabric に反映される
     syncExistingCirclesToYjs(canvas, yCircles);
 
     return () => {
@@ -168,16 +174,38 @@ function findFabricCircleById(
 }
 
 /**
- * 初期ロードで Canvas 上にある Circle を Y.Map に登録する。
- * 既に Y.Map にエントリがある場合（他クライアントが先に接続）はスキップ。
+ * Y.Map → Fabric: Y.Map に既にあるエントリを Fabric Canvas に描画する。
+ * 途中参加時に、先行ユーザが追加した Circle を表示するために使用。
+ * isRemoteRef を true にして object:added → Y.Map への二重登録を防ぐ。
+ */
+function renderYjsCirclesToCanvas(
+  canvas: Canvas,
+  yCircles: Y.Map<CircleProps>,
+  isRemoteRef: React.RefObject<boolean>,
+): void {
+  isRemoteRef.current = true;
+  try {
+    yCircles.forEach((props, key) => {
+      if (findFabricCircleById(canvas, key)) return;
+      const circle = new Circle(props);
+      setCircleId(circle, key);
+      canvas.add(circle);
+    });
+    canvas.requestRenderAll();
+  } finally {
+    isRemoteRef.current = false;
+  }
+}
+
+/**
+ * Fabric → Y.Map: Canvas 上にある Circle を Y.Map に登録する。
+ * 最初に接続したユーザが、MongoDB からロードした Circle を Y.Map に投入する。
  */
 function syncExistingCirclesToYjs(
   canvas: Canvas,
   yCircles: Y.Map<CircleProps>,
 ): void {
   const circles = canvas.getObjects().filter(isCircle);
-  if (circles.length === 0 || yCircles.size > 0) return;
-
   for (const circle of circles) {
     const id = getCircleId(circle);
     if (!yCircles.has(id)) {

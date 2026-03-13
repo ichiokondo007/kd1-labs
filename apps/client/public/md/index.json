@@ -1,0 +1,41 @@
+[
+  {
+    "slug": "getting-started",
+    "title": "Getting Started with KD1 Labs",
+    "description": "KD1 Labs プロジェクトの概要と開発環境セットアップガイド。初めての方はこちらから。",
+    "imageUrl": "/md/yjs1.png",
+    "date": "Mar 12, 2026",
+    "datetime": "2026-03-12",
+    "category": { "title": "Guide" },
+    "author": {
+      "name": "ichio",
+      "role": "Developer"
+    }
+  },
+  {
+    "slug": "architecture",
+    "title": "Yjs CRDT による共同編集アーキテクチャ",
+    "description": "Fabric.js Canvas 上でリアルタイム共同編集を実現するための Yjs CRDT 設計と実装方針。",
+    "imageUrl": "/md/yjs2.png",
+    "date": "Mar 10, 2026",
+    "datetime": "2026-03-10",
+    "category": { "title": "Architecture" },
+    "author": {
+      "name": "ichio",
+      "role": "Developer"
+    }
+  },
+  {
+    "slug": "docker-setup",
+    "title": "Docker Compose によるローカル開発環境",
+    "description": "MongoDB, MinIO, API サーバを Docker Compose で立ち上げるマルチサービス構成の解説。",
+    "imageUrl": "/md/canvas.png",
+    "date": "Mar 5, 2026",
+    "datetime": "2026-03-05",
+    "category": { "title": "DevOps" },
+    "author": {
+      "name": "ichio",
+      "role": "Developer"
+    }
+  }
+]

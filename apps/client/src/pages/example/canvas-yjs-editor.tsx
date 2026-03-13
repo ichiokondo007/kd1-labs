@@ -37,7 +37,7 @@ export default function CanvasYjsEditorPage() {
   const { user } = useCurrentUser();
   const { yDoc, provider, connectionStatus, synced } = useYjsConnection(id, user);
 
-  useYjsCircleSync(yDoc, fabricRef, canvasLoaded && synced);
+  useYjsCircleSync(yDoc, fabricRef, canvasLoaded);
 
   useEffect(() => {
     if (!id) return;

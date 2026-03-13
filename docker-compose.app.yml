@@ -39,6 +39,18 @@ services:
       minio:
         condition: service_healthy
 
+  yjs-server:
+    build:
+      context: .
+      dockerfile: Dockerfile.yjs-server
+    container_name: kd1-yjs-server
+    restart: "no"
+    environment:
+      HOST: "0.0.0.0"
+      PORT: "1234"
+    networks:
+      - kd1-network
+
   client:
     build:
       context: .
@@ -51,6 +63,7 @@ services:
       - kd1-network
     depends_on:
       - server
+      - yjs-server
 
 networks:
   kd1-network:
