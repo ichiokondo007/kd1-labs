@@ -1,5 +1,6 @@
 import * as Headless from '@headlessui/react'
 import { Outlet, useLocation } from 'react-router-dom'
+import { getPageTestId } from '@/lib/page-test-ids'
 import { Sidebar, SidebarBody, SidebarFooter, SidebarHeader, SidebarItem, SidebarLabel, SidebarSection, SidebarSpacer, SidebarHeading } from '@/components/sidebar'
 import { SidebarLayout } from '@/components/sidebar-layout'
 import { Navbar, NavbarSpacer } from '@/components/navbar'
@@ -65,8 +66,11 @@ export function DashboardLayout() {
   const pathname = location.pathname
   const { user, isLoading } = useCurrentUser()
 
+  const mainTestId = getPageTestId(pathname)
+
   return (
     <SidebarLayout
+      mainTestId={mainTestId}
       navbar={
         <Navbar>
           <img src="/kd1.png" className="h-10 w-auto" alt="KD1 Labs Logo" />

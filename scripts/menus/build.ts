@@ -3,6 +3,7 @@ import { select } from "@inquirer/prompts";
 import { runSequential, runStep } from "../runner.js";
 import { log } from "../ui/logger.js";
 import { waitForEnter } from "../ui/pause.js";
+import { SELECT_PAGE_SIZE } from "../ui/prompt-config.js";
 import { showScreen } from "../ui/screen.js";
 
 /**
@@ -46,6 +47,7 @@ export async function buildMenu(): Promise<void> {
       message: "🔨 Build・Migration",
       choices: BUILD_CHOICES,
       loop: false,
+      pageSize: SELECT_PAGE_SIZE,
     });
 
     if (choice === "back") return;

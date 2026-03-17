@@ -1,6 +1,5 @@
-import { useRef, useState, useCallback, useEffect } from "react";
+import { useRef, useState, useCallback } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import axios from "axios";
 import { Heading } from "@/components/heading";
 import { Text } from "@/components/text";
 import { Button } from "@/components/button";
@@ -9,7 +8,6 @@ import {
   CanvasEditorToolbar,
   type CanvasTool,
 } from "@/features/canvas/ui/CanvasEditorToolbar";
-import { fetchCanvas } from "@/features/canvas/services";
 import { uploadFile } from "@/services/storageApi";
 import { CanvasBgCropper } from "@/features/canvas-bg-cropper";
 import type { BgCropperResult } from "@/features/canvas-bg-cropper";
@@ -18,6 +16,7 @@ import type { SvgAssetItem } from "@kd1-labs/types";
 import { useCurrentUser } from "@/hooks/useCurrentUser";
 import { useYjsConnection } from "@/features/canvas-yjs/hooks/useYjsConnection";
 import { useYjsCircleSync } from "@/features/canvas-yjs/hooks/useYjsCircleSync";
+import { useYjsCanvasRestore } from "@/features/canvas-yjs/hooks/useYjsCanvasRestore";
 import { ConnectedUsers } from "@/features/canvas-yjs/ui/ConnectedUsers";
 import { ConnectionStatusBadge } from "@/features/canvas-yjs/ui/ConnectionStatusBadge";
 
@@ -26,43 +25,19 @@ export default function CanvasYjsEditorPage() {
   const navigate = useNavigate();
   const fabricRef = useRef<FabricCanvasHandle>(null);
   const [activeTool, setActiveTool] = useState<CanvasTool>("selection");
-  const [canvasName, setCanvasName] = useState("");
-  const [isLoading, setIsLoading] = useState(true);
   const [serverError, setServerError] = useState<string | undefined>();
   const [bgCropperSrc, setBgCropperSrc] = useState<string | null>(null);
   const [svgDrawerOpen, setSvgDrawerOpen] = useState(false);
-  const [canvasLoaded, setCanvasLoaded] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const { user } = useCurrentUser();
   const { yDoc, provider, connectionStatus, synced } = useYjsConnection(id, user);
 
-  useYjsCircleSync(yDoc, fabricRef, canvasLoaded);
+  // Y.Doc sync 完了後に meta（canvasName, 背景画像）を復元
+  const { canvasName, isRestored } = useYjsCanvasRestore(yDoc, fabricRef, synced);
 
-  useEffect(() => {
-    if (!id) return;
-    const ac = new AbortController();
-
-    (async () => {
-      setIsLoading(true);
-      setServerError(undefined);
-      try {
-        const data = await fetchCanvas(id, ac.signal);
-        if (ac.signal.aborted) return;
-        setCanvasName(data.canvasName);
-        await fabricRef.current?.loadFromJSON(data.canvas);
-        setCanvasLoaded(true);
-      } catch (e) {
-        if (ac.signal.aborted || axios.isCancel(e)) return;
-        const msg = e instanceof Error ? e.message : "Failed to load canvas.";
-        setServerError(msg);
-      } finally {
-        if (!ac.signal.aborted) setIsLoading(false);
-      }
-    })();
-
-    return () => ac.abort();
-  }, [id]);
+  // Y.Doc sync 完了 + meta 復元完了で Circle 同期を開始
+  useYjsCircleSync(yDoc, fabricRef, isRestored);
 
   const handleToolChange = useCallback((tool: CanvasTool) => {
     setActiveTool(tool);
@@ -155,9 +130,15 @@ export default function CanvasYjsEditorPage() {
               activeTool={activeTool}
               onShapePlaced={handleShapePlaced}
             />
-            {isLoading && (
+            {!isRestored && (
               <div className="absolute inset-0 flex items-center justify-center bg-white/80 rounded-md">
-                <Text>Loading canvas...</Text>
+                <Text>
+                  {connectionStatus === "connecting"
+                    ? "Connecting..."
+                    : !synced
+                      ? "Syncing Y.Doc..."
+                      : "Restoring canvas..."}
+                </Text>
               </div>
             )}
           </div>

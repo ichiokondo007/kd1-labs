@@ -1,4 +1,1 @@
-対象	変更箇所	設定方法
-client (Vite) :5173	vite.config.ts	server.port
-server (Express) :3000	.env.local	PORT=xxxx
-proxy 先	vite.config.ts	proxy.target を server に合わせる
+>

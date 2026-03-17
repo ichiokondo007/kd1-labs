@@ -12,7 +12,7 @@
 2. [用語集](#2-用語集)
 3. [サーバサイド: WebSocket 接続とプロトコル](#3-サーバサイド-websocket-接続とプロトコル)
 4. [クライアントサイド: 接続とライフサイクル](#4-クライアントサイド-接続とライフサイクル)
-5. [Fabric.js と Y.Doc の双方向バインディング](#5-fabricjs-と-ydoc-の双方向バインディング)
+5. [Fabric.js と Y.Doc の双方向バインディング#](#5-fabricjs-と-ydoc-の双方向バインディング)
 6. [オブジェクト同期ルール（実装者向けガイド）](#6-オブジェクト同期ルール実装者向けガイド)
 7. [Awareness の利用](#7-awareness-の利用)
 8. [既知の制約と Phase 2 への課題](#8-既知の制約と-phase-2-への課題)
@@ -64,41 +64,49 @@ graph TB
   CanvasAPI --> MongoDB
 ```
 
+
+
 ### 通信経路
 
-| 経路 | プロトコル | 用途 |
-|---|---|---|
+
+| 経路                                       | プロトコル     | 用途                   |
+| ---------------------------------------- | --------- | -------------------- |
 | Browser → `/yjs/{canvasId}` → yjs-server | WebSocket | Y.Doc 同期 + Awareness |
-| Browser → `/api/canvas/:id` → Express | HTTP REST | Canvas JSON の初期ロード |
+| Browser → `/api/canvas/:id` → Express    | HTTP REST | Canvas JSON の初期ロード   |
+
 
 ### パッケージ依存
 
-| レイヤー | パッケージ | バージョン |
-|---|---|---|
-| Client | `yjs` | ^13.6.29 |
-| Client | `y-websocket` | ^3.0.0 |
-| Server | `yjs` | ^13.6.24 |
-| Server | `y-protocols` | ^1.0.6 |
-| Server | `lib0` | ^0.2.102 |
-| Server | `ws` | ^8.18.0 |
+
+| レイヤー   | パッケージ         | バージョン    |
+| ------ | ------------- | -------- |
+| Client | `yjs`         | ^13.6.29 |
+| Client | `y-websocket` | ^3.0.0   |
+| Server | `yjs`         | ^13.6.24 |
+| Server | `y-protocols` | ^1.0.6   |
+| Server | `lib0`        | ^0.2.102 |
+| Server | `ws`          | ^8.18.0  |
+
 
 ---
 
 ## 2. 用語集
 
-| 用語 | 説明 |
-|---|---|
-| **Y.Doc** | Yjs の CRDT ドキュメント。全ての共有データ型のルートコンテナ。各 Canvas (room) に 1 つ存在する |
-| **Y.Map** | Y.Doc 内のキーバリュー型共有データ構造。オブジェクトタイプごとに独立した Map を使用（例: `"circles"`） |
-| **Awareness** | ユーザのプレゼンス情報（カーソル位置、ユーザ名等）を管理する Y.Doc とは独立した仕組み。永続化されない |
-| **SyncStep1** | 同期プロトコルの第 1 ステップ。自身の state vector（各クライアントの最終クロック値）を相手に送信する |
-| **SyncStep2** | 同期プロトコルの第 2 ステップ。受信した state vector を元に、相手が持っていない差分 update を送信する |
-| **Update** | Y.Doc への変更をバイナリエンコードしたもの。SyncStep2 と同じフォーマットでリアルタイム変更にも使われる |
-| **WebsocketProvider** | `y-websocket` パッケージが提供するクライアント側の接続管理クラス。Y.Doc と WebSocket を橋渡しする |
-| **CRDT** | Conflict-free Replicated Data Type。サーバを介さずに複数クライアント間でデータを矛盾なく統合できるデータ構造 |
-| **lib0** | Yjs エコシステムの低レベルユーティリティ。バイナリ encoding/decoding を提供する |
-| **Room** | 1 つの Canvas に対応する Y.Doc の論理的な部屋。URL パスの canvasId が room 名になる |
-| **controlledIDs** | サーバ側で各 WebSocket 接続が「所有する」awareness client ID の Set。切断時の一括削除に使用 |
+
+| 用語                    | 説明                                                                      |
+| --------------------- | ----------------------------------------------------------------------- |
+| **Y.Doc**             | Yjs の CRDT ドキュメント。全ての共有データ型のルートコンテナ。各 Canvas (room) に 1 つ存在する           |
+| **Y.Map**             | Y.Doc 内のキーバリュー型共有データ構造。オブジェクトタイプごとに独立した Map を使用（例: `"circles"`）         |
+| **Awareness**         | ユーザのプレゼンス情報（カーソル位置、ユーザ名等）を管理する Y.Doc とは独立した仕組み。永続化されない                  |
+| **SyncStep1**         | 同期プロトコルの第 1 ステップ。自身の state vector（各クライアントの最終クロック値）を相手に送信する              |
+| **SyncStep2**         | 同期プロトコルの第 2 ステップ。受信した state vector を元に、相手が持っていない差分 update を送信する         |
+| **Update**            | Y.Doc への変更をバイナリエンコードしたもの。SyncStep2 と同じフォーマットでリアルタイム変更にも使われる             |
+| **WebsocketProvider** | `y-websocket` パッケージが提供するクライアント側の接続管理クラス。Y.Doc と WebSocket を橋渡しする        |
+| **CRDT**              | Conflict-free Replicated Data Type。サーバを介さずに複数クライアント間でデータを矛盾なく統合できるデータ構造 |
+| **lib0**              | Yjs エコシステムの低レベルユーティリティ。バイナリ encoding/decoding を提供する                     |
+| **Room**              | 1 つの Canvas に対応する Y.Doc の論理的な部屋。URL パスの canvasId が room 名になる            |
+| **controlledIDs**     | サーバ側で各 WebSocket 接続が「所有する」awareness client ID の Set。切断時の一括削除に使用         |
+
 
 ---
 
@@ -106,11 +114,13 @@ graph TB
 
 ### 3.1 ファイル構成
 
-| ファイル | 役割 |
-|---|---|
-| `apps/yjs-server/src/index.ts` | HTTP/WebSocket サーバ起動、upgrade ハンドリング |
-| `apps/yjs-server/src/doc-manager.ts` | Y.Doc シングルトン管理、同期プロトコル、接続ライフサイクル |
-| `apps/yjs-server/src/types.ts` | 型定義 (`WSSharedDoc`, `Persistence`) |
+
+| ファイル                                 | 役割                                  |
+| ------------------------------------ | ----------------------------------- |
+| `apps/yjs-server/src/index.ts`       | HTTP/WebSocket サーバ起動、upgrade ハンドリング |
+| `apps/yjs-server/src/doc-manager.ts` | Y.Doc シングルトン管理、同期プロトコル、接続ライフサイクル    |
+| `apps/yjs-server/src/types.ts`       | 型定義 (`WSSharedDoc`, `Persistence`)  |
+
 
 ### 3.2 型定義
 
@@ -161,10 +171,12 @@ const MESSAGE_AWARENESS = 1;
 
 全メッセージは先頭 1 バイトでタイプを識別する:
 
-| 値 | 定数 | 内容 |
-|---|---|---|
-| 0 | `MESSAGE_SYNC` | ドキュメント同期 (SyncStep1 / SyncStep2 / Update) |
-| 1 | `MESSAGE_AWARENESS` | プレゼンス情報 |
+
+| 値   | 定数                  | 内容                                        |
+| --- | ------------------- | ----------------------------------------- |
+| 0   | `MESSAGE_SYNC`      | ドキュメント同期 (SyncStep1 / SyncStep2 / Update) |
+| 1   | `MESSAGE_AWARENESS` | プレゼンス情報                                   |
+
 
 `messageListener` がメッセージを受信し、タイプに応じてルーティングする:
 
@@ -173,7 +185,7 @@ const MESSAGE_AWARENESS = 1;
 function messageListener(conn: WebSocket, doc: WSSharedDoc, message: Uint8Array): void {
   try {
     const encoder = encoding.createEncoder();
-    const decoder = decoding.createDecoder(message);
+    const decoder = decoding.createDecoder(message);#
     const messageType = decoding.readVarUint(decoder);
 
     switch (messageType) {
@@ -221,7 +233,7 @@ function getYDoc(docName: string): WSSharedDoc {
 }
 ```
 
-`docs` Map がグローバルシングルトンとして全 room の Y.Doc を保持する。同じ canvasId に対する接続は同一の Y.Doc インスタンスを共有する。`getYDoc` と `docs` の間には `createWSSharedDoc`, `send`, `closeConn` 等の関数が定義されている。
+`docs` Map がグローバルシングルトンとして全 room の Y.Doc を保持する。同じ canvasId に対する接続は同一の Y.Doc インスタンスを共有する。`getYDoc` と `docs` の間には `createWSSharedDoc`, `send`, `closeConn` 等の関#数が定義されている。
 
 ### 3.6 ブロードキャスト機構
 
@@ -269,7 +281,7 @@ doc.awareness.on("update",
 
 ### 3.7 シーケンス図
 
-#### 新規接続（最初のユーザ A）
+#### 新規接続（最初のユーザ A）#
 
 ```mermaid
 sequenceDiagram
@@ -286,6 +298,8 @@ sequenceDiagram
   A-->>S: Awareness Update (user info)
   S->>S: awareness apply → awareness.on("update") 発火
 ```
+
+
 
 #### 途中参加（ユーザ B が後から参加）
 
@@ -310,6 +324,8 @@ sequenceDiagram
   S-->>A: Awareness Update (B の user info)
 ```
 
+
+
 #### 離脱処理
 
 ```mermaid
@@ -330,6 +346,8 @@ sequenceDiagram
     Note right of S: メモリから完全に解放
   end
 ```
+
+
 
 ### 3.8 Ping/Pong ヘルスチェック
 
@@ -355,13 +373,15 @@ const pingInterval = setInterval(() => {
 
 ### 4.1 ファイル構成
 
-| ファイル | 役割 |
-|---|---|
-| `features/canvas-yjs/hooks/useYjsConnection.ts` | WebSocket 接続管理 + Awareness セットアップ |
-| `features/canvas-yjs/hooks/useYjsCircleSync.ts` | Fabric.js ↔ Y.Map 双方向バインディング |
-| `features/canvas-yjs/ui/ConnectedUsers.tsx` | Awareness → 接続ユーザ表示 |
-| `features/canvas-yjs/ui/ConnectionStatusBadge.tsx` | 接続状態バッジ |
-| `pages/example/canvas-yjs-editor.tsx` | エディタページ（hooks の組み立て役） |
+
+| ファイル                                               | 役割                                |
+| -------------------------------------------------- | --------------------------------- |
+| `features/canvas-yjs/hooks/useYjsConnection.ts`    | WebSocket 接続管理 + Awareness セットアップ |
+| `features/canvas-yjs/hooks/useYjsCircleSync.ts`    | Fabric.js ↔ Y.Map 双方向バインディング#     |
+| `features/canvas-yjs/ui/ConnectedUsers.tsx`        | Awareness → 接続ユーザ表示               |
+| `features/canvas-yjs/ui/ConnectionStatusBadge.tsx` | 接続状態バッジ                           |
+| `pages/example/canvas-yjs-editor.tsx`              | エディタページ（hooks の組み立て役）             |
+
 
 ### 4.2 Vite WebSocket プロキシ
 
@@ -413,7 +433,7 @@ export function useYjsConnection(
     provider.awareness.setLocalStateField("user", {  // ⑥ Awareness にユーザ情報セット
       userId: user.userId,
       name: user.screenName,
-      avatarUrl: user.avatarUrl,
+      avatarUrl: user.avatarUrl,###
       avatarColor: user.avatarColor,
     });
   }, [provider, user]);
@@ -423,6 +443,7 @@ export function useYjsConnection(
 ```
 
 **設計ポイント:**
+
 - `Y.Doc` は `useRef` で保持し、再レンダリングで再生成されない
 - `canvasId` が変わった場合のみ `WebsocketProvider` を再生成する
 - `buildWsUrl()` は `location.protocol` と `location.host` から動的に WebSocket URL を構築する
@@ -487,7 +508,9 @@ sequenceDiagram
   Note over Sync: 初期同期処理開始<br/>(Y.Map ↔ Fabric)
 ```
 
-**`canvasLoaded` のみで `enabled` を制御する理由:**
+
+
+`**canvasLoaded` のみで `enabled` を制御する理由:**
 
 `synced` を条件に含めると、SyncStep2 完了後に observe を登録することになり、SyncStep2 で Y.Map に入った `add` イベントを取りこぼす。`canvasLoaded` 時点で observe を登録しておけば、SyncStep2 が後から来ても observer の `case "add"` で自動的に反映される。
 
@@ -542,6 +565,8 @@ flowchart TB
   Render --> ResetRemote
 ```
 
+
+
 ### 5.2 ID 管理: WeakMap による紐付け
 
 ```typescript
@@ -563,6 +588,7 @@ function setCircleId(obj: FabricObject, id: string): void {
 ```
 
 **設計判断:** Fabric オブジェクト自体のプロパティ（`obj.data` 等）に ID を持たせず、外部の `WeakMap` で管理する。理由:
+
 - Fabric v7 の型定義に `data` プロパティが存在しない
 - Fabric オブジェクトの内部状態を汚さない
 - `WeakMap` なので Fabric オブジェクトが GC されればエントリも自動消滅
@@ -601,6 +627,7 @@ const handleObjectRemoved = (e: { target?: FabricObject }) => {
 ```
 
 全ハンドラに共通するガード条件:
+
 1. `isRemoteRef.current === true` → スキップ（リモート操作の反映中）
 2. `e.target` が存在し `isCircle()` であること
 
@@ -685,13 +712,15 @@ syncExistingCirclesToYjs(canvas, yCircles);
 
 **3 つのシナリオ:**
 
-| シナリオ | Y.Map | Fabric Canvas | 動作 |
-|---|---|---|---|
-| A: 最初のユーザ | 空 | MongoDB から Circle あり | `syncExistingCirclesToYjs` で Fabric → Y.Map |
-| B: 途中参加 (SyncStep2 完了済) | データあり | MongoDB から Circle あり | `renderYjsCirclesToCanvas` で Y.Map → Fabric、`syncExistingCirclesToYjs` は重複チェックでスキップ |
-| C: 途中参加 (SyncStep2 未完了) | 空 | MongoDB から Circle あり | 両方とも実質 no-op、後から SyncStep2 が来たら observer の `"add"` で反映 |
 
-**`renderYjsCirclesToCanvas` — Y.Map → Fabric:**
+| シナリオ                    | Y.Map | Fabric Canvas        | 動作                                                                                  |
+| ----------------------- | ----- | -------------------- | ----------------------------------------------------------------------------------- |
+| A: 最初のユーザ               | 空     | MongoDB から Circle あり | `syncExistingCirclesToYjs` で Fabric → Y.Map                                         |
+| B: 途中参加 (SyncStep2 完了済) | データあり | MongoDB から Circle あり | `renderYjsCirclesToCanvas` で Y.Map → Fabric、`syncExistingCirclesToYjs` は重複チェックでスキップ |
+| C: 途中参加 (SyncStep2 未完了) | 空     | MongoDB から Circle あり | 両方とも実質 no-op、後から SyncStep2 が来たら observer の `"add"` で反映                              |
+
+
+`**renderYjsCirclesToCanvas` — Y.Map → Fabric:**
 
 ```typescript
 // features/canvas-yjs/hooks/useYjsCircleSync.ts L181-198
@@ -715,7 +744,7 @@ function renderYjsCirclesToCanvas(
 }
 ```
 
-**`syncExistingCirclesToYjs` — Fabric → Y.Map:**
+`**syncExistingCirclesToYjs` — Fabric → Y.Map:**
 
 ```typescript
 // features/canvas-yjs/hooks/useYjsCircleSync.ts L204-215
@@ -732,6 +761,10 @@ function syncExistingCirclesToYjs(
   }
 }
 ```
+
+- a
+  - b
+- c
 
 ---
 
@@ -750,6 +783,7 @@ const yPaths   = yDoc.getMap<PathProps>("paths");       // 将来追加
 ```
 
 1 つの Y.Map に全タイプを混在させない。理由:
+
 - observer のイベントハンドリングが複雑化する
 - タイプごとに独立して拡張・テストできる
 
@@ -783,13 +817,15 @@ const CIRCLE_KEYS: (keyof CircleProps)[] = [
 
 新しいオブジェクトタイプを追加する際、以下の関数を必ず定義する:
 
-| 関数 | 役割 | 例 |
-|---|---|---|
-| `isXxx(obj): obj is Xxx` | 型判別（type guard） | `obj.type === "circle"` |
-| `fabricToYjs(obj): XxxProps` | Fabric → Y.Map 変換 | プロパティ抽出 |
-| `getXxxId(obj): string` | WeakMap から ID 取得（なければ生成） | `crypto.randomUUID()` |
-| `setXxxId(obj, id): void` | WeakMap に ID 登録 | リモート受信時に使用 |
-| `findFabricXxxById(canvas, id)` | Canvas 上から ID で検索 | observer 内で使用 |
+
+| 関数                              | 役割                       | 例                       |
+| ------------------------------- | ------------------------ | ----------------------- |
+| `isXxx(obj): obj is Xxx`        | 型判別（type guard）          | `obj.type === "circle"` |
+| `fabricToYjs(obj): XxxProps`    | Fabric → Y.Map 変換        | プロパティ抽出                 |
+| `getXxxId(obj): string`         | WeakMap から ID 取得（なければ生成） | `crypto.randomUUID()`   |
+| `setXxxId(obj, id): void`       | WeakMap に ID 登録          | リモート受信時に使用              |
+| `findFabricXxxById(canvas, id)` | Canvas 上から ID で検索        | observer 内で使用           |
+
 
 ### 6.4 ID 管理ルール
 
@@ -804,40 +840,44 @@ const CIRCLE_KEYS: (keyof CircleProps)[] = [
 
 3 つのイベントを必ずハンドルする:
 
-| Fabric イベント | Y.Map 操作 | ガード |
-|---|---|---|
-| `object:added` | `yMap.set(id, props)` | `isRemoteRef` + `isXxx` + `!yMap.has(id)` |
-| `object:modified` | `yMap.set(id, props)` | `isRemoteRef` + `isXxx` |
-| `object:removed` | `yMap.delete(id)` | `isRemoteRef` + `isXxx` + `yMap.has(id)` |
+
+| Fabric イベント       | Y.Map 操作              | ガード                                       |
+| ----------------- | --------------------- | ----------------------------------------- |
+| `object:added`    | `yMap.set(id, props)` | `isRemoteRef` + `isXxx` + `!yMap.has(id)` |
+| `object:modified` | `yMap.set(id, props)` | `isRemoteRef` + `isXxx`                   |
+| `object:removed`  | `yMap.delete(id)`     | `isRemoteRef` + `isXxx` + `yMap.has(id)`  |
+
 
 #### Y.Map → Fabric（リモート操作）
 
 `observe` コールバック内で 3 つのアクションをハンドルする:
 
-| Y.Map アクション | Fabric 操作 | 注意点 |
-|---|---|---|
-| `add` | `new Xxx(props)` + `setXxxId` + `canvas.add()` | `findFabricXxxById` で重複チェック |
-| `update` | `existing.set(...)` + `setCoords()` | バウンディングボックスの再計算が必要 |
-| `delete` | `canvas.remove(existing)` | — |
+
+| Y.Map アクション | Fabric 操作                                      | 注意点                         |
+| ----------- | ---------------------------------------------- | --------------------------- |
+| `add`       | `new Xxx(props)` + `setXxxId` + `canvas.add()` | `findFabricXxxById` で重複チェック |
+| `update`    | `existing.set(...)` + `setCoords()`            | バウンディングボックスの再計算が必要          |
+| `delete`    | `canvas.remove(existing)`                      | —                           |
+
 
 #### isRemoteRef ガードの適用ルール
 
 - **observer 内の処理開始時**: `isRemoteRef.current = true` にセット
 - **observer 内の処理終了時**: `finally` ブロックで `isRemoteRef.current = false` に戻す
-- **`renderYjsCirclesToCanvas` 等の一括描画時**: 同様に `isRemoteRef` を `true` にセット
+- `**renderYjsCirclesToCanvas` 等の一括描画時**: 同様に `isRemoteRef` を `true` にセット
 - **Fabric イベントハンドラ冒頭**: `if (isRemoteRef.current) return;` でスキップ
 
 ### 6.6 新規オブジェクトタイプ追加チェックリスト
 
 新しいオブジェクトタイプ（例: Rect）を同期対象に追加する際の手順:
 
-- [ ] `interface RectProps` を定義（同期対象プロパティのみ）
-- [ ] `RECT_KEYS` 配列を定義
-- [ ] `isRect()`, `fabricToYjs()`, `getRectId()`, `setRectId()`, `findFabricRectById()` を実装
-- [ ] `useYjsRectSync` hook を作成（`useYjsCircleSync` と同じ構造）
-- [ ] `canvas-yjs-editor.tsx` で `useYjsRectSync(yDoc, fabricRef, canvasLoaded)` を呼び出し
-- [ ] 初期同期処理（`renderYjsRectsToCanvas` + `syncExistingRectsToYjs`）を実装
-- [ ] 動作確認: ローカル追加 → リモート反映、リモート追加 → ローカル反映、途中参加時の初期同期
+- `interface RectProps` を定義（同期対象プロパティのみ）
+- `RECT_KEYS` 配列を定義
+- `isRect()`, `fabricToYjs()`, `getRectId()`, `setRectId()`, `findFabricRectById()` を実装
+- `useYjsRectSync` hook を作成（`useYjsCircleSync` と同じ構造）
+- `canvas-yjs-editor.tsx` で `useYjsRectSync(yDoc, fabricRef, canvasLoaded)` を呼び出し
+- 初期同期処理（`renderYjsRectsToCanvas` + `syncExistingRectsToYjs`）を実装
+- 動作確認: ローカル追加 → リモート反映、リモート追加 → ローカル反映、途中参加時の初期同期
 
 ---
 
@@ -924,12 +964,15 @@ provider.awareness.setLocalStateField("selection", {
 
 ## 8. 既知の制約と Phase 2 への課題
 
-| 項目 | 現状 | Phase 2 での対応 |
-|---|---|---|
-| **Persistence** | 未実装。全員退出時に Y.Doc はメモリから破棄される | MongoDB Persistence の実装 (`y-mongodb-provider` or 自前) |
-| **認証** | 未実装。誰でも任意の room に接続可能 | `server.on("upgrade")` 内で session/token 検証 |
-| **対象オブジェクト** | Circle のみ | Rect, Path, Text, Image 等を順次追加 |
-| **`persistence.bindState` の非同期** | `getYDoc()` 内で `await` されていない。doc 返却時に DB 復元が未完了の可能性 | `await` 化 or 接続待機の仕組み |
-| **サーバクラッシュ** | 全員接続中にクラッシュするとデータロス | 定期的な `writeState` or WAL 方式 |
-| **GC** | `gc: true` で削除メタデータを回収。undo 履歴が失われる可能性 | undo 要件に応じて `gc: false` を検討 |
-| **スケーリング** | 単一プロセス | Redis pub/sub による複数インスタンス対応 |
+
+| 項目                               | 現状                                                   | Phase 2 での対応                                         |
+| -------------------------------- | ---------------------------------------------------- | ---------------------------------------------------- |
+| **Persistence**                  | 未実装。全員退出時に Y.Doc はメモリから破棄される                         | MongoDB Persistence の実装 (`y-mongodb-provider` or 自前) |
+| **認証**                           | 未実装。誰でも任意の room に接続可能                                | `server.on("upgrade")` 内で session/token 検証           |
+| **対象オブジェクト**                     | Circle のみ                                            | Rect, Path, Text, Image 等を順次追加                       |
+| `**persistence.bindState` の非同期** | `getYDoc()` 内で `await` されていない。doc 返却時に DB 復元が未完了の可能性 | `await` 化 or 接続待機の仕組み                                |
+| **サーバクラッシュ**                     | 全員接続中にクラッシュするとデータロス                                  | 定期的な `writeState` or WAL 方式                          |
+| **GC**                           | `gc: true` で削除メタデータを回収。undo 履歴が失われる可能性               | undo 要件に応じて `gc: false` を検討                          |
+| **スケーリング**                       | 単一プロセス                                               | Redis pub/sub による複数インスタンス対応                          |
+
+

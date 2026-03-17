@@ -3,22 +3,27 @@ import { runForeground } from "../runner.js";
 import { runFullDocker } from "../services/dev.service.js";
 import { log } from "../ui/logger.js";
 import { waitForEnter } from "../ui/pause.js";
+import { SELECT_PAGE_SIZE } from "../ui/prompt-config.js";
 import { showScreen } from "../ui/screen.js";
 
-type DevMenuValue = "full-docker" | "server" | "client" | "back" | "exit";
+type DevMenuValue = "full-docker" | "server" | "client" | "yjsserver" | "back" | "exit";
 
 const DEV_CHOICES = [
-  { name: "一括Docker起動（Full Docker run）", value: "full-docker" as const },
+  { name: " 🔷 一括起動/git clone後の初回用 ( Full Docker run）", value: "full-docker" as const },
   {
-    name: "Server Process起動 apps/server run dev（Build → run）",
+    name: " 🟢 Server Process起動 apps/server run dev（Build → run）",
     value: "server" as const,
   },
   {
-    name: "Cliant Process起動 apps/client run dev（Build → run）",
+    name: " 🟣 Cliant Process起動 apps/client run dev（Build → run）",
     value: "client" as const,
   },
-  { name: "↩ TOPへ戻る", value: "back" as const },
-  { name: "❌ EXIT", value: "exit" as const },
+  {
+    name: " 🟡 Yjs-server Process起動 apps/yjs-server run dev（Build → run）",
+    value: "yjsserver" as const,
+  },
+  { name: " ↩️ TOPへ戻る", value: "back" as const },
+  { name: " ❌ EXIT", value: "exit" as const },
 ];
 
 const PREPARE_AND_RUN = {
@@ -34,9 +39,15 @@ const PREPARE_AND_RUN = {
     runLabel: "apps/client dev server 起動",
     runCmd: "pnpm --filter client dev",
   },
+  yjsserver: {
+    buildLabel: "yjs-server 依存パッケージ ビルド",
+    buildCmd: "pnpm --filter yjs-server run build",
+    runLabel: "apps/yjs-server dev server 起動",
+    runCmd: "pnpm --filter yjs-server dev",
+  },
 } as const;
 
-async function startDevServer(target: "server" | "client"): Promise<void> {
+async function startDevServer(target: "server" | "client" | "yjsserver"): Promise<void> {
   const cfg = PREPARE_AND_RUN[target];
 
   log.info(`\n📦 ${cfg.buildLabel}...`);
@@ -61,6 +72,7 @@ export async function devMenu(): Promise<void> {
       message: "🚀 Open Development Environment (server / client は別ターミナルで各々実行)",
       choices: DEV_CHOICES,
       loop: false,
+      pageSize: SELECT_PAGE_SIZE,
     });
 
     if (choice === "back") return;
@@ -80,6 +92,10 @@ export async function devMenu(): Promise<void> {
 
       case "client":
         await startDevServer("client");
+        return;
+
+      case "yjsserver":
+        await startDevServer("yjsserver");
         return;
     }
 

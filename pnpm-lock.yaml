@@ -230,6 +230,9 @@ importers:
 
   apps/yjs-server:
     dependencies:
+      '@kd1-labs/document-db':
+        specifier: workspace:*
+        version: link:../../packages/document-db
       lib0:
         specifier: ^0.2.102
         version: 0.2.117

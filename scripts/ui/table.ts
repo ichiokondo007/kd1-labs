@@ -12,6 +12,7 @@ function colorizeState(state: string): string {
   switch (state) {
     case "running":
       return `${color.green}${state}${color.reset}`;
+    case "down":
     case "exited":
     case "dead":
       return `${color.red}${state}${color.reset}`;

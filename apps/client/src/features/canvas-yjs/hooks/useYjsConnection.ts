@@ -48,6 +48,12 @@ export function useYjsConnection(
 
     wsProvider.on("status", handleStatus);
     wsProvider.on("sync", handleSync);
+
+    // WebsocketProvider が既に synced 状態の場合（高速接続時）
+    if (wsProvider.synced) {
+      setSynced(true);
+    }
+
     setProvider(wsProvider);
 
     return () => {

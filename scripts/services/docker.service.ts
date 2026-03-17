@@ -14,26 +14,64 @@ export interface ContainerInfo {
   ports: string;
 }
 
-export async function getContainerStatus(): Promise<ContainerInfo[]> {
+const COMPOSE_ARGS = ["compose", "-f", BASE_COMPOSE_FILE, "-f", APP_COMPOSE_FILE];
+
+async function getComposeServiceNames(): Promise<string[]> {
   const { stdout } = await runCommand(
     "docker",
-    ["compose", "-f", BASE_COMPOSE_FILE, "-f", APP_COMPOSE_FILE, "ps", "--format", "json"],
+    [...COMPOSE_ARGS, "config", "--services"],
+    PROJECT_ROOT,
+  );
+  if (!stdout.trim()) return [];
+  return stdout.trim().split("\n").filter(Boolean);
+}
+
+export async function getContainerStatus(): Promise<ContainerInfo[]> {
+  const serviceNames = await getComposeServiceNames();
+  if (serviceNames.length === 0) return [];
+
+  const { stdout: psStdout } = await runCommand(
+    "docker",
+    [...COMPOSE_ARGS, "ps", "-a", "--format", "json"],
     PROJECT_ROOT,
   );
 
-  if (!stdout) return [];
+  const containerByService = new Map<string, ContainerInfo>();
+  if (psStdout) {
+    const lines = psStdout.split("\n").filter(Boolean);
+    for (const line of lines) {
+      const c = JSON.parse(line) as {
+        Name?: string;
+        Service?: string;
+        State?: string;
+        Status?: string;
+        Publishers?: { PublishedPort: number; TargetPort: number; Protocol: string }[];
+      };
+      const publishers = c.Publishers ?? [];
+      const ports = publishers
+        .map((p) => `${p.PublishedPort}/${p.Protocol}`)
+        .filter(Boolean)
+        .join(", ");
+      const state = c.State === "running" ? "running" : "down";
+      containerByService.set(c.Service ?? "", {
+        name: c.Name ?? "",
+        service: c.Service ?? "",
+        state,
+        status: c.Status ?? "",
+        ports,
+      });
+    }
+  }
 
-  const lines = stdout.split("\n").filter(Boolean);
-  return lines.map((line) => {
-    const c = JSON.parse(line);
-    const publishers: { PublishedPort: number; TargetPort: number; Protocol: string }[] =
-      c.Publishers ?? [];
-
+  return serviceNames.map((serviceName) => {
+    const existing = containerByService.get(serviceName);
+    if (existing) return existing;
     return {
-      name: c.Name ?? "",
-      service: c.Service ?? "",
-      state: c.State ?? "",
-      status: c.Status ?? "",
+      service: serviceName,
+      name: "-",
+      state: "down",
+      status: "-",
+      ports: "",
     };
   });
 }

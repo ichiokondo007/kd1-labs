@@ -14,6 +14,7 @@
   "license": "ISC",
   "packageManager": "pnpm@10.18.3",
   "dependencies": {
+    "@kd1-labs/document-db": "workspace:*",
     "lib0": "^0.2.102",
     "ws": "^8.18.0",
     "y-protocols": "^1.0.6",

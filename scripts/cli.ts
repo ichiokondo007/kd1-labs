@@ -8,8 +8,9 @@ import { buildMenu } from "./menus/build.js";
 import { helpMenu } from "./menus/help.js";
 import { techstackMenu } from "./menus/techstack.js";
 
-import { showScreen } from "./ui/screen.js";
 import { log } from "./ui/logger.js";
+import { SELECT_PAGE_SIZE } from "./ui/prompt-config.js";
+import { showScreen } from "./ui/screen.js";
 
 async function main(): Promise<void> {
   showScreen();
@@ -29,6 +30,7 @@ async function main(): Promise<void> {
           { name: "❌ Exit(終了)", value: "exit" },
         ],
         loop: false,
+        pageSize: SELECT_PAGE_SIZE,
       });
     } catch {
       log.warn("\nBye! 👋");

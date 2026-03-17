@@ -32,8 +32,8 @@ function fabricToYjs(obj: FabricObject): CircleProps {
     left: obj.left ?? 0,
     top: obj.top ?? 0,
     radius: (obj as Circle).radius ?? 50,
-    fill: (typeof obj.fill === "string" ? obj.fill : "#e8f5e9"),
-    stroke: (typeof obj.stroke === "string" ? obj.stroke : "#388e3c"),
+    fill: typeof obj.fill === "string" ? obj.fill : "#e8f5e9",
+    stroke: typeof obj.stroke === "string" ? obj.stroke : "#388e3c",
     strokeWidth: obj.strokeWidth ?? 2,
     scaleX: obj.scaleX ?? 1,
     scaleY: obj.scaleY ?? 1,
@@ -43,10 +43,24 @@ function fabricToYjs(obj: FabricObject): CircleProps {
 
 const yjsIdMap = new WeakMap<FabricObject, string>();
 
+// crypto.randomUUID() は Secure Context (HTTPS) でのみ利用可能。
+// iPad から HTTP アクセス時のフォールバック。
+function generateId(): string {
+  if (typeof crypto !== "undefined" && typeof crypto.randomUUID === "function") {
+    return crypto.randomUUID();
+  }
+  const bytes = new Uint8Array(16);
+  crypto.getRandomValues(bytes);
+  bytes[6] = (bytes[6] & 0x0f) | 0x40;
+  bytes[8] = (bytes[8] & 0x3f) | 0x80;
+  const hex = Array.from(bytes, (b) => b.toString(16).padStart(2, "0")).join("");
+  return `${hex.slice(0, 8)}-${hex.slice(8, 12)}-${hex.slice(12, 16)}-${hex.slice(16, 20)}-${hex.slice(20)}`;
+}
+
 function getCircleId(obj: FabricObject): string {
   let id = yjsIdMap.get(obj);
   if (!id) {
-    id = crypto.randomUUID();
+    id = generateId();
     yjsIdMap.set(obj, id);
   }
   return id;
@@ -62,7 +76,10 @@ function isCircle(obj: FabricObject): obj is Circle {
 
 /**
  * Fabric.js Canvas と Y.Map("circles") を双方向バインディングする hook。
- * Phase 1 では Circle オブジェクトのみ対象。
+ *
+ * Phase 1.5: Y.Doc が SSOT。初期描画は Y.Map → Fabric の一方向のみ。
+ * ユーザ操作（追加/変更/削除）は Fabric → Y.Map に反映し、
+ * リモートからの Y.Map 変更は observer で Fabric に反映する。
  */
 export function useYjsCircleSync(
   yDoc: Y.Doc | null,
@@ -146,13 +163,8 @@ export function useYjsCircleSync(
     canvas.on("object:removed", handleObjectRemoved);
     yCircles.observe(observer);
 
-    // Y.Map にデータがあれば Canvas に描画（途中参加で SyncStep2 が先に完了した場合）
-    if (yCircles.size > 0) {
-      renderYjsCirclesToCanvas(canvas, yCircles, isRemoteRef);
-    }
-    // Canvas 上の Circle を Y.Map に登録（最初のユーザ or SyncStep2 がまだの場合）
-    // SyncStep2 が後から来た場合は observer の "add" で Fabric に反映される
-    syncExistingCirclesToYjs(canvas, yCircles);
+    // Y.Map → Fabric: bindState で展開済みのデータを Fabric に描画
+    renderYjsCirclesToCanvas(canvas, yCircles, isRemoteRef);
 
     return () => {
       canvas.off("object:modified", handleObjectModified);
@@ -175,7 +187,6 @@ function findFabricCircleById(
 
 /**
  * Y.Map → Fabric: Y.Map に既にあるエントリを Fabric Canvas に描画する。
- * 途中参加時に、先行ユーザが追加した Circle を表示するために使用。
  * isRemoteRef を true にして object:added → Y.Map への二重登録を防ぐ。
  */
 function renderYjsCirclesToCanvas(
@@ -183,6 +194,7 @@ function renderYjsCirclesToCanvas(
   yCircles: Y.Map<CircleProps>,
   isRemoteRef: React.RefObject<boolean>,
 ): void {
+  if (yCircles.size === 0) return;
   isRemoteRef.current = true;
   try {
     yCircles.forEach((props, key) => {
@@ -194,22 +206,5 @@ function renderYjsCirclesToCanvas(
     canvas.requestRenderAll();
   } finally {
     isRemoteRef.current = false;
-  }
-}
-
-/**
- * Fabric → Y.Map: Canvas 上にある Circle を Y.Map に登録する。
- * 最初に接続したユーザが、MongoDB からロードした Circle を Y.Map に投入する。
- */
-function syncExistingCirclesToYjs(
-  canvas: Canvas,
-  yCircles: Y.Map<CircleProps>,
-): void {
-  const circles = canvas.getObjects().filter(isCircle);
-  for (const circle of circles) {
-    const id = getCircleId(circle);
-    if (!yCircles.has(id)) {
-      yCircles.set(id, fabricToYjs(circle));
-    }
   }
 }

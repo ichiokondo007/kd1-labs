@@ -7,12 +7,15 @@ WORKDIR /app
 
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml .npmrc ./
 COPY apps/yjs-server/package.json apps/yjs-server/
+COPY packages/document-db/package.json packages/document-db/
 RUN pnpm install --frozen-lockfile
 
 # ===========================================
 # Stage 2: build + deploy
 # ===========================================
 FROM base AS build
+COPY packages/document-db/ packages/document-db/
+RUN pnpm --filter @kd1-labs/document-db run build
 COPY apps/yjs-server/ apps/yjs-server/
 RUN pnpm --filter yjs-server run build
 RUN pnpm --filter yjs-server deploy /app/deployed --prod
@@ -21,6 +24,10 @@ RUN pnpm --filter yjs-server deploy /app/deployed --prod
 # Stage 3: production runtime
 # ===========================================
 FROM node:22-slim AS runtime
+RUN apt-get update \
+  && apt-get install -y procps \
+  && rm -rf /var/lib/apt/lists/*
+
 WORKDIR /app
 COPY --from=build /app/deployed .
 EXPOSE 1234

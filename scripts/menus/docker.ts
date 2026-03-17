@@ -10,11 +10,13 @@ import {
 } from "../services/docker.service.js";
 import { log } from "../ui/logger.js";
 import { waitForEnter } from "../ui/pause.js";
+import { SELECT_PAGE_SIZE } from "../ui/prompt-config.js";
 import { showScreen } from "../ui/screen.js";
 import { createSpinner } from "../ui/spinner.js";
 import { printContainerStatus } from "../ui/table.js";
 
 type DockerMenuValue =
+  | "docker:ps"
   | "infra:up"
   | "infra:down"
   | "app:up"
@@ -25,38 +27,44 @@ type DockerMenuValue =
   | "exit";
 
 const DOCKER_CHOICES = [
+
   {
-    name: "インフラ起動",
+    name: " 📊 Docker ps",
+    description: "",
+    value: "docker:ps" as const,
+  },
+  {
+    name: " 🔥 Infra Up (MySQL / MongoDB / MinIO)",
     description: "MySQL / MongoDB / MinIO",
     value: "infra:up" as const,
   },
   {
-    name: "インフラ停止",
+    name: " ⏹️ Infra Down",
     description: "infra を停止",
     value: "infra:down" as const,
   },
   {
-    name: "フルApp起動",
+    name: " 🚀 Infra + App全コンテナ起動 (infra + server / client / yjs-server)",
     description: "infra + server + client",
     value: "app:up" as const,
   },
   {
-    name: "フルApp停止",
+    name: " ⏹️ Infra + App全コンテナ停止",
     description: "app を停止",
     value: "app:down" as const,
   },
   {
-    name: "ボリューム削除",
+    name: " ☢️ Docker Volume remove",
     description: "データ初期化",
     value: "clean:volumes" as const,
   },
   {
-    name: "全イメージ・ボリューム削除",
+    name: " ☢️ Docker Image & Volume remove",
     description: "破壊的操作(KD1関連をすべて削除してinstall前の状態に戻します)",
     value: "clean:all" as const,
   },
-  { name: "↩ TOPへ戻る", value: "back" as const },
-  { name: "❌ EXIT", value: "exit" as const },
+  { name: " ↩️ TOPへ戻る", value: "back" as const },
+  { name: " ❌ EXIT", value: "exit" as const },
 ];
 
 export async function dockerMenu(): Promise<void> {
@@ -68,6 +76,7 @@ export async function dockerMenu(): Promise<void> {
       message: "🐳 Docker操作を選択してください",
       choices: DOCKER_CHOICES,
       loop: false,
+      pageSize: SELECT_PAGE_SIZE,
     });
 
     if (choice === "back") return;
@@ -77,6 +86,12 @@ export async function dockerMenu(): Promise<void> {
     }
 
     switch (choice) {
+      case "docker:ps":
+        await showContainerStatus();
+        console.log("");
+        await waitForEnter();
+        break;
+
       case "infra:up":
         await executeDockerAction(
           "インフラを起動しています...",
