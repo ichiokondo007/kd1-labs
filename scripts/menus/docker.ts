@@ -51,12 +51,12 @@ const DOCKER_CHOICES = [
     value: "infra:down" as const,
   },
   {
-    name: " 🚀 Infra + App全コンテナ起動 (infra + server / client / yjs-server)",
+    name: " 🚀 Infra + Apps -build Up (infra + server / client / yjs-server)",
     description: "infra + server + client",
     value: "app:up" as const,
   },
   {
-    name: " ⏹️ Infra + App全コンテナ停止",
+    name: " ⏹️ Infra + Apps down",
     description: "app を停止",
     value: "app:down" as const,
   },

@@ -16,6 +16,7 @@ import type {
   DocRegistry,
   DocInfo,
   UserInfo,
+  PersistenceWriteMeta,
 } from "./types.js";
 
 const MESSAGE_SYNC = 0;
@@ -144,12 +145,15 @@ export function createDocRegistry(): DocRegistry {
       return users;
     },
 
-    async destroyDoc(docName: string): Promise<void> {
+    async destroyDoc(
+      docName: string,
+      meta?: PersistenceWriteMeta,
+    ): Promise<void> {
       const entry = docs.get(docName);
       if (!entry) return;
 
       if (persistence !== null) {
-        await persistence.writeState(docName, entry.doc);
+        await persistence.writeState(docName, entry.doc, meta);
       }
       entry.doc.destroy();
       docs.delete(docName);

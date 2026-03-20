@@ -9,7 +9,11 @@ import {
   upsertCanvas,
   type CanvasDocument,
 } from "@kd1-labs/document-db";
-import type { Persistence, WSSharedDoc } from "../yjs/types.js";
+import type {
+  Persistence,
+  PersistenceWriteMeta,
+  WSSharedDoc,
+} from "../yjs/types.js";
 
 // ── Fabric JSON の型定義（必要最小限） ────────────────────────────────
 
@@ -243,8 +247,24 @@ export function createMongoPersistence(): Persistence {
       );
     },
 
-    async writeState(docName: string, doc: WSSharedDoc): Promise<void> {
+    async writeState(
+      docName: string,
+      doc: WSSharedDoc,
+      meta?: PersistenceWriteMeta,
+    ): Promise<void> {
       const data = collapseYDocToCanvasJson(doc);
+      let updatedBy = meta?.updatedBy;
+      let updatedBySource: "awareness" | "db" | "fallback" = "awareness";
+      if (updatedBy === undefined || updatedBy.length === 0) {
+        const existing = await findCanvasById(docName);
+        if (existing?.updatedBy) {
+          updatedBy = existing.updatedBy;
+          updatedBySource = "db";
+        } else {
+          updatedBy = "yjs-server";
+          updatedBySource = "fallback";
+        }
+      }
       await upsertCanvas({
         _id: docName,
         canvasName: data.canvasName,
@@ -252,9 +272,11 @@ export function createMongoPersistence(): Persistence {
         thumbnailUrl: data.thumbnailUrl,
         canvas: data.canvas,
         backgroundImageUrl: data.backgroundImageUrl,
-        updatedBy: "yjs-server",
+        updatedBy,
       });
-      console.log(`[kd1:persistence:write] "${docName}" — saved to MongoDB`);
+      console.log(
+        `[kd1:persistence:write] "${docName}" — saved to MongoDB (updatedBy="${updatedBy}" source=${updatedBySource})`,
+      );
     },
   };
 }

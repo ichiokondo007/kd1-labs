@@ -76,6 +76,23 @@ function sendSyncStep1(conn: WebSocket, doc: WSSharedDoc): void {
   }
 }
 
+/**
+ * 当該 WS に紐づく awareness client ID から、removeAwarenessStates の前に userId を読む。
+ * （消去後は状態が取れないため closeConn 内で削除前にのみ呼ぶ）
+ */
+function userIdFromAwarenessForConn(
+  doc: WSSharedDoc,
+  controlledIds: Set<number>,
+): string | undefined {
+  const states = doc.awareness.getStates();
+  for (const id of controlledIds) {
+    const state = states.get(id) as { user?: { userId?: string } } | undefined;
+    const uid = state?.user?.userId;
+    if (typeof uid === "string" && uid.length > 0) return uid;
+  }
+  return undefined;
+}
+
 function closeConn(
   doc: WSSharedDoc,
   conn: WebSocket,
@@ -83,7 +100,14 @@ function closeConn(
   hooks?: YjsServerHooks,
 ): void {
   const controlledIds = doc.conns.get(conn);
+  let lastDisconnectedUpdatedBy: string | undefined;
   if (controlledIds !== undefined) {
+    if (doc.conns.size === 1) {
+      lastDisconnectedUpdatedBy = userIdFromAwarenessForConn(
+        doc,
+        controlledIds,
+      );
+    }
     doc.conns.delete(conn);
     awarenessProtocol.removeAwarenessStates(
       doc.awareness,
@@ -98,7 +122,12 @@ function closeConn(
     void (async () => {
       try {
         await hooks?.onDocIdle?.(doc.name, doc);
-        await registry.destroyDoc(doc.name);
+        await registry.destroyDoc(
+          doc.name,
+          lastDisconnectedUpdatedBy !== undefined
+            ? { updatedBy: lastDisconnectedUpdatedBy }
+            : undefined,
+        );
         console.log(`[yjs:doc-idle] doc="${doc.name}" destroyed`);
       } catch (err) {
         console.error(`[yjs:doc-idle-error] doc="${doc.name}"`, err);

@@ -13,11 +13,20 @@ export interface WSSharedDoc extends Doc {
 
 // ── Persistence（SSOT 永続化） ──────────────────────────────────────
 
+/** writeState / destroyDoc から永続化層へ渡す付帯情報 */
+export interface PersistenceWriteMeta {
+  updatedBy?: string;
+}
+
 export interface Persistence {
   /** MongoDB 等から Y.Doc にデータを展開する */
   bindState(docName: string, doc: WSSharedDoc): Promise<void>;
   /** Y.Doc のデータを MongoDB 等に保存する */
-  writeState(docName: string, doc: WSSharedDoc): Promise<void>;
+  writeState(
+    docName: string,
+    doc: WSSharedDoc,
+    meta?: PersistenceWriteMeta,
+  ): Promise<void>;
 }
 
 // ── 認証結果 ─────────────────────────────────────────────────────────
@@ -79,7 +88,10 @@ export interface DocRegistry {
   getConnectedUsers(docName: string): UserInfo[];
 
   /** Y.Doc を明示的に破棄（persistence.writeState 後） */
-  destroyDoc(docName: string): Promise<void>;
+  destroyDoc(
+    docName: string,
+    meta?: PersistenceWriteMeta,
+  ): Promise<void>;
 
   /** Persistence を設定する */
   setPersistence(p: Persistence | null): void;
