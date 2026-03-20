@@ -7,6 +7,8 @@ import {
   getContainerStatus,
   infraDown,
   infraUp,
+  appsBuildUp,
+  appsBuildDown,
 } from "../services/docker.service.js";
 import { log } from "../ui/logger.js";
 import { waitForEnter } from "../ui/pause.js";
@@ -21,8 +23,11 @@ type DockerMenuValue =
   | "yjs:metrics"
   | "infra:up"
   | "infra:down"
-  | "app:up"
+  | "apps:up"
+  | "apps:down"
   | "app:down"
+  | "full:up"
+  | "full:down"
   | "clean:volumes"
   | "clean:all"
   | "back"
@@ -31,7 +36,7 @@ type DockerMenuValue =
 const DOCKER_CHOICES = [
 
   {
-    name: " 📊 Docker ps",
+    name: " 📊 KD1 Docker ps",
     description: "",
     value: "docker:ps" as const,
   },
@@ -41,27 +46,37 @@ const DOCKER_CHOICES = [
     value: "yjs:metrics" as const,
   },
   {
-    name: " 🔥 Infra Up (MySQL / MongoDB / MinIO)",
-    description: "MySQL / MongoDB / MinIO",
+    name: " 🐳🚀 Infra Up (.env.local/mysql mongodb minio)",
+    description: ".env.local の設定でMySQL / MongoDB / MinIOのみUp",
     value: "infra:up" as const,
   },
   {
-    name: " ⏹️ Infra Down",
+    name: " 🐳⏹️  Infra Down",
     description: "infra を停止",
     value: "infra:down" as const,
   },
   {
-    name: " 🚀 Infra + Apps -build Up (infra + server / client / yjs-server)",
-    description: "infra + server + client",
-    value: "app:up" as const,
+    name: " 🐳🚀 Apps Up (.env.docker/client server yjs-server)",
+    description: "client server yjs-server のみdocker Up",
+    value: "apps:up" as const,
   },
   {
-    name: " ⏹️ Infra + Apps down",
-    description: "app を停止",
-    value: "app:down" as const,
+    name: " 🐳⏹️  Apps Down",
+    description: "client server yjs-server を停止",
+    value: "apps:down" as const,
   },
   {
-    name: " ☢️ Docker Volume remove",
+    name: " 🐳🚀 Full Docker Up(infra + server / client / yjs-server)",
+    description: "Full docker Up",
+    value: "full:up" as const,
+  },
+  {
+    name: " 🐳⏹️  Full Docker Down",
+    description: "Full docker を停止",
+    value: "full:down" as const,
+  },
+  {
+    name: " ⚠️ Docker Volume remove",
     description: "データ初期化",
     value: "clean:volumes" as const,
   },
@@ -109,33 +124,48 @@ export async function dockerMenu(): Promise<void> {
 
       case "infra:up":
         await executeDockerAction(
-          "インフラを起動しています...",
+          "Infraを起動しています...",
           infraUp,
-          "インフラを起動しました",
+          "Infraを起動しました",
         );
         break;
 
       case "infra:down":
         await executeDockerAction(
-          "インフラを停止しています...",
+          "Infraを停止しています...",
           infraDown,
-          "インフラを停止しました",
+          "Infraを停止しました",
+        );
+        break;
+      case "apps:up":
+        await executeDockerAction(
+          "appsを起動しています...",
+          appsBuildUp,
+          "appsを起動しました",
         );
         break;
 
-      case "app:up":
+      case "apps:down":
         await executeDockerAction(
-          "フルAppを起動しています...",
+          "appsを停止しています...",
+          appsBuildDown,
+          "appsを停止しました",
+        );
+        break;
+
+      case "full:up":
+        await executeDockerAction(
+          "Full Docker で起動しています...",
           appUp,
-          "フルAppを起動しました",
+          "Full Docker で起動しました",
         );
         break;
 
-      case "app:down":
+      case "full:down":
         await executeDockerAction(
-          "フルAppを停止しています...",
+          "Full Docker を停止しています...",
           appDown,
-          "フルAppを停止しました",
+          "Full Docker を停止しました",
         );
         break;
 

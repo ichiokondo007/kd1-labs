@@ -92,6 +92,22 @@ export async function infraDown(): Promise<void> {
   );
 }
 
+export async function appsBuildUp(): Promise<void> {
+  await runCommand(
+    "docker",
+    ["compose", "-f", APP_COMPOSE_FILE, "--env-file", DOCKER_ENV_FILE, "up", "-d"],
+    PROJECT_ROOT,
+  );
+}
+
+export async function appsBuildDown(): Promise<void> {
+  await runCommand(
+    "docker",
+    ["compose", "-f", APP_COMPOSE_FILE, "down"],
+    PROJECT_ROOT,
+  );
+}
+
 export async function appUp(): Promise<void> {
   await runCommand(
     "docker",
@@ -137,7 +153,17 @@ export async function cleanVolumes(): Promise<void> {
 export async function cleanAll(): Promise<void> {
   await runCommand(
     "docker",
-    ["compose", "-f", BASE_COMPOSE_FILE, "down", "-v", "--rmi", "all"],
+    [
+      "compose",
+      "-f",
+      BASE_COMPOSE_FILE,
+      "-f",
+      APP_COMPOSE_FILE,
+      "down",
+      "-v",
+      "--rmi",
+      "all",
+    ],
     PROJECT_ROOT,
   );
 }

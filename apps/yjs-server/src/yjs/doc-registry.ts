@@ -32,6 +32,7 @@ export function createDocRegistry(): DocRegistry {
     const doc = new Y.Doc({ gc: true }) as WSSharedDoc;
     doc.name = name;
     doc.conns = new Map();
+    doc.connUserIds = new Map();
     doc.awareness = new awarenessProtocol.Awareness(doc);
     doc.awareness.setLocalState(null);
 
@@ -48,6 +49,17 @@ export function createDocRegistry(): DocRegistry {
           if (controlledIDs !== undefined) {
             added.forEach((id) => controlledIDs.add(id));
             removed.forEach((id) => controlledIDs.delete(id));
+          }
+          // awareness に userId があれば conn → userId を記録
+          for (const id of added.concat(updated)) {
+            const state = doc.awareness.getStates().get(id) as
+              | { user?: { userId?: string } }
+              | undefined;
+            const uid = state?.user?.userId;
+            if (typeof uid === "string" && uid.length > 0) {
+              doc.connUserIds.set(conn, uid);
+              break;
+            }
           }
         }
         const encoder = encoding.createEncoder();

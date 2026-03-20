@@ -9,6 +9,8 @@ export interface WSSharedDoc extends Doc {
   name: string;
   conns: Map<WebSocket, Set<number>>;
   awareness: Awareness;
+  /** conn → userId マッピング（awareness 消去後も参照可能にするため） */
+  connUserIds: Map<WebSocket, string>;
 }
 
 // ── Persistence（SSOT 永続化） ──────────────────────────────────────
