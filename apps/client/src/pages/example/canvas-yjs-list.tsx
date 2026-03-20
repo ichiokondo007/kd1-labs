@@ -30,7 +30,10 @@ export default function CanvasYjsListPage() {
 
   return (
     <div className="p-4 sm:p-6 lg:p-8">
-      <Heading>Example &gt; Yjs Collab Canvas</Heading>
+      <Heading>
+        <img src="/yjs.avif" alt="" className="inline-block size-6 align-middle mr-1" />
+        POC &gt; Yjs Collab Canvas
+      </Heading>
       <Text className="mt-2">
         Yjs CRDT を用いた Canvas 共同編集
       </Text>

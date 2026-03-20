@@ -16,7 +16,10 @@ import {
 } from "fabric";
 import type { TPointerEventInfo } from "fabric";
 import type { BgCropperResult } from "@/features/canvas-bg-cropper/types";
+import { registerGroupSvgMetadata } from "@/features/canvas/fabricRegisterGroupSvgMetadata";
 import type { CanvasTool } from "./CanvasEditorToolbar";
+
+registerGroupSvgMetadata();
 
 export type FabricCanvasHandle = {
   toJSON: () => unknown;
@@ -25,9 +28,12 @@ export type FabricCanvasHandle = {
   setBackgroundImage: (result: BgCropperResult) => Promise<void>;
   removeBackgroundImage: () => void;
   addSvgFromUrl: (url: string) => Promise<void>;
-  placeSvgFromUrl: (url: string) => void;
+  /** @param meta.key 指定時は Yjs 同期用に Group に svgAssetKey が付与される */
+  placeSvgFromUrl: (url: string, meta?: { key: string }) => void;
   /** Fabric Canvas インスタンスを直接取得（Yjs 同期用） */
   getCanvas: () => Canvas | null;
+  /** 選択中のキャンバスオブジェクトを削除（背景画像は対象外） */
+  deleteSelectedObjects: () => void;
 };
 
 type FabricCanvasProps = {
@@ -36,6 +42,8 @@ type FabricCanvasProps = {
   skipInitialRect?: boolean;
   activeTool?: CanvasTool;
   onShapePlaced?: () => void;
+  /** 選択の有無が変わったとき（削除ボタン活性など） */
+  onSelectionChange?: (hasSelection: boolean) => void;
 };
 
 const DEFAULT_WIDTH = 1088;
@@ -73,14 +81,20 @@ export const FabricCanvas = forwardRef<FabricCanvasHandle, FabricCanvasProps>(
       skipInitialRect = false,
       activeTool = "selection",
       onShapePlaced,
+      onSelectionChange,
     },
     ref
   ) {
     const wrapperRef = useRef<HTMLDivElement | null>(null);
     const canvasInstanceRef = useRef<Canvas | null>(null);
-    const [pendingSvgUrl, setPendingSvgUrl] = useState<string | null>(null);
-    const setPendingSvgUrlRef = useRef(setPendingSvgUrl);
-    setPendingSvgUrlRef.current = setPendingSvgUrl;
+    const [pendingSvg, setPendingSvg] = useState<{
+      url: string;
+      key?: string;
+    } | null>(null);
+    const setPendingSvgRef = useRef(setPendingSvg);
+    setPendingSvgRef.current = setPendingSvg;
+    const onSelectionChangeRef = useRef(onSelectionChange);
+    onSelectionChangeRef.current = onSelectionChange;
 
     useEffect(() => {
       const wrapper = wrapperRef.current;
@@ -116,6 +130,26 @@ export const FabricCanvas = forwardRef<FabricCanvasHandle, FabricCanvasProps>(
         while (wrapper.firstChild) {
           wrapper.removeChild(wrapper.firstChild);
         }
+      };
+    }, [width, height, skipInitialRect]);
+
+    useEffect(() => {
+      const canvas = canvasInstanceRef.current;
+      if (!canvas) return;
+
+      const notifySelection = () => {
+        onSelectionChangeRef.current?.(canvas.getActiveObjects().length > 0);
+      };
+
+      canvas.on("selection:created", notifySelection);
+      canvas.on("selection:updated", notifySelection);
+      canvas.on("selection:cleared", notifySelection);
+      notifySelection();
+
+      return () => {
+        canvas.off("selection:created", notifySelection);
+        canvas.off("selection:updated", notifySelection);
+        canvas.off("selection:cleared", notifySelection);
       };
     }, [width, height, skipInitialRect]);
 
@@ -156,7 +190,7 @@ export const FabricCanvas = forwardRef<FabricCanvasHandle, FabricCanvasProps>(
       const canvas = canvasInstanceRef.current;
       if (!canvas) return;
 
-      if (pendingSvgUrl) {
+      if (pendingSvg) {
         canvas.selection = false;
         canvas.defaultCursor = "crosshair";
         canvas.forEachObject((obj) => {
@@ -164,9 +198,9 @@ export const FabricCanvas = forwardRef<FabricCanvasHandle, FabricCanvasProps>(
           obj.evented = false;
         });
 
-        const urlToPlace = pendingSvgUrl;
+        const { url: urlToPlace, key: placementKey } = pendingSvg;
         const handler = (opt: TPointerEventInfo) => {
-          setPendingSvgUrl(null);
+          setPendingSvg(null);
           const { x, y } = opt.scenePoint;
           void (async () => {
             const group = await loadAndScaleSvgGroup(urlToPlace);
@@ -174,6 +208,12 @@ export const FabricCanvas = forwardRef<FabricCanvasHandle, FabricCanvasProps>(
             const c = canvasInstanceRef.current;
             if (!c) return;
             group.set({ left: x, top: y });
+            if (placementKey) {
+              group.set({
+                svgAssetKey: placementKey,
+                svgAssetUrl: urlToPlace,
+              });
+            }
             c.add(group);
             c.setActiveObject(group);
             c.requestRenderAll();
@@ -221,7 +261,7 @@ export const FabricCanvas = forwardRef<FabricCanvasHandle, FabricCanvasProps>(
 
       canvas.selection = true;
       canvas.defaultCursor = "default";
-    }, [activeTool, placeShape, pendingSvgUrl]);
+    }, [activeTool, placeShape, pendingSvg]);
 
     useImperativeHandle(
       ref,
@@ -278,11 +318,25 @@ export const FabricCanvas = forwardRef<FabricCanvasHandle, FabricCanvasProps>(
           canvas.add(group);
           canvas.requestRenderAll();
         },
-        placeSvgFromUrl(url: string) {
-          setPendingSvgUrlRef.current(url);
+        placeSvgFromUrl(url: string, meta?: { key: string }) {
+          setPendingSvgRef.current(
+            meta ? { url, key: meta.key } : { url },
+          );
         },
         getCanvas() {
           return canvasInstanceRef.current;
+        },
+        deleteSelectedObjects() {
+          const canvas = canvasInstanceRef.current;
+          if (!canvas) return;
+          const targets = [...canvas.getActiveObjects()];
+          if (targets.length === 0) return;
+          for (const obj of targets) {
+            canvas.remove(obj);
+          }
+          canvas.discardActiveObject();
+          canvas.requestRenderAll();
+          onSelectionChangeRef.current?.(false);
         },
       }),
       []

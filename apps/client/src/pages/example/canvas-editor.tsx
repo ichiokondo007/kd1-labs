@@ -37,6 +37,7 @@ export default function CanvasEditorPage() {
   const [isDeleting, setIsDeleting] = useState(false);
   const [bgCropperSrc, setBgCropperSrc] = useState<string | null>(null);
   const [svgDrawerOpen, setSvgDrawerOpen] = useState(false);
+  const [hasCanvasSelection, setHasCanvasSelection] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -237,6 +238,8 @@ export default function CanvasEditorPage() {
           <CanvasEditorToolbar
             activeTool={activeTool}
             onToolChange={handleToolChange}
+            onDeleteSelected={() => fabricRef.current?.deleteSelectedObjects()}
+            deleteDisabled={!hasCanvasSelection}
           />
           <div className="mt-3 relative">
             <FabricCanvas
@@ -244,6 +247,7 @@ export default function CanvasEditorPage() {
               skipInitialRect={isEditMode}
               activeTool={activeTool}
               onShapePlaced={handleShapePlaced}
+              onSelectionChange={setHasCanvasSelection}
             />
             {isLoading && (
               <div className="absolute inset-0 flex items-center justify-center bg-white/80 rounded-md">

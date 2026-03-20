@@ -39,6 +39,14 @@ apps/client/src/
 │   └── canvas-yjs-editor.tsx           # 共同編集エディタページ
 ```
 
+## Phase 1.6: Rect / 登録 SVG 共同編集（完了）
+
+- `Y.Map("rects")` + `useYjsRectSync` — Rect 標準プロパティを CRDT 同期
+- `Y.Map("svgPlacements")` + `useYjsSvgPlacementSync` — `svgAssetKey` + `svgAssetUrl` と変形（A 案）
+- `collabRemoteApplyDepthRef` で Circle / Rect / SVG の非同期復元と `object:added` ループを防止
+- Mongo persistence: `expandCanvasToYDoc` / `collapseYDocToCanvasJson` が Rect と `type: kd1SvgPlacement` を扱う
+- `FabricCanvas.placeSvgFromUrl(url, { key })` で Yjs 用メタを Group に付与
+
 ## Phase 2: 永続化 + スケーリング検証
 
 | Step | 内容 |

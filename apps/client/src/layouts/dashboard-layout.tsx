@@ -109,7 +109,7 @@ export function DashboardLayout() {
             <SidebarSection>
               <SidebarHeading>POC</SidebarHeading>
               <SidebarItem href="/example/canvas-yjs" to="/example/canvas-yjs" current={pathname === '/example/canvas-yjs'}>
-                <Square2StackIcon />
+                <img src="/yjs.avif" alt="Yjs" className="size-5" />
                 <SidebarLabel>Yjs collab canvas</SidebarLabel>
               </SidebarItem>
               <SidebarItem href="/example/form-yjs" to="/example/form-yjs" current={pathname === '/example/form-yjs'}>

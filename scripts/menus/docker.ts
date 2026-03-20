@@ -10,13 +10,15 @@ import {
 } from "../services/docker.service.js";
 import { log } from "../ui/logger.js";
 import { waitForEnter } from "../ui/pause.js";
-import { SELECT_PAGE_SIZE } from "../ui/prompt-config.js";
+import { SELECT_PAGE_SIZE, SELECT_THEME } from "../ui/prompt-config.js";
 import { showScreen } from "../ui/screen.js";
 import { createSpinner } from "../ui/spinner.js";
 import { printContainerStatus } from "../ui/table.js";
+import { runForeground } from "../runner.js";
 
 type DockerMenuValue =
   | "docker:ps"
+  | "yjs:metrics"
   | "infra:up"
   | "infra:down"
   | "app:up"
@@ -32,6 +34,11 @@ const DOCKER_CHOICES = [
     name: " 📊 Docker ps",
     description: "",
     value: "docker:ps" as const,
+  },
+  {
+    name: " 📈 yjs-server Metrics (top)",
+    description: "kd1-yjs-server コンテナの top を表示",
+    value: "yjs:metrics" as const,
   },
   {
     name: " 🔥 Infra Up (MySQL / MongoDB / MinIO)",
@@ -68,15 +75,16 @@ const DOCKER_CHOICES = [
 ];
 
 export async function dockerMenu(): Promise<void> {
-  showScreen("🐳 Docker操作");
+  showScreen("🐳 Docker Operation");
 
   while (true) {
     console.log("");
     const choice = await select<DockerMenuValue>({
-      message: "🐳 Docker操作を選択してください",
+      message: "🐳 Select an action\n",
       choices: DOCKER_CHOICES,
       loop: false,
       pageSize: SELECT_PAGE_SIZE,
+      theme: SELECT_THEME,
     });
 
     if (choice === "back") return;
@@ -90,6 +98,13 @@ export async function dockerMenu(): Promise<void> {
         await showContainerStatus();
         console.log("");
         await waitForEnter();
+        break;
+
+      case "yjs:metrics":
+        await runForeground({
+          label: "yjs-server Metrics (top)",
+          cmd: 'docker exec -it kd1-yjs-server sh -c "top"',
+        });
         break;
 
       case "infra:up":

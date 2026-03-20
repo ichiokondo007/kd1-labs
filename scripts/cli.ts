@@ -9,7 +9,7 @@ import { helpMenu } from "./menus/help.js";
 import { techstackMenu } from "./menus/techstack.js";
 
 import { log } from "./ui/logger.js";
-import { SELECT_PAGE_SIZE } from "./ui/prompt-config.js";
+import { SELECT_PAGE_SIZE, SELECT_THEME } from "./ui/prompt-config.js";
 import { showScreen } from "./ui/screen.js";
 
 async function main(): Promise<void> {
@@ -20,17 +20,18 @@ async function main(): Promise<void> {
 
     try {
       choice = await select({
-        message: "Operation selection(操作を選択してください)",
+        message: "Select an action\n",
         choices: [
-          { name: "🚀 Open Development Environment (開発環境を起動)", value: "dev" },
-          { name: "🐳 Docker Operation (Docker 操作)", value: "docker" },
-          { name: "🔨 Build / DB Migration (ビルド / DB マイグレーション)", value: "build" },
-          { name: "📦 Tech Stack (技術スタック)", value: "techstack" },
-          { name: "🧪 HELP / Cheat Sheet (ヘルプ / チートシート)", value: "help" },
+          { name: "🚀 Open Development Environment", value: "dev" },
+          { name: "🐳 Docker Operation ", value: "docker" },
+          { name: "🔨 Build / DB Migration (Build / DB Migration)", value: "build" },
+          { name: "📦 Tech Stack", value: "techstack" },
+          { name: "🧪 HELP / Cheat Sheet", value: "help" },
           { name: "❌ Exit(終了)", value: "exit" },
         ],
         loop: false,
         pageSize: SELECT_PAGE_SIZE,
+        theme: SELECT_THEME,
       });
     } catch {
       log.warn("\nBye! 👋");

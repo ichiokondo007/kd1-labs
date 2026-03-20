@@ -3,7 +3,7 @@ import { select } from "@inquirer/prompts";
 import { runSequential, runStep } from "../runner.js";
 import { log } from "../ui/logger.js";
 import { waitForEnter } from "../ui/pause.js";
-import { SELECT_PAGE_SIZE } from "../ui/prompt-config.js";
+import { SELECT_PAGE_SIZE, SELECT_THEME } from "../ui/prompt-config.js";
 import { showScreen } from "../ui/screen.js";
 
 /**
@@ -44,10 +44,11 @@ export async function buildMenu(): Promise<void> {
   while (true) {
     console.log("");
     const choice = await select<BuildMenuValue>({
-      message: "🔨 Build・Migration",
+      message: "🔨 Select an action\n",
       choices: BUILD_CHOICES,
       loop: false,
       pageSize: SELECT_PAGE_SIZE,
+      theme: SELECT_THEME,
     });
 
     if (choice === "back") return;

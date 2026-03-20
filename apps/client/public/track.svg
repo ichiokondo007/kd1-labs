@@ -1,0 +1,58 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 520 340" width="800" height="523">
+  <defs>
+    <clipPath id="bedClip">
+      <polygon points="192,230 192,110 393,87 416,87 416,230"/>
+    </clipPath>
+  </defs>
+
+  <!-- Background -->
+  <rect width="520" height="340" fill="#e8eaed" rx="12"/>
+
+  <!-- CHASSIS -->
+  <rect x="57" y="226" width="363" height="15" rx="5"
+        fill="white" stroke="black" stroke-width="11" stroke-linejoin="round"/>
+
+  <!-- CAB body -->
+  <path d="M66,230 L66,134 Q66,110 90,110 L188,110 L188,230 Z"
+        fill="white" stroke="black" stroke-width="11"
+        stroke-linejoin="round" stroke-linecap="round"/>
+
+  <!-- CAB window -->
+  <rect x="82" y="120" width="86" height="70" rx="8"
+        fill="white" stroke="black" stroke-width="10"/>
+
+  <!-- DUMP BED outline (drawn first, will be re-drawn after stripes) -->
+  <polygon points="188,230 188,110 393,87 416,87 416,230"
+           fill="white" stroke="none"/>
+
+  <!-- Diagonal stripes -->
+  <g clip-path="url(#bedClip)" stroke="black" stroke-width="10" stroke-linecap="butt">
+    <line x1="195" y1="235" x2="308" y2="80"/>
+    <line x1="225" y1="235" x2="338" y2="80"/>
+    <line x1="255" y1="235" x2="368" y2="80"/>
+    <line x1="285" y1="235" x2="398" y2="80"/>
+    <line x1="315" y1="235" x2="428" y2="80"/>
+    <line x1="345" y1="235" x2="458" y2="80"/>
+    <line x1="375" y1="235" x2="488" y2="80"/>
+  </g>
+
+  <!-- DUMP BED border (on top of stripes) -->
+  <polygon points="188,230 188,110 393,87 416,87 416,230"
+           fill="none" stroke="black" stroke-width="11"
+           stroke-linejoin="round" stroke-linecap="round"/>
+
+  <!-- Dump chute / spout -->
+  <path d="M180,110 L202,110 L190,138 L175,138 Z"
+        fill="black"/>
+
+  <!-- WHEELS -->
+  <circle cx="118" cy="263" r="35" fill="white" stroke="black" stroke-width="11"/>
+  <circle cx="118" cy="263" r="10" fill="black"/>
+
+  <circle cx="314" cy="263" r="35" fill="white" stroke="black" stroke-width="11"/>
+  <circle cx="314" cy="263" r="10" fill="black"/>
+
+  <circle cx="388" cy="263" r="35" fill="white" stroke="black" stroke-width="11"/>
+  <circle cx="388" cy="263" r="10" fill="black"/>
+
+</svg>

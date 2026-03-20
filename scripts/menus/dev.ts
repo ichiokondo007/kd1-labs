@@ -3,7 +3,7 @@ import { runForeground } from "../runner.js";
 import { runFullDocker } from "../services/dev.service.js";
 import { log } from "../ui/logger.js";
 import { waitForEnter } from "../ui/pause.js";
-import { SELECT_PAGE_SIZE } from "../ui/prompt-config.js";
+import { SELECT_PAGE_SIZE, SELECT_THEME } from "../ui/prompt-config.js";
 import { showScreen } from "../ui/screen.js";
 
 type DevMenuValue = "full-docker" | "server" | "client" | "yjsserver" | "back" | "exit";
@@ -69,10 +69,11 @@ export async function devMenu(): Promise<void> {
   while (true) {
     console.log("");
     const choice = await select<DevMenuValue>({
-      message: "🚀 Open Development Environment (server / client は別ターミナルで各々実行)",
+      message: "🚀 Select an actio\n",
       choices: DEV_CHOICES,
       loop: false,
       pageSize: SELECT_PAGE_SIZE,
+      theme: SELECT_THEME,
     });
 
     if (choice === "back") return;

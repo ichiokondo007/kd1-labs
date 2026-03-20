@@ -2,6 +2,7 @@ import { useEffect, useRef } from "react";
 import * as Y from "yjs";
 import { Circle, type Canvas, type FabricObject } from "fabric";
 import type { FabricCanvasHandle } from "@/features/canvas/ui/FabricCanvas";
+import { isApplyingRemote } from "./collabRemoteDepth";
 
 interface CircleProps {
   left: number;
@@ -80,13 +81,17 @@ function isCircle(obj: FabricObject): obj is Circle {
  * Phase 1.5: Y.Doc が SSOT。初期描画は Y.Map → Fabric の一方向のみ。
  * ユーザ操作（追加/変更/削除）は Fabric → Y.Map に反映し、
  * リモートからの Y.Map 変更は observer で Fabric に反映する。
+ *
+ * @param remoteApplyDepthRef 他図形同期と共有。0 より大きい間はローカル→Y の反映を止める（非同期 SVG 復元と併用可）。
  */
 export function useYjsCircleSync(
   yDoc: Y.Doc | null,
   fabricRef: React.RefObject<FabricCanvasHandle | null>,
   enabled: boolean,
+  remoteApplyDepthRef?: React.MutableRefObject<number>,
 ): void {
-  const isRemoteRef = useRef(false);
+  const internalDepthRef = useRef(0);
+  const depthRef = remoteApplyDepthRef ?? internalDepthRef;
 
   useEffect(() => {
     if (!yDoc || !enabled) return;
@@ -97,13 +102,13 @@ export function useYjsCircleSync(
     const yCircles = yDoc.getMap<CircleProps>("circles");
 
     const handleObjectModified = (e: { target?: FabricObject }) => {
-      if (isRemoteRef.current || !e.target || !isCircle(e.target)) return;
+      if (isApplyingRemote(depthRef) || !e.target || !isCircle(e.target)) return;
       const id = getCircleId(e.target);
       yCircles.set(id, fabricToYjs(e.target));
     };
 
     const handleObjectAdded = (e: { target?: FabricObject }) => {
-      if (isRemoteRef.current || !e.target || !isCircle(e.target)) return;
+      if (isApplyingRemote(depthRef) || !e.target || !isCircle(e.target)) return;
       const id = getCircleId(e.target);
       if (!yCircles.has(id)) {
         yCircles.set(id, fabricToYjs(e.target));
@@ -111,7 +116,7 @@ export function useYjsCircleSync(
     };
 
     const handleObjectRemoved = (e: { target?: FabricObject }) => {
-      if (isRemoteRef.current || !e.target || !isCircle(e.target)) return;
+      if (isApplyingRemote(depthRef) || !e.target || !isCircle(e.target)) return;
       const id = getCircleId(e.target);
       if (yCircles.has(id)) {
         yCircles.delete(id);
@@ -119,7 +124,7 @@ export function useYjsCircleSync(
     };
 
     const observer = (event: Y.YMapEvent<CircleProps>) => {
-      isRemoteRef.current = true;
+      depthRef.current += 1;
       try {
         event.keys.forEach((change, key) => {
           switch (change.action) {
@@ -154,7 +159,7 @@ export function useYjsCircleSync(
         });
         canvas.requestRenderAll();
       } finally {
-        isRemoteRef.current = false;
+        depthRef.current -= 1;
       }
     };
 
@@ -164,7 +169,7 @@ export function useYjsCircleSync(
     yCircles.observe(observer);
 
     // Y.Map → Fabric: bindState で展開済みのデータを Fabric に描画
-    renderYjsCirclesToCanvas(canvas, yCircles, isRemoteRef);
+    renderYjsCirclesToCanvas(canvas, yCircles, depthRef);
 
     return () => {
       canvas.off("object:modified", handleObjectModified);
@@ -172,7 +177,7 @@ export function useYjsCircleSync(
       canvas.off("object:removed", handleObjectRemoved);
       yCircles.unobserve(observer);
     };
-  }, [yDoc, fabricRef, enabled]);
+  }, [yDoc, fabricRef, enabled, remoteApplyDepthRef]); // eslint-disable-line react-hooks/exhaustive-deps -- depthRef
 }
 
 function findFabricCircleById(
@@ -187,15 +192,15 @@ function findFabricCircleById(
 
 /**
  * Y.Map → Fabric: Y.Map に既にあるエントリを Fabric Canvas に描画する。
- * isRemoteRef を true にして object:added → Y.Map への二重登録を防ぐ。
+ * depthRef をインクリメントして object:added → Y.Map への二重登録を防ぐ。
  */
 function renderYjsCirclesToCanvas(
   canvas: Canvas,
   yCircles: Y.Map<CircleProps>,
-  isRemoteRef: React.RefObject<boolean>,
+  depthRef: React.MutableRefObject<number>,
 ): void {
   if (yCircles.size === 0) return;
-  isRemoteRef.current = true;
+  depthRef.current += 1;
   try {
     yCircles.forEach((props, key) => {
       if (findFabricCircleById(canvas, key)) return;
@@ -205,6 +210,6 @@ function renderYjsCirclesToCanvas(
     });
     canvas.requestRenderAll();
   } finally {
-    isRemoteRef.current = false;
+    depthRef.current -= 1;
   }
 }

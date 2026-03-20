@@ -17,7 +17,7 @@
 >
 > ３．CRDT Persistence方式検証
 >
-> 尚、YJS調査、実装方針は doc/yjs/配下を参照。awareness
+> 尚、YJS調査、実装方針は doc/yjs/配下を参照。awareness(アウェアネス)についても追記忘れない。
 
 ---
 

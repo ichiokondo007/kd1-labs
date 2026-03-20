@@ -50,10 +50,33 @@ interface CircleProps {
   angle: number;
 }
 
+interface RectYjsProps {
+  left: number;
+  top: number;
+  width: number;
+  height: number;
+  fill: string;
+  stroke: string;
+  strokeWidth: number;
+  scaleX: number;
+  scaleY: number;
+  angle: number;
+  skewX: number;
+  skewY: number;
+  opacity: number;
+  flipX: boolean;
+  flipY: boolean;
+  visible: boolean;
+}
+
 // ── Canvas JSON → Y.Doc 展開 ─────────────────────────────────────────
 
 function isCircleType(type: string): boolean {
   return type === "Circle" || type === "circle";
+}
+
+function isRectType(type: string): boolean {
+  return type === "Rect" || type === "rect";
 }
 
 function expandCanvasToYDoc(
@@ -81,13 +104,14 @@ function expandCanvasToYDoc(
     if (!fabricJson?.objects) return;
 
     const yCircles = yDoc.getMap<CircleProps>("circles");
+    const yRects = yDoc.getMap<RectYjsProps>("rects");
     const nonCircleObjects: FabricObjectJson[] = [];
 
     for (const obj of fabricJson.objects) {
       const id =
         typeof obj.yjsId === "string" ? obj.yjsId : crypto.randomUUID();
 
-      if (isCircleType(obj.type)) {
+      if (isCircleType(String(obj.type))) {
         yCircles.set(id, {
           left: obj.left ?? 0,
           top: obj.top ?? 0,
@@ -98,6 +122,25 @@ function expandCanvasToYDoc(
           scaleX: obj.scaleX ?? 1,
           scaleY: obj.scaleY ?? 1,
           angle: obj.angle ?? 0,
+        });
+      } else if (isRectType(String(obj.type))) {
+        yRects.set(id, {
+          left: obj.left ?? 0,
+          top: obj.top ?? 0,
+          width: obj.width ?? 120,
+          height: obj.height ?? 80,
+          fill: typeof obj.fill === "string" ? obj.fill : "#e3f2fd",
+          stroke: typeof obj.stroke === "string" ? obj.stroke : "#1976d2",
+          strokeWidth: obj.strokeWidth ?? 2,
+          scaleX: obj.scaleX ?? 1,
+          scaleY: obj.scaleY ?? 1,
+          angle: obj.angle ?? 0,
+          skewX: obj.skewX ?? 0,
+          skewY: obj.skewY ?? 0,
+          opacity: typeof obj.opacity === "number" ? obj.opacity : 1,
+          flipX: Boolean(obj.flipX),
+          flipY: Boolean(obj.flipY),
+          visible: obj.visible !== false,
         });
       } else {
         nonCircleObjects.push(obj);
@@ -144,6 +187,15 @@ function collapseYDocToCanvasJson(yDoc: WSSharedDoc): {
   yCircles.forEach((props, id) => {
     objects.push({
       type: "Circle",
+      yjsId: id,
+      ...props,
+    });
+  });
+
+  const yRects = yDoc.getMap<RectYjsProps>("rects");
+  yRects.forEach((props, id) => {
+    objects.push({
+      type: "Rect",
       yjsId: id,
       ...props,
     });

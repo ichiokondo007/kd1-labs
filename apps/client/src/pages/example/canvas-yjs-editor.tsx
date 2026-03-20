@@ -16,6 +16,7 @@ import type { SvgAssetItem } from "@kd1-labs/types";
 import { useCurrentUser } from "@/hooks/useCurrentUser";
 import { useYjsConnection } from "@/features/canvas-yjs/hooks/useYjsConnection";
 import { useYjsCircleSync } from "@/features/canvas-yjs/hooks/useYjsCircleSync";
+import { useYjsRectSync } from "@/features/canvas-yjs/hooks/useYjsRectSync";
 import { useYjsCanvasRestore } from "@/features/canvas-yjs/hooks/useYjsCanvasRestore";
 import { ConnectedUsers } from "@/features/canvas-yjs/ui/ConnectedUsers";
 import { ConnectionStatusBadge } from "@/features/canvas-yjs/ui/ConnectionStatusBadge";
@@ -28,7 +29,10 @@ export default function CanvasYjsEditorPage() {
   const [serverError, setServerError] = useState<string | undefined>();
   const [bgCropperSrc, setBgCropperSrc] = useState<string | null>(null);
   const [svgDrawerOpen, setSvgDrawerOpen] = useState(false);
+  const [hasCanvasSelection, setHasCanvasSelection] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  /** Circle / Rect 同期で共有（object:added ループ防止） */
+  const collabRemoteApplyDepthRef = useRef(0);
 
   const { user } = useCurrentUser();
   const { yDoc, provider, connectionStatus, synced } = useYjsConnection(id, user);
@@ -36,8 +40,9 @@ export default function CanvasYjsEditorPage() {
   // Y.Doc sync 完了後に meta（canvasName, 背景画像）を復元
   const { canvasName, isRestored } = useYjsCanvasRestore(yDoc, fabricRef, synced);
 
-  // Y.Doc sync 完了 + meta 復元完了で Circle 同期を開始
-  useYjsCircleSync(yDoc, fabricRef, isRestored);
+  // Y.Doc sync 完了 + meta 復元完了で図形同期を開始（SVG 配置は設計見直し中のため無効）
+  useYjsCircleSync(yDoc, fabricRef, isRestored, collabRemoteApplyDepthRef);
+  useYjsRectSync(yDoc, fabricRef, isRestored, collabRemoteApplyDepthRef);
 
   const handleToolChange = useCallback((tool: CanvasTool) => {
     setActiveTool(tool);
@@ -96,7 +101,10 @@ export default function CanvasYjsEditorPage() {
 
   return (
     <div className="p-4 sm:p-6 lg:p-8">
-      <Heading>Example &gt; Yjs Collab Canvas</Heading>
+      <Heading>
+        <img src="/yjs.avif" alt="" className="inline-block size-6 align-middle mr-1" />
+        POC &gt; Yjs Collab Canvas
+      </Heading>
       <Text className="mt-2">
         Yjs CRDT 共同編集 — {canvasName || "Loading..."}
       </Text>
@@ -122,6 +130,8 @@ export default function CanvasYjsEditorPage() {
           <CanvasEditorToolbar
             activeTool={activeTool}
             onToolChange={handleToolChange}
+            onDeleteSelected={() => fabricRef.current?.deleteSelectedObjects()}
+            deleteDisabled={!hasCanvasSelection}
           />
           <div className="mt-3 relative">
             <FabricCanvas
@@ -129,6 +139,7 @@ export default function CanvasYjsEditorPage() {
               skipInitialRect
               activeTool={activeTool}
               onShapePlaced={handleShapePlaced}
+              onSelectionChange={setHasCanvasSelection}
             />
             {!isRestored && (
               <div className="absolute inset-0 flex items-center justify-center bg-white/80 rounded-md">

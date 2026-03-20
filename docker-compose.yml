@@ -97,6 +97,51 @@ services:
       - kd1-network
     restart: on-failure
 
+  # ============================================
+  # 監視スタック
+  # ============================================
+
+  cadvisor:
+    image: gcr.io/cadvisor/cadvisor:v0.49.1
+    container_name: kd1-cadvisor
+    restart: "no"
+    volumes:
+      - /:/rootfs:ro
+      - /var/run:/var/run:ro
+      - /sys:/sys:ro
+      - /var/lib/docker/:/var/lib/docker:ro
+    ports:
+      - "8080:8080"
+    networks:
+      - kd1-network
+
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: kd1-prometheus
+    restart: "no"
+    volumes:
+      - ./docker/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - kd1_prometheus_data:/prometheus
+    ports:
+      - "9090:9090"
+    networks:
+      - kd1-network
+    depends_on:
+      - cadvisor
+
+  grafana:
+    image: grafana/grafana:latest
+    container_name: kd1-grafana
+    restart: "no"
+    volumes:
+      - kd1_grafana_data:/var/lib/grafana
+    ports:
+      - "3001:3000"
+    networks:
+      - kd1-network
+    depends_on:
+      - prometheus
+
 networks:
   kd1-network:
     name: kd1-network
@@ -105,3 +150,5 @@ volumes:
   kd1_mysql_data:
   kd1_mongo_data:
   kd1_minio_data:
+  kd1_prometheus_data:
+  kd1_grafana_data:

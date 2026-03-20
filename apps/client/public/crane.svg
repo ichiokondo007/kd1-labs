@@ -1,0 +1,88 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 580 340" width="900" height="527">
+  <defs>
+    <clipPath id="bodyClip">
+      <rect x="185" y="155" width="200" height="75"/>
+    </clipPath>
+  </defs>
+
+  <!-- Background -->
+  <rect width="580" height="340" fill="#e8eaed" rx="12"/>
+
+  <!-- ===== CHASSIS / FRAME ===== -->
+  <rect x="55" y="228" width="468" height="14" rx="5"
+        fill="white" stroke="black" stroke-width="11" stroke-linejoin="round"/>
+
+  <!-- ===== CAB ===== -->
+  <path d="M65,230 L65,134 Q65,110 90,110 L188,110 L188,230 Z"
+        fill="white" stroke="black" stroke-width="11"
+        stroke-linejoin="round" stroke-linecap="round"/>
+
+  <!-- Cab window -->
+  <rect x="80" y="120" width="88" height="70" rx="8"
+        fill="white" stroke="black" stroke-width="10"/>
+
+  <!-- ===== CRANE BODY (outrigger box) ===== -->
+  <rect x="188" y="155" width="200" height="73" rx="6"
+        fill="white" stroke="black" stroke-width="11"
+        stroke-linejoin="round"/>
+
+  <!-- Body detail lines -->
+  <line x1="250" y1="155" x2="250" y2="228" stroke="black" stroke-width="8"/>
+  <line x1="320" y1="155" x2="320" y2="228" stroke="black" stroke-width="8"/>
+
+  <!-- ===== CRANE BOOM BASE (turret) ===== -->
+  <rect x="220" y="118" width="70" height="40" rx="6"
+        fill="white" stroke="black" stroke-width="11"/>
+
+  <!-- ===== MAIN BOOM ===== -->
+  <!-- Boom: angled up-right from turret -->
+  <polygon points="225,125  265,125  530,42  515,32"
+           fill="white" stroke="black" stroke-width="10"
+           stroke-linejoin="round" stroke-linecap="round"/>
+
+  <!-- Inner boom (telescope section) -->
+  <polygon points="234,120  256,120  500,44  485,38"
+           fill="#e8eaed" stroke="black" stroke-width="7"
+           stroke-linejoin="round"/>
+
+  <!-- Boom tip -->
+  <circle cx="522" cy="37" r="7" fill="black"/>
+
+  <!-- ===== HOOK CABLE ===== -->
+  <line x1="522" y1="37" x2="522" y2="100"
+        stroke="black" stroke-width="5" stroke-dasharray="6,4"/>
+
+  <!-- Hook -->
+  <path d="M510,100 Q510,118 522,118 Q534,118 534,106 Q534,98 526,96"
+        fill="none" stroke="black" stroke-width="8"
+        stroke-linecap="round" stroke-linejoin="round"/>
+  <line x1="510" y1="100" x2="534" y2="100"
+        stroke="black" stroke-width="8" stroke-linecap="round"/>
+
+  <!-- ===== OUTRIGGERS ===== -->
+  <!-- Left outrigger arm -->
+  <rect x="210" y="225" width="14" height="40" rx="4"
+        fill="white" stroke="black" stroke-width="9"/>
+  <ellipse cx="217" cy="267" rx="18" ry="8"
+           fill="white" stroke="black" stroke-width="9"/>
+
+  <!-- Right outrigger arm -->
+  <rect x="358" y="225" width="14" height="40" rx="4"
+        fill="white" stroke="black" stroke-width="9"/>
+  <ellipse cx="365" cy="267" rx="18" ry="8"
+           fill="white" stroke="black" stroke-width="9"/>
+
+  <!-- ===== WHEELS ===== -->
+  <!-- Front wheel -->
+  <circle cx="118" cy="263" r="35" fill="white" stroke="black" stroke-width="11"/>
+  <circle cx="118" cy="263" r="10" fill="black"/>
+
+  <!-- Rear wheel 1 -->
+  <circle cx="430" cy="263" r="35" fill="white" stroke="black" stroke-width="11"/>
+  <circle cx="430" cy="263" r="10" fill="black"/>
+
+  <!-- Rear wheel 2 -->
+  <circle cx="500" cy="263" r="35" fill="white" stroke="black" stroke-width="11"/>
+  <circle cx="500" cy="263" r="10" fill="black"/>
+
+</svg>
