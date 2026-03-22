@@ -15,8 +15,7 @@ import { SvgAssetsDrawer } from "@/features/svglibrary/ui/SvgAssetsDrawer";
 import type { SvgAssetItem } from "@kd1-labs/types";
 import { useCurrentUser } from "@/hooks/useCurrentUser";
 import { useYjsConnection } from "@/features/canvas-yjs/hooks/useYjsConnection";
-import { useYjsCircleSync } from "@/features/canvas-yjs/hooks/useYjsCircleSync";
-import { useYjsRectSync } from "@/features/canvas-yjs/hooks/useYjsRectSync";
+import { useYjsObjectSync } from "@/features/canvas-yjs/hooks/useYjsObjectSync";
 import { useYjsCanvasRestore } from "@/features/canvas-yjs/hooks/useYjsCanvasRestore";
 import { ConnectedUsers } from "@/features/canvas-yjs/ui/ConnectedUsers";
 import { ConnectionStatusBadge } from "@/features/canvas-yjs/ui/ConnectionStatusBadge";
@@ -40,9 +39,8 @@ export default function CanvasYjsEditorPage() {
   // Y.Doc sync 完了後に meta（canvasName, 背景画像）を復元
   const { canvasName, isRestored } = useYjsCanvasRestore(yDoc, fabricRef, synced);
 
-  // Y.Doc sync 完了 + meta 復元完了で図形同期を開始（SVG 配置は設計見直し中のため無効）
-  useYjsCircleSync(yDoc, fabricRef, isRestored, collabRemoteApplyDepthRef);
-  useYjsRectSync(yDoc, fabricRef, isRestored, collabRemoteApplyDepthRef);
+  // Y.Doc sync 完了 + meta 復元完了でオブジェクト同期を開始
+  useYjsObjectSync(yDoc, fabricRef, isRestored, collabRemoteApplyDepthRef);
 
   const handleToolChange = useCallback((tool: CanvasTool) => {
     setActiveTool(tool);
@@ -88,7 +86,7 @@ export default function CanvasYjsEditorPage() {
 
   const handleSvgSelect = useCallback((item: SvgAssetItem) => {
     setSvgDrawerOpen(false);
-    fabricRef.current?.placeSvgFromUrl(item.url);
+    fabricRef.current?.placeSvgFromUrl(item.url, { key: item.key });
   }, []);
 
   const handleBgCropperCancel = useCallback(() => {

@@ -16,6 +16,7 @@
   "dependencies": {
     "@kd1-labs/document-db": "workspace:*",
     "lib0": "^0.2.102",
+    "prom-client": "^15.1.3",
     "ws": "^8.18.0",
     "y-protocols": "^1.0.6",
     "yjs": "^13.6.24"

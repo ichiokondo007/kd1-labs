@@ -135,6 +135,8 @@ services:
     restart: "no"
     volumes:
       - kd1_grafana_data:/var/lib/grafana
+      - ./docker/grafana/provisioning:/etc/grafana/provisioning:ro
+      - ./docker/grafana/dashboards:/var/lib/grafana/dashboards:ro
     ports:
       - "3001:3000"
     networks:

@@ -17,6 +17,7 @@ import CanvasYjsListPage from '@/pages/example/canvas-yjs-list'
 import CanvasYjsEditorPage from '@/pages/example/canvas-yjs-editor'
 import BlogPublicPageEntry from '@/pages/blog-public'
 import BlogPublicDetailPage from '@/pages/blog-public-detail'
+import YjsMetricsPage from '@/pages/yjs-metrics'
 
 function App() {
   return (
@@ -40,6 +41,7 @@ function App() {
             <Route path="/example/canvas-yjs" element={<CanvasYjsListPage />} />
             <Route path="/example/canvas-yjs/:id" element={<CanvasYjsEditorPage />} />
             <Route path="/example/form-yjs" element={<ComingSoonPage />} />
+            <Route path="/yjs-metrics" element={<YjsMetricsPage />} />
 
             {/* Tech Blog Routes */}
             <Route path="/blog/public" element={<BlogPublicPageEntry />} />

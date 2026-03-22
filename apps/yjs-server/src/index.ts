@@ -2,10 +2,14 @@ import { connectMongo } from "@kd1-labs/document-db";
 import { YjsServer } from "./yjs/server.js";
 import { createMongoPersistence } from "./kd1/persistence.js";
 import { createKd1Hooks } from "./kd1/hooks.js";
+import { startMetricsServer } from "./yjs/metrics.js";
 
 // ── MongoDB 接続 ────────────────────────────────────────────────────
 await connectMongo();
 console.log("[yjs-server] MongoDB connected");
+
+// ── Metrics サーバー起動 ─────────────────────────────────────────────
+startMetricsServer(parseInt(process.env.METRICS_PORT ?? "9091", 10));
 
 // ── YjsServer 起動 ──────────────────────────────────────────────────
 const server = new YjsServer({

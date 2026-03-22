@@ -39,7 +39,7 @@ const DOCKER_CHOICES = [
     name: " 📊 KD1 Docker ps",
     description: "",
     value: "docker:ps" as const,
-  },
+},
   {
     name: " 📈 yjs-server Metrics (top)",
     description: "kd1-yjs-server コンテナの top を表示",
@@ -51,7 +51,7 @@ const DOCKER_CHOICES = [
     value: "infra:up" as const,
   },
   {
-    name: " 🐳⏹️  Infra Down",
+    name: " 🐳⏹️ Infra Down",
     description: "infra を停止",
     value: "infra:down" as const,
   },
@@ -61,7 +61,7 @@ const DOCKER_CHOICES = [
     value: "apps:up" as const,
   },
   {
-    name: " 🐳⏹️  Apps Down",
+    name: " 🐳⏹️ Apps Down",
     description: "client server yjs-server を停止",
     value: "apps:down" as const,
   },

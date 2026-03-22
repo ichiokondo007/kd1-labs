@@ -116,6 +116,10 @@ export function DashboardLayout() {
                 <DocumentTextIcon />
                 <SidebarLabel>Yjs collab Scaled</SidebarLabel>
               </SidebarItem>
+              <SidebarItem href="/yjs-metrics" to="/yjs-metrics" current={pathname === '/yjs-metrics'}>
+                <img src="/icons8-grafana-48.png" alt="Grafana" className="size-5" />
+                <SidebarLabel>Yjs-server Metrics</SidebarLabel>
+              </SidebarItem>
             </SidebarSection>
 
             <SidebarSection>

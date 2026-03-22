@@ -3,6 +3,9 @@
  *
  * bindState: MongoDB の Canvas JSON → Y.Doc に展開
  * writeState: Y.Doc → MongoDB に保存（全員退出時）
+ *
+ * 全オブジェクトを単一の Y.Map("objects") で管理し、
+ * fabricSnapshot (toObject() の完全 JSON) で統一的に扱う。
  */
 import {
   findCanvasById,
@@ -19,17 +22,6 @@ import type {
 
 interface FabricObjectJson {
   type: string;
-  left?: number;
-  top?: number;
-  radius?: number;
-  fill?: string;
-  stroke?: string;
-  strokeWidth?: number;
-  scaleX?: number;
-  scaleY?: number;
-  angle?: number;
-  width?: number;
-  height?: number;
   [key: string]: unknown;
 }
 
@@ -40,48 +32,27 @@ interface FabricCanvasJson {
   [key: string]: unknown;
 }
 
-// ── CircleProps（クライアントの useYjsCircleSync と同じ構造） ─────────
+// ── Y.Map エントリ型 ─────────────────────────────────────────────────
 
-interface CircleProps {
-  left: number;
-  top: number;
-  radius: number;
-  fill: string;
-  stroke: string;
-  strokeWidth: number;
-  scaleX: number;
-  scaleY: number;
-  angle: number;
+interface ObjectYjsEntry {
+  fabricSnapshot: Record<string, unknown>;
 }
 
-interface RectYjsProps {
-  left: number;
-  top: number;
-  width: number;
-  height: number;
-  fill: string;
-  stroke: string;
-  strokeWidth: number;
-  scaleX: number;
-  scaleY: number;
-  angle: number;
-  skewX: number;
-  skewY: number;
-  opacity: number;
-  flipX: boolean;
-  flipY: boolean;
-  visible: boolean;
+// ── Y.js 内部型を plain object に変換 ────────────────────────────────
+
+function toPlainObject(value: unknown): unknown {
+  if (value == null) return value;
+  if (
+    typeof value === "object" &&
+    "toJSON" in value &&
+    typeof (value as { toJSON: unknown }).toJSON === "function"
+  ) {
+    return (value as { toJSON: () => unknown }).toJSON();
+  }
+  return value;
 }
 
 // ── Canvas JSON → Y.Doc 展開 ─────────────────────────────────────────
-
-function isCircleType(type: string): boolean {
-  return type === "Circle" || type === "circle";
-}
-
-function isRectType(type: string): boolean {
-  return type === "Rect" || type === "rect";
-}
 
 function expandCanvasToYDoc(
   canvasDoc: CanvasDocument,
@@ -107,52 +78,14 @@ function expandCanvasToYDoc(
 
     if (!fabricJson?.objects) return;
 
-    const yCircles = yDoc.getMap<CircleProps>("circles");
-    const yRects = yDoc.getMap<RectYjsProps>("rects");
-    const nonCircleObjects: FabricObjectJson[] = [];
+    const yObjects = yDoc.getMap<ObjectYjsEntry>("objects");
 
     for (const obj of fabricJson.objects) {
       const id =
         typeof obj.yjsId === "string" ? obj.yjsId : crypto.randomUUID();
-
-      if (isCircleType(String(obj.type))) {
-        yCircles.set(id, {
-          left: obj.left ?? 0,
-          top: obj.top ?? 0,
-          radius: obj.radius ?? 50,
-          fill: typeof obj.fill === "string" ? obj.fill : "#e8f5e9",
-          stroke: typeof obj.stroke === "string" ? obj.stroke : "#388e3c",
-          strokeWidth: obj.strokeWidth ?? 2,
-          scaleX: obj.scaleX ?? 1,
-          scaleY: obj.scaleY ?? 1,
-          angle: obj.angle ?? 0,
-        });
-      } else if (isRectType(String(obj.type))) {
-        yRects.set(id, {
-          left: obj.left ?? 0,
-          top: obj.top ?? 0,
-          width: obj.width ?? 120,
-          height: obj.height ?? 80,
-          fill: typeof obj.fill === "string" ? obj.fill : "#e3f2fd",
-          stroke: typeof obj.stroke === "string" ? obj.stroke : "#1976d2",
-          strokeWidth: obj.strokeWidth ?? 2,
-          scaleX: obj.scaleX ?? 1,
-          scaleY: obj.scaleY ?? 1,
-          angle: obj.angle ?? 0,
-          skewX: obj.skewX ?? 0,
-          skewY: obj.skewY ?? 0,
-          opacity: typeof obj.opacity === "number" ? obj.opacity : 1,
-          flipX: Boolean(obj.flipX),
-          flipY: Boolean(obj.flipY),
-          visible: obj.visible !== false,
-        });
-      } else {
-        nonCircleObjects.push(obj);
-      }
-    }
-
-    if (nonCircleObjects.length > 0) {
-      yMeta.set("nonCircleObjects", nonCircleObjects);
+      yObjects.set(id, {
+        fabricSnapshot: obj as Record<string, unknown>,
+      });
     }
   });
 }
@@ -187,33 +120,16 @@ function collapseYDocToCanvasJson(yDoc: WSSharedDoc): {
 
   const objects: FabricObjectJson[] = [];
 
-  const yCircles = yDoc.getMap<CircleProps>("circles");
-  yCircles.forEach((props, id) => {
-    objects.push({
-      type: "Circle",
-      yjsId: id,
-      ...props,
-    });
+  const yObjects = yDoc.getMap<ObjectYjsEntry>("objects");
+  yObjects.forEach((entry, id) => {
+    const plain = toPlainObject(entry.fabricSnapshot);
+    const obj = { ...(plain as Record<string, unknown>) } as FabricObjectJson;
+    obj.yjsId = id;
+    objects.push(obj);
   });
-
-  const yRects = yDoc.getMap<RectYjsProps>("rects");
-  yRects.forEach((props, id) => {
-    objects.push({
-      type: "Rect",
-      yjsId: id,
-      ...props,
-    });
-  });
-
-  const nonCircleObjects = yMeta.get("nonCircleObjects") as
-    | FabricObjectJson[]
-    | undefined;
-  if (nonCircleObjects) {
-    objects.push(...nonCircleObjects);
-  }
 
   const canvas: FabricCanvasJson = {
-    version: "6.6.1",
+    version: "7.2.0",
     objects,
     ...(backgroundImage ? { backgroundImage } : {}),
   };

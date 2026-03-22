@@ -4,11 +4,10 @@ global:
 
 scrape_configs:
   # コンテナメトリクス（メモリ・CPU）
-  - job_name: 'cadvisor'
+  - job_name: "cadvisor"
     static_configs:
-      - targets: ['cadvisor:8080']
+      - targets: ["cadvisor:8080"]
 
-  # TODO: y-websocketにprom-client導入後に有効化
-  # - job_name: 'yjs-server'
-  #   static_configs:
-  #     - targets: ['kd1-yjs-server:9091']
+  - job_name: "yjs-server"
+    static_configs:
+      - targets: ["kd1-yjs-server:9091"]

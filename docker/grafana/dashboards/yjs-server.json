@@ -1,0 +1,264 @@
+{
+  "annotations": { "list": [] },
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 1,
+  "links": [],
+  "panels": [
+    {
+      "title": "Container CPU Usage",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 0 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percentunit",
+          "custom": { "fillOpacity": 20 }
+        },
+        "overrides": []
+      },
+      "targets": [
+        {
+          "expr": "rate(container_cpu_usage_seconds_total{name=\"kd1-yjs-server\"}[1m])",
+          "legendFormat": "container CPU",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "title": "Node.js Process CPU",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 0 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percentunit",
+          "custom": { "fillOpacity": 20 }
+        },
+        "overrides": []
+      },
+      "targets": [
+        {
+          "expr": "rate(process_cpu_seconds_total{job=\"yjs-server\"}[1m])",
+          "legendFormat": "process CPU",
+          "refId": "A"
+        },
+        {
+          "expr": "rate(process_cpu_user_seconds_total{job=\"yjs-server\"}[1m])",
+          "legendFormat": "user CPU",
+          "refId": "B"
+        },
+        {
+          "expr": "rate(process_cpu_system_seconds_total{job=\"yjs-server\"}[1m])",
+          "legendFormat": "system CPU",
+          "refId": "C"
+        }
+      ]
+    },
+    {
+      "title": "Container Memory",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 8 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "bytes",
+          "custom": { "fillOpacity": 20 }
+        },
+        "overrides": []
+      },
+      "targets": [
+        {
+          "expr": "container_memory_usage_bytes{name=\"kd1-yjs-server\"}",
+          "legendFormat": "container memory usage",
+          "refId": "A"
+        },
+        {
+          "expr": "container_memory_working_set_bytes{name=\"kd1-yjs-server\"}",
+          "legendFormat": "container working set",
+          "refId": "B"
+        }
+      ]
+    },
+    {
+      "title": "Process Resident Memory",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 8 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "bytes",
+          "custom": { "fillOpacity": 20 }
+        },
+        "overrides": []
+      },
+      "targets": [
+        {
+          "expr": "process_resident_memory_bytes{job=\"yjs-server\"}",
+          "legendFormat": "RSS",
+          "refId": "A"
+        },
+        {
+          "expr": "process_virtual_memory_bytes{job=\"yjs-server\"}",
+          "legendFormat": "virtual",
+          "refId": "B"
+        }
+      ]
+    },
+    {
+      "title": "Node.js Heap",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 16 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "bytes",
+          "custom": { "fillOpacity": 20 }
+        },
+        "overrides": []
+      },
+      "targets": [
+        {
+          "expr": "nodejs_heap_size_used_bytes{job=\"yjs-server\"}",
+          "legendFormat": "heap used",
+          "refId": "A"
+        },
+        {
+          "expr": "nodejs_heap_size_total_bytes{job=\"yjs-server\"}",
+          "legendFormat": "heap total",
+          "refId": "B"
+        },
+        {
+          "expr": "nodejs_external_memory_bytes{job=\"yjs-server\"}",
+          "legendFormat": "external",
+          "refId": "C"
+        }
+      ]
+    },
+    {
+      "title": "Heap Spaces",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 16 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "bytes",
+          "custom": { "fillOpacity": 10 }
+        },
+        "overrides": []
+      },
+      "targets": [
+        {
+          "expr": "nodejs_heap_space_size_used_bytes{job=\"yjs-server\"}",
+          "legendFormat": "{{space}} used",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "title": "GC Duration (rate)",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 24 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "s",
+          "custom": { "fillOpacity": 20 }
+        },
+        "overrides": []
+      },
+      "targets": [
+        {
+          "expr": "rate(nodejs_gc_duration_seconds_sum{job=\"yjs-server\"}[1m])",
+          "legendFormat": "{{kind}} GC time/s",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "title": "GC Pause Count (rate)",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 24 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "ops",
+          "custom": { "fillOpacity": 20 }
+        },
+        "overrides": []
+      },
+      "targets": [
+        {
+          "expr": "rate(nodejs_gc_duration_seconds_count{job=\"yjs-server\"}[1m])",
+          "legendFormat": "{{kind}} GC count/s",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "title": "Event Loop Lag",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 32 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "s",
+          "custom": { "fillOpacity": 20 }
+        },
+        "overrides": []
+      },
+      "targets": [
+        {
+          "expr": "nodejs_eventloop_lag_seconds{job=\"yjs-server\"}",
+          "legendFormat": "mean lag",
+          "refId": "A"
+        },
+        {
+          "expr": "nodejs_eventloop_lag_p99_seconds{job=\"yjs-server\"}",
+          "legendFormat": "p99 lag",
+          "refId": "B"
+        },
+        {
+          "expr": "nodejs_eventloop_lag_p50_seconds{job=\"yjs-server\"}",
+          "legendFormat": "p50 lag",
+          "refId": "C"
+        }
+      ]
+    },
+    {
+      "title": "Active Handles / Requests",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 32 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "custom": { "fillOpacity": 20 }
+        },
+        "overrides": []
+      },
+      "targets": [
+        {
+          "expr": "nodejs_active_handles_total{job=\"yjs-server\"}",
+          "legendFormat": "active handles",
+          "refId": "A"
+        },
+        {
+          "expr": "nodejs_active_requests_total{job=\"yjs-server\"}",
+          "legendFormat": "active requests",
+          "refId": "B"
+        }
+      ]
+    }
+  ],
+  "refresh": "10s",
+  "schemaVersion": 39,
+  "tags": ["yjs-server", "nodejs"],
+  "templating": { "list": [] },
+  "time": { "from": "now-30m", "to": "now" },
+  "timepicker": {},
+  "timezone": "browser",
+  "title": "yjs-server",
+  "uid": "yjs-server-overview",
+  "version": 1
+}

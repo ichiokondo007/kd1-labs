@@ -51,7 +51,6 @@ function messageListener(
     }
   } catch (err) {
     console.error("[yjs:message-error]", err);
-    doc.emit("error", [err]);
   }
 }
 

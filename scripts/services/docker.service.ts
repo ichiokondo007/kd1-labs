@@ -95,7 +95,21 @@ export async function infraDown(): Promise<void> {
 export async function appsBuildUp(): Promise<void> {
   await runCommand(
     "docker",
-    ["compose", "-f", APP_COMPOSE_FILE, "--env-file", DOCKER_ENV_FILE, "up", "-d"],
+    [
+      "compose",
+      "-f",
+      BASE_COMPOSE_FILE,
+      "-f",
+      APP_COMPOSE_FILE,
+      "--env-file",
+      DOCKER_ENV_FILE,
+      "up",
+      "--build",
+      "-d",
+      "yjs-server",
+      "server",
+      "client",
+    ], 
     PROJECT_ROOT,
   );
 }

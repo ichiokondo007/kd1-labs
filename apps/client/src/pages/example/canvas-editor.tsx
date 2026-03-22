@@ -108,7 +108,7 @@ export default function CanvasEditorPage() {
 
   const handleSvgSelect = useCallback((item: SvgAssetItem) => {
     setSvgDrawerOpen(false);
-    fabricRef.current?.placeSvgFromUrl(item.url);
+    fabricRef.current?.placeSvgFromUrl(item.url, { key: item.key });
   }, []);
 
   const handleBgCropperCancel = useCallback(() => {
