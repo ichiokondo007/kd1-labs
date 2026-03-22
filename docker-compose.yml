@@ -102,9 +102,10 @@ services:
   # ============================================
 
   cadvisor:
-    image: gcr.io/cadvisor/cadvisor:v0.49.1
+    image: ghcr.io/google/cadvisor:v0.54.0
     container_name: kd1-cadvisor
     restart: "no"
+    privileged: true
     volumes:
       - /:/rootfs:ro
       - /var/run:/var/run:ro
