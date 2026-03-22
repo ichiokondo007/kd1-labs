@@ -1,8 +1,24 @@
 import { createServer } from "node:http";
-import { Registry, collectDefaultMetrics } from "prom-client";
+import { Registry, collectDefaultMetrics, Gauge } from "prom-client";
 
 const register = new Registry();
 collectDefaultMetrics({ register });
+
+// ── カスタムメトリクス ───────────────────────────────────────────────
+
+export const activeDocsGauge = new Gauge({
+  name: "yjs_active_docs_total",
+  help: "Number of Y.Doc instances currently in memory",
+  registers: [register],
+});
+
+export const activeConnectionsGauge = new Gauge({
+  name: "yjs_active_connections_total",
+  help: "Number of active WebSocket connections",
+  registers: [register],
+});
+
+// ── メトリクス HTTP サーバー ─────────────────────────────────────────
 
 export function startMetricsServer(port = 9091): void {
   const server = createServer(async (_req, res) => {

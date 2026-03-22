@@ -1,0 +1,14 @@
+{
+  "name": "@kd1-labs/scripts",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "setup": "pnpm install --ignore-workspace"
+  },
+  "dependencies": {
+    "@inquirer/prompts": "^8.3.0",
+    "@kd1-labs/devtool-cli": "file:../../devtool-cli",
+    "cli-table3": "^0.6.5"
+  }
+}

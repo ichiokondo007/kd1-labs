@@ -1,10 +1,14 @@
 import { select } from "@inquirer/prompts";
-import { runForeground } from "../runner.js";
+import {
+  runForeground,
+  runSequential,
+  log,
+  waitForEnter,
+  showScreen,
+  SELECT_PAGE_SIZE,
+  SELECT_THEME,
+} from "@kd1-labs/devtool-cli";
 import { runFullDocker } from "../services/dev.service.js";
-import { log } from "../ui/logger.js";
-import { waitForEnter } from "../ui/pause.js";
-import { SELECT_PAGE_SIZE, SELECT_THEME } from "../ui/prompt-config.js";
-import { showScreen } from "../ui/screen.js";
 
 type DevMenuValue = "full-docker" | "server" | "client" | "yjsserver" | "back" | "exit";
 
@@ -51,7 +55,6 @@ async function startDevServer(target: "server" | "client" | "yjsserver"): Promis
   const cfg = PREPARE_AND_RUN[target];
 
   log.info(`\n📦 ${cfg.buildLabel}...`);
-  const { runSequential } = await import("../runner.js");
   runSequential([{ label: cfg.buildLabel, cmd: cfg.buildCmd }]);
 
   log.success(`\n✅ ビルド完了 → ${cfg.runLabel} を開始します`);
@@ -60,8 +63,6 @@ async function startDevServer(target: "server" | "client" | "yjsserver"): Promis
   console.log(`\n🛑 dev server 終了 (code: ${code})`);
   process.exit(0);
 }
-
-
 
 export async function devMenu(): Promise<void> {
   showScreen("🚀 Open Development Environment");

@@ -1,4 +1,4 @@
-import { waitForEnter } from "../ui/pause.js";
+import { waitForEnter } from "@kd1-labs/devtool-cli";
 
 export async function helpMenu(): Promise<void> {
   console.log(`

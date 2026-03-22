@@ -1,12 +1,6 @@
 import Table from "cli-table3";
 import type { ContainerInfo } from "../services/docker.service.js";
-import { color } from "./color.js";
-
-export function printTable(headers: string[], rows: string[][]) {
-  const table = new Table({ head: headers });
-  for (const r of rows) table.push(r);
-  console.log(table.toString());
-}
+import { color } from "@kd1-labs/devtool-cli";
 
 function colorizeState(state: string): string {
   switch (state) {

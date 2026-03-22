@@ -249,6 +249,46 @@
           "refId": "B"
         }
       ]
+    },
+    {
+      "title": "Active Y.Doc Count",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 40 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "custom": { "fillOpacity": 20 }
+        },
+        "overrides": []
+      },
+      "targets": [
+        {
+          "expr": "yjs_active_docs_total{job=\"yjs-server\"}",
+          "legendFormat": "active docs",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "title": "Active Connections",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 40 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "custom": { "fillOpacity": 20 }
+        },
+        "overrides": []
+      },
+      "targets": [
+        {
+          "expr": "yjs_active_connections_total{job=\"yjs-server\"}",
+          "legendFormat": "active connections",
+          "refId": "A"
+        }
+      ]
     }
   ],
   "refresh": "10s",

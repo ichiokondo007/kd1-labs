@@ -1,19 +1,11 @@
-/**
- * 開発環境起動まわり（full-docker, server/client など）の窓口。
- * full-docker: インフラ起動 → MinIO初期化 → DBマイグレーション → アプリDeploy を担当する。
- */
-
 import { execSync } from "node:child_process";
-import { runCommand } from "./command.service.js";
-import { log } from "../ui/logger.js";
-import { createSpinner } from "../ui/spinner.js";
+import { runCommand, log, createSpinner } from "@kd1-labs/devtool-cli";
 
 const PROJECT_ROOT = process.cwd();
 const BASE_COMPOSE_FILE = "docker-compose.yml";
 const APP_COMPOSE_FILE = "docker-compose.app.yml";
 const DOCKER_ENV_FILE = ".env.docker";
 
-/** docker compose の共通引数 */
 const baseComposeArgs = [
   "compose",
   "-f",
@@ -22,10 +14,6 @@ const baseComposeArgs = [
   DOCKER_ENV_FILE,
 ];
 
-/**
- * kd1-mysql コンテナの公開ポートを docker port から動的に取得する。
- * 取得できない場合はデフォルト 3307 を返す。
- */
 function getMysqlPort(): string {
   try {
     const out = execSync("docker port kd1-mysql 3306", {
@@ -45,11 +33,9 @@ export async function runFullDocker(): Promise<void> {
   const spinner = createSpinner("Full Docker run を準備しています...");
 
   try {
-    // 0. pnpm install
     spinner.text = "依存インストール（pnpm install）...";
     await runCommand("pnpm", ["install"], PROJECT_ROOT);
 
-    // 1. インフラ起動（mysql, mongodb, minio）
     spinner.text =
       "インフラ起動（mysql, mongodb, minio）... healthcheck 待機中";
     await runCommand(
@@ -58,7 +44,6 @@ export async function runFullDocker(): Promise<void> {
       PROJECT_ROOT,
     );
 
-    // 2. MinIO 初期バケット作成
     spinner.text = "MinIO 初期バケット作成（minio-init）...";
     await runCommand(
       "docker",
@@ -66,7 +51,6 @@ export async function runFullDocker(): Promise<void> {
       PROJECT_ROOT,
     );
 
-    // 3. Drizzle DBマイグレーション（Seed含む）
     spinner.text = "db-client ビルド...";
     await runCommand(
       "pnpm",
@@ -83,7 +67,6 @@ export async function runFullDocker(): Promise<void> {
       { cwd: PROJECT_ROOT, env: { ...process.env, DB_PORT: dbPort } },
     );
 
-    // 4. アプリケーション Deploy & run
     spinner.text = "アプリケーション Deploy（server, client）...";
     await runCommand(
       "docker",

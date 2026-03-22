@@ -19,6 +19,13 @@ export default function YjsMetricsPage() {
           Open Grafana
         </Button>
       </div>
+      <div className="mt-8">
+        <img
+          src="/md/grafana-overview.png"
+          alt="Grafana dashboard overview"
+          className="w-full rounded-lg ring-1 ring-zinc-950/5 dark:ring-white/10"
+        />
+      </div>
     </div>
   )
 }

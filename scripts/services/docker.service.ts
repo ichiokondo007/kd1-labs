@@ -1,4 +1,4 @@
-import { runCommand } from "./command.service.js";
+import { runCommand } from "@kd1-labs/devtool-cli";
 
 const PROJECT_ROOT = process.cwd();
 const BASE_COMPOSE_FILE = "docker-compose.yml";

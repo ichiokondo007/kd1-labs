@@ -1,28 +1,32 @@
+import { lazy, Suspense } from 'react'
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import { GlobalLoading } from '@/components/global-loading'
 import { ProtectedRoute } from '@/components/ProtectedRoute'
 import { DashboardLayout } from '@/layouts/dashboard-layout'
-import HomePage from '@/pages/home'
 import LoginPageEntry from '@/pages/login'
-import PasswordChangePageEntry from '@/pages/password-change'
-import CanvasListPage from '@/pages/example/canvas-list'
-import SettingsPageEntry from '@/pages/settings'
-import UserManagementPageEntry from '@/pages/user-management'
 import LogoutPage from '@/pages/logout'
-import CanvasEditorPage from '@/pages/example/canvas-editor'
-import { SvglibraryPage } from '@/features/svglibrary'
 import NotFoundPage from '@/pages/404'
 import ComingSoonPage from '@/pages/coming-soon'
-import CanvasYjsListPage from '@/pages/example/canvas-yjs-list'
-import CanvasYjsEditorPage from '@/pages/example/canvas-yjs-editor'
-import BlogPublicPageEntry from '@/pages/blog-public'
-import BlogPublicDetailPage from '@/pages/blog-public-detail'
-import YjsMetricsPage from '@/pages/yjs-metrics'
+
+// Route-level code splitting
+const HomePage = lazy(() => import('@/pages/home'))
+const PasswordChangePageEntry = lazy(() => import('@/pages/password-change'))
+const CanvasListPage = lazy(() => import('@/pages/example/canvas-list'))
+const CanvasEditorPage = lazy(() => import('@/pages/example/canvas-editor'))
+const CanvasYjsListPage = lazy(() => import('@/pages/example/canvas-yjs-list'))
+const CanvasYjsEditorPage = lazy(() => import('@/pages/example/canvas-yjs-editor'))
+const SvglibraryPage = lazy(() => import('@/features/svglibrary').then(m => ({ default: m.SvglibraryPage })))
+const BlogPublicPageEntry = lazy(() => import('@/pages/blog-public'))
+const BlogPublicDetailPage = lazy(() => import('@/pages/blog-public-detail'))
+const YjsMetricsPage = lazy(() => import('@/pages/yjs-metrics'))
+const SettingsPageEntry = lazy(() => import('@/pages/settings'))
+const UserManagementPageEntry = lazy(() => import('@/pages/user-management'))
 
 function App() {
   return (
     <BrowserRouter>
       <GlobalLoading />
+      <Suspense fallback={<GlobalLoading />}>
       <Routes>
         {/* 認証画面（レイアウト外） */}
         <Route path="/login" element={<LoginPageEntry />} />
@@ -64,6 +68,7 @@ function App() {
         {/* ルート（/）はログイン画面へリダイレクト */}
         <Route path="/" element={<Navigate to="/login" replace />} />
       </Routes>
+      </Suspense>
     </BrowserRouter>
   )
 }
