@@ -1,0 +1,14 @@
+services:
+  cloudflared:
+    container_name: kd1-cloudflared
+    image: cloudflare/cloudflared:latest
+    restart: unless-stopped
+    command: tunnel --no-autoupdate run
+    networks:
+      - kd1-network
+    environment:
+      - TUNNEL_TOKEN=${CLOUDFLARE_TUNNEL_TOKEN}
+
+networks:
+  kd1-network:
+    name: kd1-network

@@ -17,6 +17,7 @@ import {
 import type { TPointerEventInfo } from "fabric";
 import type { BgCropperResult } from "@/features/canvas-bg-cropper/types";
 import { registerGroupSvgMetadata } from "@/features/canvas/fabricRegisterGroupSvgMetadata";
+import { generateId } from "@/features/canvas/domain";
 import type { CanvasTool } from "./CanvasEditorToolbar";
 
 registerGroupSvgMetadata();
@@ -120,7 +121,7 @@ export const FabricCanvas = forwardRef<FabricCanvasHandle, FabricCanvasProps>(
           fill: "#e3f2fd",
           stroke: "#1976d2",
           strokeWidth: 2,
-          yjsId: crypto.randomUUID(),
+          yjsId: generateId(),
         });
         canvas.add(rect);
       }
@@ -168,7 +169,7 @@ export const FabricCanvas = forwardRef<FabricCanvasHandle, FabricCanvasProps>(
             fill: "#e3f2fd",
             stroke: "#1976d2",
             strokeWidth: 2,
-            yjsId: crypto.randomUUID(),
+            yjsId: generateId(),
           });
           canvas.add(rect);
         } else {
@@ -179,7 +180,7 @@ export const FabricCanvas = forwardRef<FabricCanvasHandle, FabricCanvasProps>(
             fill: "#e8f5e9",
             stroke: "#388e3c",
             strokeWidth: 2,
-            yjsId: crypto.randomUUID(),
+            yjsId: generateId(),
           });
           canvas.add(circle);
         }
@@ -213,7 +214,7 @@ export const FabricCanvas = forwardRef<FabricCanvasHandle, FabricCanvasProps>(
             group.set({
               left: x,
               top: y,
-              yjsId: crypto.randomUUID(),
+              yjsId: generateId(),
             });
             if (placementKey) {
               group.set({
@@ -321,7 +322,7 @@ export const FabricCanvas = forwardRef<FabricCanvasHandle, FabricCanvasProps>(
           if (!canvas) return;
           const group = await loadAndScaleSvgGroup(url);
           if (!group) return;
-          group.set({ left: 100, top: 100, yjsId: crypto.randomUUID() });
+          group.set({ left: 100, top: 100, yjsId: generateId() });
           canvas.add(group);
           canvas.requestRenderAll();
         },

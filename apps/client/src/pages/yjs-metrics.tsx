@@ -2,7 +2,7 @@ import { Heading } from '@/components/heading'
 import { Text } from '@/components/text'
 import { Button } from '@/components/button'
 
-const GRAFANA_URL = 'http://localhost:3001'
+const GRAFANA_URL = '/grafana/'
 
 export default function YjsMetricsPage() {
   return (

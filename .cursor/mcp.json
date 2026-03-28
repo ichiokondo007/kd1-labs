@@ -8,6 +8,8 @@
         "serena-mcp-server",
         "--project",
         "/home/ichio/projects/kd1-labs",
+        "--project",
+        "/home/ichio/projects/navmenu-project/packages/navmenu-cli",
         "--context",
         "ide-assistant",
         "--enable-web-dashboard",

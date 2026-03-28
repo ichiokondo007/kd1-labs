@@ -49,33 +49,33 @@ const DOCKER_CHOICES = [
     value: "yjs:metrics" as const,
   },
   {
-    name: " 🐳🚀 Infra Up (.env.local/mysql mongodb minio)",
+    name: " 🐳 Infra Up (.env.local/mysql mongodb minio grafana prometheus cadvisor)",
     description: ".env.local の設定でMySQL / MongoDB / MinIOのみUp",
     value: "infra:up" as const,
   },
   {
-    name: " 🐳⏹️ Infra Down",
+    name: " ⏹️ Infra Down",
     description: "infra を停止",
     value: "infra:down" as const,
   },
   {
-    name: " 🐳🚀 Apps Up (.env.docker/client server yjs-server)",
+    name: " 🐳 Apps Up (.env.docker/client server yjs-server)",
     description: "client server yjs-server のみdocker Up",
     value: "apps:up" as const,
   },
   {
-    name: " 🐳⏹️ Apps Down",
+    name: " ⏹️ Apps Down",
     description: "client server yjs-server を停止",
     value: "apps:down" as const,
   },
   {
-    name: " 🐳🚀 Full Docker Up(infra + server / client / yjs-server)",
+    name: " 🐳 Full Docker Up(.env.docker/ Infra + Apps/[ server / client / yjs-server] )",
     description: "Full docker Up",
     value: "full:up" as const,
   },
   {
-    name: " 🐳⏹️  Full Docker Down",
-    description: "Full docker を停止",
+    name: " ⏹️ Full Docker Down",
+  description: "Full docker を停止",
     value: "full:down" as const,
   },
   {

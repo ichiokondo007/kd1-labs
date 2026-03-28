@@ -12,8 +12,6 @@ export interface MinioStorageAdapterConfig {
   accessKey: string;
   secretKey: string;
   bucket: string;
-  publicHost?: string;
-  publicPort?: number;
 }
 
 export function createMinioStorageAdapter(config: MinioStorageAdapterConfig): StoragePort {
@@ -24,8 +22,6 @@ export function createMinioStorageAdapter(config: MinioStorageAdapterConfig): St
     accessKey: config.accessKey,
     secretKey: config.secretKey,
     bucket: config.bucket,
-    publicHost: config.publicHost,
-    publicPort: config.publicPort,
   });
 
   return {

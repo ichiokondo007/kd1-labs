@@ -13,13 +13,18 @@ export default defineConfig({
     host: true,
     proxy: {
       '/api': {
-        target: 'http://localhost:3000',
+        target: process.env.VITE_API_PROXY_TARGET ?? 'http://localhost:3000',
         changeOrigin: true,
       },
       '/yjs': {
-        target: 'ws://localhost:1234',
+        target: process.env.VITE_YJS_PROXY_TARGET ?? 'ws://localhost:1234',
         ws: true,
         rewrite: (path) => path.replace(/^\/yjs/, ''),
+      },
+      '/grafana': {
+        target: 'http://localhost:3001',
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/grafana/, ''),
       },
     },
   },
