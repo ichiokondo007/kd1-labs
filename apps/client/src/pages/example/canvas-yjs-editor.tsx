@@ -130,6 +130,7 @@ export default function CanvasYjsEditorPage() {
             onToolChange={handleToolChange}
             onDeleteSelected={() => fabricRef.current?.deleteSelectedObjects()}
             deleteDisabled={!hasCanvasSelection}
+            bgImageDisabled
           />
           <div className="mt-3 relative">
             <FabricCanvas

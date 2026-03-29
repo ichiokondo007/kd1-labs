@@ -33,6 +33,8 @@ export type CanvasEditorToolbarProps = {
   onDeleteSelected?: () => void;
   /** 削除ボタンを無効化（未選択時は true） */
   deleteDisabled?: boolean;
+  /** 背景画像ツールを無効化（例: Yjs 共同編集） */
+  bgImageDisabled?: boolean;
 };
 
 const PRIMARY_TOOL_BUTTONS: {
@@ -75,6 +77,7 @@ export const CanvasEditorToolbar: FC<CanvasEditorToolbarProps> = ({
   redoDisabled = true,
   onDeleteSelected,
   deleteDisabled = true,
+  bgImageDisabled = false,
 }) => {
   const deleteButtonDisabled = deleteDisabled || !onDeleteSelected;
 
@@ -141,17 +144,28 @@ export const CanvasEditorToolbar: FC<CanvasEditorToolbarProps> = ({
         <button
           type="button"
           onClick={() => onToolChange(BG_IMAGE_TOOL.tool)}
+          disabled={bgImageDisabled}
           className={clsx(
-            "flex flex-col items-center justify-center gap-0.5 rounded-md px-3 py-2 transition",
-            activeTool === BG_IMAGE_TOOL.tool
+            "flex flex-col items-center justify-center gap-0.5 rounded-md px-3 py-2 text-zinc-500 transition disabled:opacity-40 disabled:hover:bg-transparent dark:text-zinc-400",
+            !bgImageDisabled && activeTool === BG_IMAGE_TOOL.tool
               ? "bg-blue-50 text-blue-600 dark:bg-blue-950/40 dark:text-blue-400"
-              : "text-zinc-500 hover:bg-zinc-100 hover:text-zinc-700 dark:text-zinc-400 dark:hover:bg-zinc-800 dark:hover:text-zinc-300"
+              : !bgImageDisabled &&
+                  "hover:bg-zinc-100 hover:text-zinc-700 dark:hover:bg-zinc-800 dark:hover:text-zinc-300"
           )}
-          title={BG_IMAGE_TOOL.label}
-          {...(activeTool === BG_IMAGE_TOOL.tool && {
-            "aria-pressed": "true" as const,
-          })}
-          aria-label={BG_IMAGE_TOOL.label}
+          title={
+            bgImageDisabled
+              ? "共同編集では背景画像を変更できません"
+              : BG_IMAGE_TOOL.label
+          }
+          {...(!bgImageDisabled &&
+            activeTool === BG_IMAGE_TOOL.tool && {
+              "aria-pressed": "true" as const,
+            })}
+          aria-label={
+            bgImageDisabled
+              ? `${BG_IMAGE_TOOL.label}（利用不可）`
+              : BG_IMAGE_TOOL.label
+          }
         >
           <BG_IMAGE_TOOL.icon className="size-5" aria-hidden />
           <span className="text-[10px] leading-none">{BG_IMAGE_TOOL.label}</span>
