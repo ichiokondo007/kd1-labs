@@ -27,6 +27,7 @@
     "vitest": "catalog:"
   },
   "dependencies": {
+    "@kd1-labs/utils": "workspace:*",
     "minio": "^8.0.7"
   }
 }

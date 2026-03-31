@@ -11,6 +11,7 @@ import {
   Circle,
   FabricImage,
   Rect,
+  Textbox,
   loadSVGFromURL,
   util,
 } from "fabric";
@@ -26,7 +27,7 @@ export type FabricCanvasHandle = {
   toJSON: () => unknown;
   loadFromJSON: (json: unknown) => Promise<void>;
   toDataURL: () => string | null;
-  setBackgroundImage: (result: BgCropperResult) => Promise<void>;
+  setBackgroundImage: (result: BgCropperResult, storageKey?: string) => Promise<void>;
   removeBackgroundImage: () => void;
   addSvgFromUrl: (url: string) => Promise<void>;
   /** @param meta.key 指定時は Yjs 同期用に Group に svgAssetKey が付与される */
@@ -148,10 +149,20 @@ export const FabricCanvas = forwardRef<FabricCanvasHandle, FabricCanvasProps>(
       canvas.on("selection:cleared", notifySelection);
       notifySelection();
 
+      const handleTextEditingExited = (e: { target: unknown }) => {
+        const target = e.target;
+        if (target instanceof Textbox && target.text.trim() === "") {
+          canvas.remove(target);
+          canvas.requestRenderAll();
+        }
+      };
+      canvas.on("text:editing:exited", handleTextEditingExited);
+
       return () => {
         canvas.off("selection:created", notifySelection);
         canvas.off("selection:updated", notifySelection);
         canvas.off("selection:cleared", notifySelection);
+        canvas.off("text:editing:exited", handleTextEditingExited);
       };
     }, [width, height, skipInitialRect]);
 
@@ -267,6 +278,44 @@ export const FabricCanvas = forwardRef<FabricCanvasHandle, FabricCanvasProps>(
         };
       }
 
+      if (activeTool === "text") {
+        canvas.selection = false;
+        canvas.defaultCursor = "text";
+        canvas.forEachObject((obj) => {
+          obj.selectable = false;
+          obj.evented = false;
+        });
+
+        const handler = (opt: TPointerEventInfo) => {
+          const { x, y } = opt.scenePoint;
+          const textbox = new Textbox("", {
+            left: x,
+            top: y,
+            width: 200,
+            fontSize: 20,
+            fontFamily: "sans-serif",
+            fill: "#333333",
+            yjsId: generateId(),
+          });
+          canvas.add(textbox);
+          canvas.setActiveObject(textbox);
+          textbox.enterEditing();
+          canvas.requestRenderAll();
+          onShapePlacedRef.current?.();
+        };
+        canvas.on("mouse:down", handler);
+
+        return () => {
+          canvas.off("mouse:down", handler);
+          canvas.selection = true;
+          canvas.defaultCursor = "default";
+          canvas.forEachObject((obj) => {
+            obj.selectable = true;
+            obj.evented = true;
+          });
+        };
+      }
+
       canvas.selection = true;
       canvas.defaultCursor = "default";
     }, [activeTool, placeShape, pendingSvg]);
@@ -293,7 +342,7 @@ export const FabricCanvas = forwardRef<FabricCanvasHandle, FabricCanvasProps>(
           await canvas.loadFromJSON(json as string | Record<string, unknown>);
           canvas.requestRenderAll();
         },
-        async setBackgroundImage(result: BgCropperResult) {
+        async setBackgroundImage(result: BgCropperResult, storageKey?: string) {
           const canvas = canvasInstanceRef.current;
           if (!canvas) return;
           const img = await FabricImage.fromURL(result.dataUrl, {
@@ -307,6 +356,9 @@ export const FabricCanvas = forwardRef<FabricCanvasHandle, FabricCanvasProps>(
             originX: result.originX,
             originY: result.originY,
           });
+          if (storageKey) {
+            (img as unknown as Record<string, unknown>).storageKey = storageKey;
+          }
           img.canvas = canvas;
           canvas.backgroundImage = img;
           canvas.requestRenderAll();

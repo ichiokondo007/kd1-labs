@@ -8,12 +8,15 @@ WORKDIR /app
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml .npmrc ./
 COPY apps/yjs-server/package.json apps/yjs-server/
 COPY packages/document-db/package.json packages/document-db/
+COPY packages/utils/package.json packages/utils/
 RUN pnpm install --frozen-lockfile
 
 # ===========================================
 # Stage 2: build + deploy
 # ===========================================
 FROM base AS build
+COPY packages/utils/ packages/utils/
+RUN pnpm --filter @kd1-labs/utils run build
 COPY packages/document-db/ packages/document-db/
 RUN pnpm --filter @kd1-labs/document-db run build
 COPY apps/yjs-server/ apps/yjs-server/

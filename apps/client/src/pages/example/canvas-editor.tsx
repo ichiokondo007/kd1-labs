@@ -97,8 +97,8 @@ export default function CanvasEditorPage() {
     async (result: BgCropperResult) => {
       setBgCropperSrc(null);
       try {
-        const { url } = await uploadFile(result.dataUrl, "image/jpeg");
-        await fabricRef.current?.setBackgroundImage({ ...result, dataUrl: url });
+        const { key, url } = await uploadFile(result.dataUrl, "image/jpeg");
+        await fabricRef.current?.setBackgroundImage({ ...result, dataUrl: url }, key);
       } catch {
         setServerError("Failed to upload background image.");
       }

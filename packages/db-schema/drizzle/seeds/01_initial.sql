@@ -21,7 +21,7 @@ INSERT IGNORE INTO
 VALUES (
         '1',
         'admin',
-        '管理 太郎',
+        '管理太郎',
         '$2b$10$hBgWA9H1XZQmBNxdlhT2POyOpSZxiU6wXEg.J99xxfoYOpTDFDC0e',
         0,
         1,

@@ -12,11 +12,14 @@ import {
   upsertCanvas,
   type CanvasDocument,
 } from "@kd1-labs/document-db";
+import { buildStorageUrl, extractStorageKey } from "@kd1-labs/utils";
 import type {
   Persistence,
   PersistenceWriteMeta,
   WSSharedDoc,
 } from "../yjs/types.js";
+
+const STORAGE_BUCKET = process.env.MINIO_BUCKET ?? "public";
 
 // ── Fabric JSON の型定義（必要最小限） ────────────────────────────────
 
@@ -66,12 +69,17 @@ function expandCanvasToYDoc(
     yMeta.set("canvasDescription", canvasDoc.canvasDescription ?? null);
     yMeta.set("thumbnailUrl", canvasDoc.thumbnailUrl ?? null);
 
+    const bgKey = canvasDoc.backgroundImageUrl ?? null;
     const bgImage = fabricJson?.backgroundImage ?? null;
-    const bgUrl = canvasDoc.backgroundImageUrl ?? null;
-    if (bgImage) {
+    if (bgKey) {
+      const src = buildStorageUrl(STORAGE_BUCKET, bgKey);
+      if (bgImage) {
+        yMeta.set("backgroundImage", { ...bgImage, key: bgKey, src });
+      } else {
+        yMeta.set("backgroundImage", { type: "Image", key: bgKey, src });
+      }
+    } else if (bgImage) {
       yMeta.set("backgroundImage", bgImage);
-    } else if (bgUrl) {
-      yMeta.set("backgroundImage", bgUrl);
     } else {
       yMeta.set("backgroundImage", null);
     }
@@ -110,12 +118,25 @@ function collapseYDocToCanvasJson(yDoc: WSSharedDoc): {
   let backgroundImage: Record<string, unknown> | undefined;
 
   if (typeof bgRaw === "string") {
-    backgroundImageUrl = bgRaw;
-    backgroundImage = { type: "Image", src: bgRaw };
+    backgroundImageUrl = extractStorageKey(bgRaw);
+    backgroundImage = {
+      type: "Image",
+      src: buildStorageUrl(STORAGE_BUCKET, backgroundImageUrl),
+    };
   } else if (bgRaw && typeof bgRaw === "object") {
     backgroundImage = bgRaw as Record<string, unknown>;
-    backgroundImageUrl =
-      typeof backgroundImage.src === "string" ? backgroundImage.src : null;
+    if (typeof backgroundImage.key === "string") {
+      backgroundImageUrl = backgroundImage.key;
+    } else if (typeof backgroundImage.src === "string") {
+      backgroundImageUrl = extractStorageKey(backgroundImage.src);
+    }
+    if (backgroundImageUrl) {
+      backgroundImage = {
+        ...backgroundImage,
+        key: backgroundImageUrl,
+        src: buildStorageUrl(STORAGE_BUCKET, backgroundImageUrl),
+      };
+    }
   }
 
   const objects: FabricObjectJson[] = [];

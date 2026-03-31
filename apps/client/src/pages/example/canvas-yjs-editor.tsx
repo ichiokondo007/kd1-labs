@@ -17,6 +17,7 @@ import { useCurrentUser } from "@/hooks/useCurrentUser";
 import { useYjsConnection } from "@/features/canvas-yjs/hooks/useYjsConnection";
 import { useYjsObjectSync } from "@/features/canvas-yjs/hooks/useYjsObjectSync";
 import { useYjsCanvasRestore } from "@/features/canvas-yjs/hooks/useYjsCanvasRestore";
+import { useYjsUndoManager } from "@/features/canvas-yjs/hooks/useYjsUndoManager";
 import { ConnectedUsers } from "@/features/canvas-yjs/ui/ConnectedUsers";
 import { ConnectionStatusBadge } from "@/features/canvas-yjs/ui/ConnectionStatusBadge";
 
@@ -41,6 +42,8 @@ export default function CanvasYjsEditorPage() {
 
   // Y.Doc sync 完了 + meta 復元完了でオブジェクト同期を開始
   useYjsObjectSync(yDoc, fabricRef, isRestored, collabRemoteApplyDepthRef);
+
+  const { undo, redo, canUndo, canRedo } = useYjsUndoManager(yDoc, id, isRestored);
 
   const handleToolChange = useCallback((tool: CanvasTool) => {
     setActiveTool(tool);
@@ -75,8 +78,8 @@ export default function CanvasYjsEditorPage() {
     async (result: BgCropperResult) => {
       setBgCropperSrc(null);
       try {
-        const { url } = await uploadFile(result.dataUrl, "image/jpeg");
-        await fabricRef.current?.setBackgroundImage({ ...result, dataUrl: url });
+        const { key, url } = await uploadFile(result.dataUrl, "image/jpeg");
+        await fabricRef.current?.setBackgroundImage({ ...result, dataUrl: url }, key);
       } catch {
         setServerError("Failed to upload background image.");
       }
@@ -128,6 +131,10 @@ export default function CanvasYjsEditorPage() {
           <CanvasEditorToolbar
             activeTool={activeTool}
             onToolChange={handleToolChange}
+            onUndo={undo}
+            onRedo={redo}
+            undoDisabled={!canUndo}
+            redoDisabled={!canRedo}
             onDeleteSelected={() => fabricRef.current?.deleteSelectedObjects()}
             deleteDisabled={!hasCanvasSelection}
             bgImageDisabled

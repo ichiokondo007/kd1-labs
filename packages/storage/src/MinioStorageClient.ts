@@ -1,5 +1,6 @@
 import { Client } from "minio";
 import { Readable } from "node:stream";
+import { buildStorageUrl } from "@kd1-labs/utils";
 import type { StorageClient, StorageObjectInfo } from "./StorageClient.js";
 
 export interface MinioStorageClientConfig {
@@ -53,9 +54,7 @@ export class MinioStorageClient implements StorageClient {
   }
 
   buildPublicUrl(key: string): string {
-    if (key.startsWith("http://") || key.startsWith("https://")) return key;
-    if (key.startsWith("/api/") || key.startsWith("/storage/")) return key;
-    return `/storage/${this.bucket}/${key}`;
+    return buildStorageUrl(this.bucket, key);
   }
 
   async listObjects(prefix: string): Promise<StorageObjectInfo[]> {

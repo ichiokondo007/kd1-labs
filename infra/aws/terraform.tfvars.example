@@ -1,0 +1,14 @@
+# AWS Region
+aws_region = "ap-northeast-1"
+
+# Domain configuration
+domain_name      = "kd1.example.com"
+hosted_zone_name = "example.com"
+
+# EC2
+instance_type = "t3.xlarge"
+volume_size   = 30
+ssh_key_name  = "your-key-pair-name"
+
+# SSH access restriction (your IP)
+# ssh_allowed_cidr = "203.0.113.0/32"

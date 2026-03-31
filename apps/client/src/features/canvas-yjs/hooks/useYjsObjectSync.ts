@@ -3,6 +3,7 @@ import * as Y from "yjs";
 import { util, type Canvas, type FabricObject } from "fabric";
 import type { FabricCanvasHandle } from "@/features/canvas/ui/FabricCanvas";
 import { generateId } from "@/features/canvas/domain";
+import { LOCAL_EDIT_ORIGIN } from "@/features/canvas-yjs/domain";
 import { isApplyingRemote } from "./collabRemoteDepth";
 
 interface ObjectYjsEntry {
@@ -84,24 +85,36 @@ export function useYjsObjectSync(
     const yObjects = yDoc.getMap<ObjectYjsEntry>("objects");
 
     const handleObjectModified = (e: { target?: FabricObject }) => {
-      if (isApplyingRemote(depthRef) || !e.target) return;
-      const id = getObjectId(e.target);
-      yObjects.set(id, fabricToYjs(e.target));
+      if (isApplyingRemote(depthRef)) return;
+      const target = e.target;
+      if (!target) return;
+      const id = getObjectId(target);
+      yDoc.transact(() => {
+        yObjects.set(id, fabricToYjs(target));
+      }, LOCAL_EDIT_ORIGIN);
     };
 
     const handleObjectAdded = (e: { target?: FabricObject }) => {
-      if (isApplyingRemote(depthRef) || !e.target) return;
-      const id = getObjectId(e.target);
+      if (isApplyingRemote(depthRef)) return;
+      const target = e.target;
+      if (!target) return;
+      const id = getObjectId(target);
       if (!yObjects.has(id)) {
-        yObjects.set(id, fabricToYjs(e.target));
+        yDoc.transact(() => {
+          yObjects.set(id, fabricToYjs(target));
+        }, LOCAL_EDIT_ORIGIN);
       }
     };
 
     const handleObjectRemoved = (e: { target?: FabricObject }) => {
-      if (isApplyingRemote(depthRef) || !e.target) return;
-      const id = getObjectId(e.target);
+      if (isApplyingRemote(depthRef)) return;
+      const target = e.target;
+      if (!target) return;
+      const id = getObjectId(target);
       if (yObjects.has(id)) {
-        yObjects.delete(id);
+        yDoc.transact(() => {
+          yObjects.delete(id);
+        }, LOCAL_EDIT_ORIGIN);
       }
     };
 
