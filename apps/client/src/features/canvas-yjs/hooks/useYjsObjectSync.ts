@@ -64,8 +64,12 @@ function findFabricObjectById(
 }
 
 /**
- * 全 Fabric オブジェクトと Y.Map("objects") の双方向同期。
- * オブジェクト種別を問わず fabricSnapshot (toObject() の完全 JSON) で統一的に扱う。
+ * 全 Fabric オブジェクトと Y.Map("objects") + Y.Array("order") の双方向同期。
+ *
+ * - 属性の真実: Y.Map<ObjectYjsEntry>("objects")
+ * - 並びの真実: Y.Array<string>("order") (末尾 = 前面 / 先頭 = 背面)
+ *
+ * 追加・削除は属性と並びを 1 transact にまとめ、CRDT の整合性を保つ。
  */
 export function useYjsObjectSync(
   yDoc: Y.Doc | null,
@@ -83,6 +87,13 @@ export function useYjsObjectSync(
     if (!canvas) return;
 
     const yObjects = yDoc.getMap<ObjectYjsEntry>("objects");
+    const yOrder = yDoc.getArray<string>("order");
+
+    if (yObjects.size > 0 && yOrder.length === 0) {
+      yDoc.transact(() => {
+        yOrder.push(Array.from(yObjects.keys()));
+      }, LOCAL_EDIT_ORIGIN);
+    }
 
     const handleObjectModified = (e: { target?: FabricObject }) => {
       if (isApplyingRemote(depthRef)) return;
@@ -99,11 +110,11 @@ export function useYjsObjectSync(
       const target = e.target;
       if (!target) return;
       const id = getObjectId(target);
-      if (!yObjects.has(id)) {
-        yDoc.transact(() => {
-          yObjects.set(id, fabricToYjs(target));
-        }, LOCAL_EDIT_ORIGIN);
-      }
+      if (yObjects.has(id)) return;
+      yDoc.transact(() => {
+        yObjects.set(id, fabricToYjs(target));
+        yOrder.push([id]);
+      }, LOCAL_EDIT_ORIGIN);
     };
 
     const handleObjectRemoved = (e: { target?: FabricObject }) => {
@@ -111,11 +122,17 @@ export function useYjsObjectSync(
       const target = e.target;
       if (!target) return;
       const id = getObjectId(target);
-      if (yObjects.has(id)) {
-        yDoc.transact(() => {
-          yObjects.delete(id);
-        }, LOCAL_EDIT_ORIGIN);
-      }
+      if (!yObjects.has(id)) return;
+      yDoc.transact(() => {
+        yObjects.delete(id);
+        const idx = yOrder.toArray().indexOf(id);
+        if (idx >= 0) yOrder.delete(idx, 1);
+      }, LOCAL_EDIT_ORIGIN);
+    };
+
+    const placeAtOrderIndex = (c: Canvas, obj: FabricObject, key: string) => {
+      const idx = yOrder.toArray().indexOf(key);
+      if (idx >= 0) c.moveObjectTo(obj, idx);
     };
 
     const observer = (event: Y.YMapEvent<ObjectYjsEntry>) => {
@@ -135,6 +152,7 @@ export function useYjsObjectSync(
                 if (!obj || !c) return;
                 setObjectId(obj, key);
                 c.add(obj);
+                placeAtOrderIndex(c, obj, key);
                 c.requestRenderAll();
               } catch (err) {
                 console.warn(
@@ -163,6 +181,7 @@ export function useYjsObjectSync(
                 setObjectId(obj, key);
                 c.remove(existing);
                 c.add(obj);
+                placeAtOrderIndex(c, obj, key);
                 c.requestRenderAll();
               } catch (err) {
                 console.warn(
@@ -192,45 +211,67 @@ export function useYjsObjectSync(
       });
     };
 
+    const orderObserver = () => {
+      const c = fabricRef.current?.getCanvas();
+      if (!c) return;
+      const ids = yOrder.toArray();
+      depthRef.current += 1;
+      try {
+        ids.forEach((id, index) => {
+          const obj = findFabricObjectById(c, id);
+          if (obj) c.moveObjectTo(obj, index);
+        });
+        c.requestRenderAll();
+      } finally {
+        depthRef.current -= 1;
+      }
+    };
+
     canvas.on("object:modified", handleObjectModified);
     canvas.on("object:added", handleObjectAdded);
     canvas.on("object:removed", handleObjectRemoved);
     yObjects.observe(observer);
+    yOrder.observe(orderObserver);
 
-    renderYjsObjectsToCanvas(canvas, yObjects, fabricRef, depthRef);
+    void renderYjsObjectsToCanvas(canvas, yObjects, yOrder, fabricRef, depthRef);
 
     return () => {
       canvas.off("object:modified", handleObjectModified);
       canvas.off("object:added", handleObjectAdded);
       canvas.off("object:removed", handleObjectRemoved);
       yObjects.unobserve(observer);
+      yOrder.unobserve(orderObserver);
     };
   }, [yDoc, fabricRef, enabled, remoteApplyDepthRef]); // eslint-disable-line react-hooks/exhaustive-deps -- depthRef
 }
 
-function renderYjsObjectsToCanvas(
+async function renderYjsObjectsToCanvas(
   canvas: Canvas,
   yObjects: Y.Map<ObjectYjsEntry>,
+  yOrder: Y.Array<string>,
   fabricRef: React.RefObject<FabricCanvasHandle | null>,
   depthRef: React.MutableRefObject<number>,
-): void {
-  if (yObjects.size === 0) return;
-  yObjects.forEach((entry, key) => {
-    if (findFabricObjectById(canvas, key)) return;
-    void (async () => {
-      depthRef.current += 1;
-      try {
-        const obj = await snapshotToFabricObject(entry.fabricSnapshot);
-        const c = fabricRef.current?.getCanvas();
-        if (!obj || !c) return;
-        setObjectId(obj, key);
-        c.add(obj);
-        c.requestRenderAll();
-      } catch (err) {
-        console.warn("[useYjsObjectSync] initial render failed", err);
-      } finally {
-        depthRef.current -= 1;
-      }
-    })();
-  });
+): Promise<void> {
+  const ids =
+    yOrder.length > 0 ? yOrder.toArray() : Array.from(yObjects.keys());
+  if (ids.length === 0) return;
+
+  for (const key of ids) {
+    if (findFabricObjectById(canvas, key)) continue;
+    const entry = yObjects.get(key);
+    if (!entry) continue;
+    depthRef.current += 1;
+    try {
+      const obj = await snapshotToFabricObject(entry.fabricSnapshot);
+      const c = fabricRef.current?.getCanvas();
+      if (!obj || !c) continue;
+      setObjectId(obj, key);
+      c.add(obj);
+    } catch (err) {
+      console.warn("[useYjsObjectSync] initial render failed", err);
+    } finally {
+      depthRef.current -= 1;
+    }
+  }
+  fabricRef.current?.getCanvas()?.requestRenderAll();
 }
